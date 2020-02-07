@@ -1,0 +1,337 @@
+@charset "UTF-8";
+@import url("https://fonts.googleapis.com/css?family=Roboto|Roboto+Mono");
+
+.title {
+    font-weight          : normal;
+}
+h1 {
+    font-weight          : normal;
+    font-size            : 150%;
+}
+h2 {
+    margin-top           : 1.5em;
+    font-weight          : normal;
+    font-size            : 130%;
+}
+h3 {
+    font-weight          : normal;
+    font-size            : 100%;
+}
+h1.glow, h2.glow, h3.glow, h4.glow, h5.glow, h6.glow {
+    text-shadow: none;
+}
+
+a {
+    color: #34c;
+}
+
+body, table, div, p, dl {
+    font                 : 12px/1.231 Roboto, Verdana, Meiryo, sans-serif;
+}
+#doc-content {
+    overflow: auto;
+    display: inherit;
+    padding: 0px;
+    margin: 0px;
+    margin-left: 0px;
+    -webkit-overflow-scrolling: auto;
+}
+.contents {
+    max-width: 640px;
+    max-width: 800px;
+}
+code, .memItemLeft, .memItemRight {
+    font-family          : "Roboto Mono", "Courier New", monospace, fixed;
+}
+b {
+    font-weight          : normal;
+}
+a.el {
+    font-family          : inherit;
+    font-weight          : normal;
+}
+div.fragment {
+    padding: 0.5em;
+    border: none;
+    background-color: #ccc;
+}
+div.line {
+    font                 : 90% "Roboto Mono", "Courier New", monospace, fixed;
+    border               : none;
+    background-color     : #ccc;
+    line-height          : 120%;
+}
+span.lineno {
+    padding-right: 4px;
+    text-align: right;
+    border               : none;
+    background-color: #ddd;
+    white-space: pre;
+}
+div.line.glow {
+    background-color: #ddd;
+    box-shadow: none;
+}
+
+.textbox, .textblock {
+    max-width            : 640px;
+}
+.permalink {
+    display: none;
+}
+.memtitle {
+    max-width            : 640px;
+    margin               : 0 0 0.5em 0;
+    padding              : 0;
+    border               : none;
+    border-radius        : 0;
+    background-image     : none;
+    background-color     : transparent;
+    line-height          : 100%;
+    font-size            : 120%;
+    font-weight          : bold;
+    font-family          : "Roboto Mono", "Courier New", monospace, fixed;
+    -webkit-transition   : none;
+    -moz-transition      : none;
+    -ms-transition       : none;
+    -o-transition        : none;
+    transition           : none;
+    float                : none;
+}
+.memitem {
+    max-width: 800px;;
+    min-width: 640px;;
+}
+.memitem .memproto table.memname {
+    margin               : 0;
+}
+.memitem .memproto table.memname tbody {
+    letter-spacing       : -40em;
+}
+.memitem .memproto table.memname tbody tr {
+    margin               : 0;
+    padding              : 0;
+    display              : inline-block;
+}
+.memitem .memproto table.memname tbody tr td {
+    margin               : 0;
+    padding              : 0;
+    letter-spacing       : normal;
+}
+.memproto, dl.reflist dt {
+    border-top                     : 1px solid #ccc;
+    border-left                    : 1px solid #ccc;
+    border-right                   : 1px solid #ccc;
+    padding                        : 6px 0px 6px 0px;
+    background-color               : #ddd;
+    color                          : #253555;
+    font-weight                    : bold;
+    text-shadow                    : none;
+    box-shadow                     : none;
+    border-top-right-radius        : 0;
+    -moz-box-shadow                : none
+    -moz-border-radius-topright    : 0;
+    -webkit-box-shadow             : none
+    -webkit-border-top-right-radius: 0;
+}
+.memitem {
+    padding                           : 0;
+    margin-bottom                     : 2em;
+    margin-right                      : 5px;
+    -webkit-transition                : none;
+    -moz-transition                   : none;
+    -ms-transition                    : none;
+    -o-transition                     : none;
+    transition                        : none;
+    display                           : table !important;
+    width                             : 100%;
+}
+.memdoc, dl.reflist dd {
+    border-bottom                     : 1px solid #ccc;
+    border-left                       : 1px solid #ccc;
+    border-right                      : 1px solid #ccc;
+    padding                           : 6px 10px 2px 10px;
+    border-top-width                  : 0;
+    background-image                  : none;
+    background-color                  : #FFFFFF;
+    border-bottom-left-radius         : 0;
+    border-bottom-right-radius        : 0;
+    box-shadow                        : none;
+    -moz-border-radius-bottomleft     : 0;
+    -moz-border-radius-bottomright    : 0;
+    -moz-box-shadow                   : none;
+    -webkit-border-bottom-left-radius : 0;
+    -webkit-border-bottom-right-radius: 0;
+    -webkit-box-shadow                : none;
+}
+.memname {
+    font-family                       : "Roboto Mono", "Courier New", monospace, fixed;
+}
+p.reference, p.definition {
+    margin                            : 0;
+    padding                           : 0;
+    color                             : #666;
+    font                              : 400 90% Roboto,sans-serif;
+}
+/*
+**
+**
+*/
+#titlearea {
+    width                             : 100%;
+    margin                            : 0px;
+    padding                           : 0px;
+    border                            : none;
+    background-color                  : #333;
+}
+#titlearea .navi {
+    padding-left                      : 3px;
+    padding-right                     : 3px;
+    font                              : 400 85% Roboto,sans-serif;
+    color                             : #fff;
+    background-color                  : #222;
+    text-align                        : right;
+}
+#titlearea .navi a {
+    color                             : #999;
+    text-decoration                   : none;
+}
+#titlearea .navi a:hover {
+    color                             : #ccc;
+    text-decoration                   : none;
+}
+#projectname {
+    margin               : 0px;
+    padding              : 2px 0px;
+    font                 : bold 150% Roboto,Meiryo,Verdana,Arial,sans-serif;
+    color                : #eee;
+}
+#projectnumber {
+    margin               : 0px;
+    padding              : 0px;
+    font                 : bold 70% Roboto,Meiryo,Verdana,Arial,sans-serif;
+}
+div.ah, span.ah {
+    background-color     : black;
+    font-weight          : bold;
+    color                : #eee;
+    margin-bottom        : 3px;
+    margin-top           : 3px;
+    padding              : 0.2em;
+    border               : solid thin #333;
+    border-radius        : 0;
+    -webkit-border-radius: 0;
+    -moz-border-radius   : 0;
+    box-shadow           : none;
+    -webkit-box-shadow   : none;
+    -moz-box-shadow      : none;
+    background-image     : none;
+}
+/*
+** @brief side navigation
+**
+*/
+#side-nav {
+    background-color     : #eee;
+}
+#nav-tree {
+    overflow             : auto;
+    height               : 100%;
+    background-color     : #eee;
+    background-image     : none;
+}
+#nav-tree-contents {
+    margin               : 0;
+    padding              : 5px 0 0 5px;
+    background-color     : #eee;
+}
+#nav-tree .label {
+    margin               : 0px;
+    padding              : 0px;
+    font                 : 100% nomarl Roboto, Verdana, Meiryo, sans-serif;
+}
+#nav-tree .selected {
+    background-image     : none;
+    background-color     : #444;
+    color                : #fff;
+    text-shadow          : none;
+}
+.arrow {
+    font-family          : "Roboto Mono", Consolas, "Courier new";
+    color                : #999;
+    -webkit-user-select  : none;
+    -khtml-user-select   : none;
+    -moz-user-select     : none;
+    -ms-user-select      : none;
+    user-select          : none;
+    cursor               : pointer;
+    font-size            : 90%;
+    display              : inline-block;
+    width                : 16px;
+    height               : 100%;
+}
+.arrow > * {
+    content              : "";
+}
+
+#nav-sync {
+    display              : none;
+}
+.ui-resizable-e {
+    background-color     : #ccc;
+    background-image     : none;
+    background-size      : 100%;
+    background-repeat    : no-repeat;
+    background-attachment: scroll;
+    cursor               : ew-resize;
+    height               : 100%;
+    right                : 0;
+    top                  : 0;
+    width                : 1px;
+}
+
+table.directory {
+    font: normal 100% Roboto,sans-serif;
+}
+
+table.fieldtable {
+    margin-bottom: 10px;
+    border: 1px solid #666;
+    border-spacing: 0px;
+    -moz-border-radius: 0;
+    -webkit-border-radius: 0;
+    border-radius: 0;
+    -moz-box-shadow: none;
+    -webkit-box-shadow: none;
+    box-shadow: none;
+}
+.fieldtable th {
+    background-image: none;
+    background-color: #ccc;
+    font-size: 90%;
+    color: #333;
+    padding-bottom: 4px;
+    padding-top: 5px;
+    text-align: left;
+    font-weight: 400;
+    -moz-border-radius-topleft: 0;
+    -moz-border-radius-topright: 0;
+    -webkit-border-top-left-radius: 0;
+    -webkit-border-top-right-radius: 0;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+    border-bottom: 1px solid #666;
+}
+.fieldtable td.fieldtype,
+.fieldtable td.fieldname {
+    white-space: nowrap;
+    border-right: 1px solid #666;
+    border-bottom: 1px solid #666;
+    vertical-align: top;
+}
+
+dl.warning, dl.attention {
+    margin-left: -7px;
+    padding-left: 3px;
+    background-color: #fcc;
+}

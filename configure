@@ -1,0 +1,235 @@
+#! cmake -P
+
+set(GF_GENERATOR   "MSYS Makefiles")
+set(GF_BUILD_PATH  "${CMAKE_SOURCE_DIR}/.build")
+set(GF_CMAKE_LIST  "${CMAKE_SOURCE_DIR}/CMakeLists.txt")
+
+#
+# Prepare the build directory
+#
+
+function(init)
+  
+  if(NOT EXISTS ${GF_BUILD_PATH})
+    # Make build directory
+    file(MAKE_DIRECTORY ${GF_BUILD_PATH})
+    message(">>> New directory '${GF_BUILD_PATH}' created.")
+  endif()
+
+  file(READ ${CMAKE_ARGV2} GF_SETUP_FILE)
+  string(REGEX MATCHALL "\n#> *[^\n]+" _TMP ${GF_SETUP_FILE})
+  string(REPLACE ";" "" _TMP "${_TMP}")
+  string(REPLACE "#>" "" GF_CONFIG_FILE "${_TMP}")
+  file(WRITE ${GF_CMAKE_LIST} ${GF_CONFIG_FILE})
+
+  # Execute CMake command
+  message(">>> Running CMake ...")
+  execute_process(
+  COMMAND
+    ${CMAKE_COMMAND} .. -G ${GF_GENERATOR}
+  WORKING_DIRECTORY
+    ${GF_BUILD_PATH}
+  )
+endfunction(init)
+
+#
+# Clean up the build directory
+#
+
+function(clean)
+  # Clean build path
+  if(EXISTS ${GF_BUILD_PATH})
+    file(REMOVE_RECURSE ${GF_BUILD_PATH})
+    message(">>> Removed '${GF_BUILD_PATH}/'.")
+  endif()
+  # Clean CMakeLists.txt
+  if(EXISTS ${GF_CMAKE_LIST})
+    file(REMOVE_RECURSE ${GF_CMAKE_LIST})
+    message(">>> Removed '${GF_CMAKE_LIST}'.")
+  endif()
+endfunction(clean)
+
+#
+# Print help message
+#
+
+function(help)
+  message("Usage: configure <command>")
+  message("command:")
+  message("  init          Prepare the build directory")
+  message("  clean         Clean up the build directory")
+  message("  help          Print this message")
+endfunction(help)
+
+
+#
+# Top of the script
+#
+
+set(SETUP_COMMAND ${CMAKE_ARGV3})
+
+if("${SETUP_COMMAND}" STREQUAL "init")
+  init()
+elseif("${SETUP_COMMAND}" STREQUAL "clean")
+  clean()
+elseif("${SETUP_COMMAND}" STREQUAL "help")
+  help()
+elseif(NOT "${SETUP_COMMAND}")
+  help()
+else()
+  message(">>> ERROR: '${SETUP_COMMAND}' is not a command string.")
+endif()
+
+#------------------------------------------------------------------------------#
+#> #############################################################################
+#> ##                                                                         ##
+#> ## CONFIGURATION FILE FOR PROJECT GRAYFISH                                 ##
+#> ##                                                                         ##
+#> #############################################################################
+#> 
+#> cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
+#> 
+#> project(GF VERSION 0.0.1 LANGUAGES C)
+#> 
+#> set(CMAKE_BUILD_TYPE Debug)
+#> 
+#> set(GF_MODULE_NAME Grayfish)
+#>
+#> #---------------------------------------------------------------------------#
+#> # DEPENDENCIES                                                              #
+#> #---------------------------------------------------------------------------#
+#> 
+#> find_package(LibXml2 REQUIRED)
+#> find_package(LibXslt REQUIRED)
+#> 
+#> #---------------------------------------------------------------------------#
+#> # SETTINGS                                                                  #
+#> #---------------------------------------------------------------------------#
+#> 
+#> ##
+#> ## Common compiler/linker options
+#> ##
+#> 
+#> set(GF_CMAKE_C_FLAGS "-Wall -Wextra -Wshadow -Werror -std=c11 -D__USE_MINGW_ANSI_STDIO=1")
+#>
+#> ##
+#> ## Switch flags along with the build mode
+#> ##
+#>
+#> set(CMAKE_C_FLAGS_DEBUG   "-g -O0 -DGF_DEBUG_")
+#> set(CMAKE_C_FLAGS_RELEASE "-O3")
+#>
+#> ##
+#> ## Paths
+#> ##
+#> 
+#> set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+#> set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+#> set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+#> 
+#> #---------------------------------------------------------------------------#
+#> # API REFERENCE                                                             #
+#> #---------------------------------------------------------------------------#
+#> 
+#> set(GF_REFERENCE_DOXYFILE_IN ${CMAKE_SOURCE_DIR}/doc/Doxyfile.in)
+#> set(GF_REFERENCE_DOXYFILE    ${CMAKE_BINARY_DIR}/doc/Doxyfile)
+#> set(GF_REFERENCE_OUTPUT_FILE ${CMAKE_BINARY_DIR}/doc/${GF_MODULE_NAME})
+#> 
+#> configure_file(${GF_REFERENCE_DOXYFILE_IN} ${GF_REFERENCE_DOXYFILE})
+#> 
+#> add_custom_target(
+#>   doc ALL
+#>   doxygen ${GF_REFERENCE_DOXYFILE}
+#> WORKING_DIRECTORY
+#>   ${CMAKE_SOURCE_DIR}
+#> )
+#> 
+#> #---------------------------------------------------------------------------#
+#> # MAIN LIBRARY                                                              #
+#> #---------------------------------------------------------------------------#
+#> 
+#> set(GF_LIBGF_CONFIG_H_IN ${CMAKE_SOURCE_DIR}/src/libgf/config.h.in)
+#> set(GF_LIBGF_CONFIG_H    ${CMAKE_BINARY_DIR}/src/libgf/config.h)
+#> 
+#> file(GLOB GF_LIBGF_SOURCE ${CMAKE_SOURCE_DIR}/src/libgf/*.c)
+#> file(GLOB GF_LIBGF_HEADER
+#>   ${CMAKE_SOURCE_DIR}/src/libgf/*.h ${GF_LIBGF_CONFIG_H})
+#> 
+#> configure_file(${GF_LIBGF_CONFIG_H_IN} ${GF_LIBGF_CONFIG_H})
+#>    
+#> set(CMAKE_C_FLAGS ${GF_CMAKE_C_FLAGS} "-DDLL_EXPORT")
+#>    
+#> include_directories(
+#>   ${LIBXML2_INCLUDE_DIR}
+#>   ${LIBXSLT_INCLUDE_DIR} 
+#>   ${CMAKE_SOURCE_DIR}/src)
+#> 
+#> add_library(gf SHARED ${GF_LIBGF_SOURCE} ${GF_LIBGF_HEADER})
+#> target_link_libraries(
+#>     gf
+#>   PRIVATE
+#>     ${LIBXML2_LIBRARIES}
+#>     ${LIBXSLT_LIBRARIES}
+#>     ${LIBXSLT_EXSLT_LIBRARY}
+#>     shlwapi
+#> )
+#> 
+#> #---------------------------------------------------------------------------#
+#> # MAIN EXECUTABLE MODULE                                                    #
+#> #---------------------------------------------------------------------------#
+#> 
+#> # Files
+#> 
+#> set(GF_MODULE_NAME gf-bin)
+#> 
+#> set(GF_SOURCE_DIR  ${CMAKE_SOURCE_DIR}/src/gf)
+#> set(GF_BINARY_DIR  ${CMAKE_BINARY_DIR}/src/gf)
+#> set(GF_MODULE_PATH ${CMAKE_BINARY_DIR}/bin/${GF_MODULE_NAME})
+#> 
+#> file(GLOB GF_SOURCE ${CMAKE_SOURCE_DIR}/src/gf/*.c)
+#> file(GLOB GF_HEADER ${CMAKE_SOURCE_DIR}/src/gf/*.h)
+#>
+#> set(CMAKE_C_FLAGS ${GF_CMAKE_C_FLAGS})
+#>
+#> include_directories(
+#>   ${CMAKE_BINARY_DIR}/src
+#>   ${CMAKE_SOURCE_DIR}/src)
+#>    
+#> add_executable(${GF_MODULE_NAME} WIN32 ${GF_SOURCE})
+#> target_link_libraries(
+#>   gf-bin
+#>   gf
+#>   "-Wl,-subsystem,console"
+#> )
+#>
+#> #
+#> # now we rename gf-bin executable to gf using target properties
+#> #
+#>
+#> set_target_properties(gf-bin PROPERTIES OUTPUT_NAME gf)
+#> 
+#> #
+#> # config files
+#> #
+#> 
+#> configure_file(
+#>   ${CMAKE_SOURCE_DIR}/etc/gf.conf
+#>   ${CMAKE_BINARY_DIR}/etc/gf.conf
+#>   COPYONLY
+#> )
+#> 
+#> #---------------------------------------------------------------------------#
+#> # SHARED FILES                                                              #
+#> #---------------------------------------------------------------------------#
+#> 
+#> file(GLOB_RECURSE GF_SHARED_FILES ${CMAKE_SOURCE_DIR}/etc/docbook/*)
+#> 
+#> add_custom_target(
+#>   gf-shared
+#>   ALL
+#> COMMAND
+#>   ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/etc/docbook ${CMAKE_BINARY_DIR}/etc/docbook
+#> DEPENDS
+#>   ${GF_SHARED_FILES}
+#> )
+#> 

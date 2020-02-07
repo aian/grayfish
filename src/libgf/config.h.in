@@ -1,0 +1,21 @@
+/*-
+ * This file is part of Grayfish project. For license details, see the file
+ * 'LICENSE.md' in this package.
+ */
+/*!
+** @file config.h
+** @brief Module configuration file
+*/
+#ifndef GF_CONFIG_H
+#define GF_CONFIG_H
+
+#pragma once
+
+#define GF_VERSION_MAJOR @GF_VERSION_MAJOR@
+#define GF_VERSION_MINOR @GF_VERSION_MINOR@
+#define GF_VERSION_PATCH @GF_VERSION_PATCH@
+
+#define GF_VERSION_STRING \
+  "v@GF_VERSION_MAJOR@.@GF_VERSION_MINOR@.@GF_VERSION_PATCH@"
+
+#endif  /* GF_CONFIG_H */

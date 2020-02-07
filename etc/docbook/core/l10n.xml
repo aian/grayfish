@@ -1,0 +1,6 @@
+<?xml version='1.0'?>
+<!DOCTYPE l:i18n SYSTEM "l10n.dtd">
+<l:i18n xmlns:l="http://docbook.sourceforge.net/xmlns/l10n/1.0">
+<l:l10n language="en" href="en.xml"/>
+<l:l10n language="ja" href="ja.xml"/>
+</l:i18n>
