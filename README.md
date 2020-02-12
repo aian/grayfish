@@ -1,6 +1,9 @@
 Grayfish
 ========
 
+**THIS MODULE IS NOT AVAILABLE. FOR NOW, IT IS UNDER DEVELOPMENT.**
+
+
 Grayfish is a static website generator for DocBook XML documents.
 
 
