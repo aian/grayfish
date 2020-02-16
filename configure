@@ -218,18 +218,3 @@ endif()
 #>   COPYONLY
 #> )
 #> 
-#> #---------------------------------------------------------------------------#
-#> # SHARED FILES                                                              #
-#> #---------------------------------------------------------------------------#
-#> 
-#> file(GLOB_RECURSE GF_SHARED_FILES ${CMAKE_SOURCE_DIR}/etc/docbook/*)
-#> 
-#> add_custom_target(
-#>   gf-shared
-#>   ALL
-#> COMMAND
-#>   ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/etc/docbook ${CMAKE_BINARY_DIR}/etc/docbook
-#> DEPENDS
-#>   ${GF_SHARED_FILES}
-#> )
-#> 
