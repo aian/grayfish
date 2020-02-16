@@ -6,7 +6,9 @@
 ** @file libgf/gf_hash.c
 ** @brief Hash functions
 */
-#include <libgf/gf_hash.c>
+#include <libgf/gf_local.h>
+#include <libgf/gf_memory.h>
+#include <libgf/gf_hash.h>
 
 
 struct gf_hash {
