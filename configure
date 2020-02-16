@@ -172,6 +172,7 @@ endif()
 #>     ${LIBXSLT_LIBRARIES}
 #>     ${LIBXSLT_EXSLT_LIBRARY}
 #>     shlwapi
+#>     advapi32
 #> )
 #> 
 #> #---------------------------------------------------------------------------#
