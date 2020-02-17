@@ -114,7 +114,7 @@ endif()
 #> ##
 #> ## Switch flags along with the build mode
 #> ##
-#> set(CMAKE_C_FLAGS_DEBUG   "-g -O0 -DGF_DEBUG_")
+#> set(CMAKE_C_FLAGS_DEBUG   "-coverage -g -O0 -DGF_DEBUG_")
 #> set(CMAKE_C_FLAGS_RELEASE "-O3")
 #> ##
 #> ## Paths
