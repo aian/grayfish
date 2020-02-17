@@ -183,6 +183,62 @@ swap_paths_with_null_ptr(void) {
 
 /* -------------------------------------------------------------------------- */
 
+static void
+copy_paths_in_normal_cond(void) {
+  gf_status rc = 0;
+  gf_path* path_1 = NULL;
+  gf_path* path_2 = NULL;
+  const char* str_1 = NULL;
+  const char* str_2 = NULL;
+
+  static const char s[] = "file";
+
+  rc = gf_path_new(&path_1, s);
+  CU_ASSERT_EQUAL_FATAL(rc, GF_SUCCESS);
+  rc = gf_path_new(&path_2, "");   // empty string
+  CU_ASSERT_EQUAL_FATAL(rc, GF_SUCCESS);
+
+  rc = gf_path_copy(path_2, path_1);  // copy 1 --> 2
+  CU_ASSERT_EQUAL(rc, GF_SUCCESS);
+
+  str_1 = gf_path_get_string(path_1);
+  str_2 = gf_path_get_string(path_2);
+  CU_ASSERT_PTR_NOT_NULL_FATAL(str_1);
+  CU_ASSERT_PTR_NOT_NULL_FATAL(str_2);
+
+  CU_ASSERT_STRING_EQUAL(str_1, str_2);
+  CU_ASSERT_PTR_NOT_EQUAL(str_1, str_2);
+  
+  gf_path_free(path_1);
+  gf_path_free(path_2);
+}
+
+static void
+copy_paths_with_null_ptr(void) {
+  gf_status rc = 0;
+  gf_path* path = NULL;
+  const char* str = NULL;
+
+  static const char s[] = "file";
+
+  rc = gf_path_new(&path, s);
+  CU_ASSERT_EQUAL_FATAL(rc, GF_SUCCESS);
+
+  rc = gf_path_copy(path, NULL);
+  CU_ASSERT_NOT_EQUAL(rc, GF_SUCCESS);
+  str = gf_path_get_string(path);
+  CU_ASSERT_STRING_EQUAL(str, s);
+
+  rc = gf_path_copy(NULL, path);
+  CU_ASSERT_NOT_EQUAL(rc, GF_SUCCESS);
+  str = gf_path_get_string(path);
+  CU_ASSERT_STRING_EQUAL(str, s);
+
+  gf_path_free(path);
+}
+
+/* -------------------------------------------------------------------------- */
+
 /*!
 ** @brief The interface function for the test of gf_path.
 **
@@ -206,4 +262,7 @@ gft_path_add_tests(void) {
   /* swap */
   CU_add_test(s, "Swap paths in normal cond",   swap_paths_in_normal_cond);
   CU_add_test(s, "Swap paths with null ptr",    swap_paths_with_null_ptr);
+  /* copy */
+  CU_add_test(s, "Copy paths in normal cond",   copy_paths_in_normal_cond);
+  CU_add_test(s, "Copy paths with null ptr",    copy_paths_with_null_ptr);
 }
