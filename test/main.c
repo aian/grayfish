@@ -20,7 +20,7 @@ gft_init(void) {
 
 void
 gft_prepare(void) {
-  
+  gft_path_add_tests();  // gf_path
 }
 
 void
