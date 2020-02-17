@@ -81,6 +81,7 @@ else()
 endif()
 
 #------------------------------------------------------------------------------#
+#>
 #> #############################################################################
 #> ##                                                                         ##
 #> ## CONFIGURATION FILE FOR PROJECT GRAYFISH                                 ##
@@ -94,7 +95,6 @@ endif()
 #> set(CMAKE_BUILD_TYPE Debug)
 #> 
 #> set(GF_MODULE_NAME Grayfish)
-#>
 #> #---------------------------------------------------------------------------#
 #> # DEPENDENCIES                                                              #
 #> #---------------------------------------------------------------------------#
@@ -111,14 +111,11 @@ endif()
 #> ##
 #> 
 #> set(GF_CMAKE_C_FLAGS "-Wall -Wextra -Wshadow -Werror -std=c11 -D__USE_MINGW_ANSI_STDIO=1")
-#>
 #> ##
 #> ## Switch flags along with the build mode
 #> ##
-#>
 #> set(CMAKE_C_FLAGS_DEBUG   "-g -O0 -DGF_DEBUG_")
 #> set(CMAKE_C_FLAGS_RELEASE "-O3")
-#>
 #> ##
 #> ## Paths
 #> ##
@@ -188,9 +185,7 @@ endif()
 #> 
 #> file(GLOB GF_SOURCE ${CMAKE_SOURCE_DIR}/src/gf/*.c)
 #> file(GLOB GF_HEADER ${CMAKE_SOURCE_DIR}/src/gf/*.h)
-#>
 #> set(CMAKE_C_FLAGS ${GF_CMAKE_C_FLAGS})
-#>
 #> include_directories(
 #>   ${CMAKE_BINARY_DIR}/src
 #>   ${CMAKE_SOURCE_DIR}/src)
@@ -201,11 +196,9 @@ endif()
 #>   gf
 #>   "-Wl,-subsystem,console"
 #> )
-#>
 #> #
 #> # now we rename gf-bin executable to gf using target properties
 #> #
-#>
 #> set_target_properties(gf-bin PROPERTIES OUTPUT_NAME gf)
 #> 
 #> #
@@ -217,4 +210,29 @@ endif()
 #>   ${CMAKE_BINARY_DIR}/etc/gf.conf
 #>   COPYONLY
 #> )
+#>
+#> #---------------------------------------------------------------------------#
+#> # TESTING MODULE                                                            #
+#> #---------------------------------------------------------------------------#
+#>
+#> set(GF_TEST_MODULE_NAME gf-test)
 #> 
+#> set(GF_SOURCE_DIR  ${CMAKE_SOURCE_DIR}/test/gf)
+#> set(GF_BINARY_DIR  ${CMAKE_BINARY_DIR}/test/gf)
+#> set(GF_MODULE_PATH ${CMAKE_BINARY_DIR}/bin/${GF_TEST_MODULE_NAME})
+#> 
+#> file(GLOB GF_SOURCE ${CMAKE_SOURCE_DIR}/test/*.c)
+#> file(GLOB GF_HEADER ${CMAKE_SOURCE_DIR}/test/*.h)
+#> set(CMAKE_C_FLAGS ${GF_CMAKE_C_FLAGS})
+#> include_directories(
+#>   ${CMAKE_BINARY_DIR}/src
+#>   ${CMAKE_SOURCE_DIR}/src
+#>   ${CMAKE_SOURCE_DIR}/test)
+#>    
+#> add_executable(${GF_TEST_MODULE_NAME} WIN32 ${GF_SOURCE})
+#> target_link_libraries(
+#>   gf-test
+#>   gf
+#>   cunit
+#>   "-Wl,-subsystem,console"
+#> )
