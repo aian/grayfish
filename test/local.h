@@ -15,9 +15,8 @@
 extern "C" {
 #endif
 
-
+extern void gft_string_add_tests(void);
 extern void gft_path_add_tests(void);
-
 
 #ifdef __cplusplus
 }
