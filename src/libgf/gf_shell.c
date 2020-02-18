@@ -90,9 +90,15 @@ gf_shell_remove_direcroty(const gf_path* path) {
 }
 
 gf_status
-gf_shell_rename(const gf_path* path) {
-  gf_validate(!gf_path_is_empty(path));
+gf_shell_rename(const gf_path* dst, const gf_path* src) {
+  gf_validate(!gf_path_is_empty(dst));
+  gf_validate(!gf_path_is_empty(src));
   return GF_SUCCESS;
+}
+
+gf_status
+gf_shell_move(const gf_path* dst, const gf_path* src) {
+  return gf_shell_rename(dst, src);
 }
 
 gf_status
@@ -117,6 +123,13 @@ gf_shell_copy_tree(const gf_path* dst, const gf_path* src) {
 
 gf_status
 gf_shell_remove_tree(const gf_path* path) {
+  gf_validate(!gf_path_is_empty(path));
+
+  return GF_SUCCESS;
+}
+
+gf_status
+gf_shell_change_directory(const gf_path* path) {
   gf_validate(!gf_path_is_empty(path));
 
   return GF_SUCCESS;
