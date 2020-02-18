@@ -47,7 +47,7 @@ gf_shell_is_directory(const gf_path* path) {
   }
   s = gf_path_get_string(path);
   
-  return path && PathIsDirectory(path->buf) ? GF_TRUE : GF_FALSE;
+  return path && PathIsDirectory(s) ? GF_TRUE : GF_FALSE;
 }
 
 gf_bool
