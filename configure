@@ -169,6 +169,7 @@ endif()
 #>     ${LIBXSLT_LIBRARIES}
 #>     ${LIBXSLT_EXSLT_LIBRARY}
 #>     shlwapi
+#>     advapi32
 #> )
 #> 
 #> #---------------------------------------------------------------------------#
@@ -236,3 +237,4 @@ endif()
 #>   cunit
 #>   "-Wl,-subsystem,console"
 #> )
+#> 
