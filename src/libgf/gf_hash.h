@@ -31,8 +31,8 @@ typedef struct gf_hash gf_hash;
 /*!
 ** @brief Create a hash context handle
 **
-** @param hash [out] The pointer to the new context handle
-** @param type [in]  The hashing algorithm type
+** @param [out] hash The pointer to the new context handle
+** @param [in]  type The hashing algorithm type
 **
 */
 
@@ -41,7 +41,7 @@ extern gf_status gf_hash_new(gf_hash** hash, gf_hash_type type);
 /*!
 ** @brief Destroy the hash context handle
 **
-** @param hash [in] The pointer to the context handle to destroy
+** @param [in] hash The pointer to the context handle to destroy
 **
 */
 
