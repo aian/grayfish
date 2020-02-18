@@ -13,16 +13,16 @@
 
 #include <libgf/config.h>
 
+#include <wchar.h>
 #include <stddef.h>
 
-typedef _Bool gf_bool;
-typedef void* gf_ptr;
-typedef size_t gf_size_t;
-
+typedef _Bool   gf_bool;
+typedef size_t  gf_size_t;
+typedef wchar_t gf_char;    /* For now, this code is for Winddows OS */
+typedef void*   gf_ptr;
 
 extern const gf_bool GF_TRUE;
 extern const gf_bool GF_FALSE;
-
 
 enum gf_status {
   GF_SUCCESS   = 0,  ///< Success
