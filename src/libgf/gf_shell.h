@@ -212,7 +212,7 @@ extern gf_status gf_shell_remove_tree(const gf_path* path);
 /*!
 ** @brief Change the current directory
 **
-** @param [in] path the path to which the current directory is changed
+** @param [in] path The path to which the current directory is changed
 **
 ** @return GF_SUCCESS on success, GF_E_* otherwise
 */
