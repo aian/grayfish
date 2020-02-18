@@ -3,8 +3,8 @@
  * 'LICENSE.md' in this package.
  */
 /*!
-** @file test/test-path.c
-** @brief Testing gf_path module.
+** @file test/test-string.c
+** @brief Testing module for gf_string.
 */
 #include <CUnit/CUnit.h>
 

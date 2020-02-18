@@ -4,7 +4,7 @@
  */
 /*!
 ** @file test/test-path.c
-** @brief Testing gf_path module.
+** @brief Testing module for gf_path.
 */
 #include <CUnit/CUnit.h>
 
