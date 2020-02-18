@@ -9,18 +9,21 @@
 
 #include <assert.h>
 
+#include <shlwapi.h>
+
 #include <libgf/gf_shell.h>
 
 gf_bool
 gf_shell_is_file_exists(const gf_path* path) {
-  gf_bool ret = GF_FALSE;
+  const char* s = NULL;
 
   if (gf_path_is_empty(path)) {
     assert(GF_FALSE);
     return GF_FALSE;
   }
+  s = gf_path_get_string(path);
 
-  return ret;
+  return path && PathFileExists(s) ? GF_TRUE : GF_FALSE;
 }
 
 struct gf_file_info {
@@ -36,14 +39,15 @@ gf_shell_get_file_info(gf_file_info** info, const gf_path* path) {
 
 gf_bool
 gf_shell_is_directory(const gf_path* path) {
-  gf_bool ret = GF_FALSE;
+  const char* s = NULL;
 
   if (gf_path_is_empty(path)) {
     assert(GF_FALSE);
     return GF_FALSE;
   }
-
-  return ret;
+  s = gf_path_get_string(path);
+  
+  return path && PathIsDirectory(path->buf) ? GF_TRUE : GF_FALSE;
 }
 
 gf_bool
