@@ -150,7 +150,7 @@ gf_shell_remove_file(const gf_path* path) {
 }
 
 gf_status
-gf_shell_remove_direcroty(const gf_path* path) {
+gf_shell_remove_directory(const gf_path* path) {
   BOOL ret = FALSE;
   const char* s = NULL;
   
@@ -192,13 +192,16 @@ gf_shell_move(const gf_path* dst, const gf_path* src) {
 
 gf_status
 gf_shell_traverse_tree(
-  const gf_path* path, gf_shell_traverse_order order, gf_shell_fn fn, gf_ptr data) {
+  const gf_path* path, const gf_path* trace, gf_shell_traverse_order order,
+  gf_shell_fn fn, gf_ptr data) {
 
   HANDLE finder = INVALID_HANDLE_VALUE;
   WIN32_FIND_DATA find_data = { 0 };
+
+  (void)trace;  // TODO: implement this
   
   gf_path* find_path = NULL;
-
+  
   static const char WILDCARD[]    = "*.*";
   static const char CURRENT_DIR[] = ".";
   static const char PARENT_DIR[]  = "..";
@@ -216,17 +219,26 @@ gf_shell_traverse_tree(
   }
   do {
     gf_status rc = 0;
+    gf_path* child = NULL;
     const char* name = find_data.cFileName;        // alias
     const DWORD attr = find_data.dwFileAttributes; // alias
     
     if (!strcmp(name, CURRENT_DIR) || !strcmp(name, PARENT_DIR)) {
       continue;
     }
+    /* Child path */
+    rc = gf_path_append_string(&child, path, name);
+    if (rc != GF_SUCCESS) {
+      gf_path_free(find_path);
+      FindClose(finder);
+      gf_throw(rc);
+    }
     /* Preorder processing */
     if (order == GF_SHELL_TRAVERSE_PREORDER) {
       if (fn) {
-        rc = fn(path, &find_data, data);
+        rc = fn(child, NULL, &find_data, data);
         if (rc != GF_SUCCESS) {
+          gf_path_free(child);
           gf_path_free(find_path);
           FindClose(finder);
           gf_throw(rc);
@@ -235,16 +247,9 @@ gf_shell_traverse_tree(
     }
     /* Dig into the sub-directory */
     if (shell_has_specified_attributes(attr, FILE_ATTRIBUTE_DIRECTORY)) {
-      gf_path* subdir = NULL;
-
-      rc = gf_path_append_string(&subdir, path, name);
+      rc = gf_shell_traverse_tree(child, NULL, order, fn, data);
       if (rc != GF_SUCCESS) {
-        gf_path_free(find_path);
-        FindClose(finder);
-        gf_throw(rc);
-      }
-      rc = gf_shell_traverse_tree(subdir, order, fn, data);
-      if (rc != GF_SUCCESS) {
+        gf_path_free(child);
         gf_path_free(find_path);
         FindClose(finder);
         gf_throw(rc);
@@ -253,14 +258,16 @@ gf_shell_traverse_tree(
     /* Postorder processing */
     if (order == GF_SHELL_TRAVERSE_POSTORDER) {
       if (fn) {
-        rc = fn(path, &find_data, data);
+        rc = fn(child, NULL, &find_data, data);
         if (rc != GF_SUCCESS) {
+          gf_path_free(child);
           gf_path_free(find_path);
           FindClose(finder);
           gf_throw(rc);
         }
       }
     }
+    gf_path_free(child);
   } while (FindNextFile(finder, &find_data));
 
   gf_path_free(find_path);
@@ -269,17 +276,113 @@ gf_shell_traverse_tree(
   return GF_SUCCESS;
 }
 
+static gf_status
+shell_copy_callback(
+  const gf_path* path, const gf_path* trace, gf_ptr find_data, gf_ptr data) {
+  gf_status rc = 0;
+  const WIN32_FIND_DATA* fd = (WIN32_FIND_DATA*)find_data;
+  const gf_path* dst = (gf_path*)data;  // target directory 
+
+  DWORD attr = 0;
+  const char* name = NULL;
+
+  gf_path* dst_path = NULL;  // target file
+
+  (void)trace;
+  
+  gf_validate(!gf_path_is_empty(path));
+  gf_validate(find_data);
+
+  /* alias */
+  attr = fd->dwFileAttributes;
+  name = fd->cFileName;
+  
+  rc = gf_path_append_string(&dst_path, dst, name);
+  if (rc != GF_SUCCESS) {
+    gf_throw(rc);
+  }
+  if (shell_has_specified_attributes(attr, FILE_ATTRIBUTE_DIRECTORY)) {
+    rc = gf_shell_make_directory(dst_path);
+    gf_path_free(dst_path);
+    if (rc != GF_SUCCESS) {
+      gf_throw(rc);
+    }
+  } else {
+    rc = gf_shell_copy_file(dst_path, path);
+    gf_path_free(dst_path);
+    if (rc != GF_SUCCESS) {
+      gf_throw(rc);
+    }
+  }
+  
+  return GF_SUCCESS;
+}
+
 gf_status
 gf_shell_copy_tree(const gf_path* dst, const gf_path* src) {
+  gf_status rc = 0;
+  gf_path* path = NULL;
+  
   gf_validate(!gf_path_is_empty(dst));
   gf_validate(!gf_path_is_empty(src));
 
+  if (gf_shell_is_directory(src)) {
+    rc = gf_path_clone(&path, dst);
+    if (rc != GF_SUCCESS) {
+      gf_throw(rc);
+    }
+    rc = gf_shell_make_directory(path);
+    if (rc != GF_SUCCESS) {
+      gf_path_free(path);
+      gf_throw(rc);
+    }
+    rc = gf_shell_traverse_tree(
+      src, NULL, GF_SHELL_TRAVERSE_PREORDER, shell_copy_callback, path);
+    gf_path_free(path);
+    if (rc != GF_SUCCESS) {
+      gf_throw(rc);
+    }
+  } else {
+    _(gf_shell_copy_file(dst, src));
+  }
+
+  return GF_SUCCESS;
+}
+
+static gf_status
+shell_remove_callback(
+  const gf_path* path, const gf_path* trace, gf_ptr find_data, gf_ptr data) {
+  const WIN32_FIND_DATA* fd = (WIN32_FIND_DATA*)find_data;
+  DWORD attr = 0;
+
+  (void)data;
+  (void)trace;
+  
+  gf_validate(!gf_path_is_empty(path));
+
+  /* alias */
+  attr = fd->dwFileAttributes;
+
+  if (shell_has_specified_attributes(attr, FILE_ATTRIBUTE_DIRECTORY)) {
+    _(gf_shell_remove_directory(path));
+  } else {
+    _(gf_shell_remove_file(path));
+  }
+  
   return GF_SUCCESS;
 }
 
 gf_status
 gf_shell_remove_tree(const gf_path* path) {
+  gf_status rc = 0;
+  
   gf_validate(!gf_path_is_empty(path));
+
+  rc = gf_shell_traverse_tree(
+    path, NULL, GF_SHELL_TRAVERSE_POSTORDER, shell_remove_callback, NULL);
+  if (rc != GF_SUCCESS) {
+    gf_throw(rc);
+  }
 
   return GF_SUCCESS;
 }

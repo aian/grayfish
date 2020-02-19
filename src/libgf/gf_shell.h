@@ -120,7 +120,7 @@ extern gf_status gf_shell_remove_file(const gf_path* path);
 ** @return GF_SUCCESS on success, GF_E_* otherwise
 */
 
-extern gf_status gf_shell_remove_direcroty(const gf_path* path);
+extern gf_status gf_shell_remove_directory(const gf_path* path);
 
 /*!
 ** @brief Rename the name of specified file
@@ -147,7 +147,7 @@ extern gf_status gf_shell_rename(const gf_path* dst, const gf_path* src);
 extern gf_status gf_shell_move(const gf_path* dst, const gf_path* src);
 
 /*!
-** @brief Function pointer type for shell operations
+t** @brief Function pointer type for shell operations
 **
 ** This type is used for automated shell operations. For instance, in the
 ** function <code>gf_shell_traverse_tree()</code>, you can specify this type of
@@ -155,7 +155,8 @@ extern gf_status gf_shell_move(const gf_path* dst, const gf_path* src);
 ** callback.
 */
 
-typedef gf_status (*gf_shell_fn)(const gf_path* path, gf_ptr attr, gf_ptr data);
+typedef gf_status (*gf_shell_fn)(
+  const gf_path* path, const gf_path* trace, gf_ptr find_data, gf_ptr data);
 
 /*!
 ** @brief The order of evaluation in traversing directory tree.
@@ -176,6 +177,7 @@ typedef enum gf_shell_traverse_order gf_shell_traverse_order;
 ** @brief Traverse the directory tree recursively
 **
 ** @param path  [in] The path of the root directory or file to be traversed.
+** @param trace [in] The path which is actually traced
 ** @param order [in] The order when the specifed callback is called.
 ** @param fn    [in] The pointer to the callback function.
 ** @param data  [in, out] The user data with which the calllback is called.
@@ -184,7 +186,8 @@ typedef enum gf_shell_traverse_order gf_shell_traverse_order;
 */
 
 extern gf_status gf_shell_traverse_tree(
-  const gf_path* path, gf_shell_traverse_order order, gf_shell_fn fn, gf_ptr data);
+  const gf_path* path, const gf_path* trace, gf_shell_traverse_order order,
+  gf_shell_fn fn, gf_ptr data);
 
 /*!
 ** @brief Copy a file or a directory recursively
