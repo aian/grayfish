@@ -155,7 +155,7 @@ extern gf_status gf_shell_move(const gf_path* dst, const gf_path* src);
 ** callback.
 */
 
-typedef gf_status (*gf_shell_fn)(const gf_path* path, gf_ptr data);
+typedef gf_status (*gf_shell_fn)(const gf_path* path, gf_ptr attr, gf_ptr data);
 
 /*!
 ** @brief The order of evaluation in traversing directory tree.
