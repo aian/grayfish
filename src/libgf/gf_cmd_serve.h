@@ -3,11 +3,11 @@
  * 'LICENSE.md' in this package.
  */
 /*!
-** @file libgf/gf_serve.h
+** @file libgf/gf_cmd_serve.h
 ** @brief Initialize the system environment (private command).
 */
-#ifndef LIBGF_GF_SERVE_H
-#define LIBGF_GF_SERVE_H
+#ifndef LIBGF_GF_CMD_SERVE_H
+#define LIBGF_GF_CMD_SERVE_H
 
 #pragma once
 
@@ -38,4 +38,4 @@ extern void gf_serve_free(gf_command* cmd);
 
 extern gf_status gf_serve_execute(gf_command* cmd);
 
-#endif  /* LIBGF_GF_SERVE_H */
+#endif  /* LIBGF_GF_CMD_SERVE_H */

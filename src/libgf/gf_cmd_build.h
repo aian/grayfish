@@ -3,11 +3,11 @@
  * 'LICENSE.md' in this package.
  */
 /*!
-** @file libgf/gf_build.h
+** @file libgf/gf_cmd_build.h
 ** @brief Initialize the system environment (private command).
 */
-#ifndef LIBGF_GF_BUILD_H
-#define LIBGF_GF_BUILD_H
+#ifndef LIBGF_GF_CMD_BUILD_H
+#define LIBGF_GF_CMD_BUILD_H
 
 #pragma once
 
@@ -38,4 +38,4 @@ extern void gf_build_free(gf_command* cmd);
 
 extern gf_status gf_build_execute(gf_command* cmd);
 
-#endif  /* LIBGF_GF_BUILD_H */
+#endif  /* LIBGF_GF_CMD_BUILD_H */

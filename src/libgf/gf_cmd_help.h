@@ -3,11 +3,11 @@
  * 'LICENSE.md' in this package.
  */
 /*!
-** @file libgf/gf_help.h
+** @file libgf/gf_cmd_help.h
 ** @brief Main routine of Grayfish.
 */
-#ifndef LIBGF_GF_HELP_H
-#define LIBGF_GF_HELP_H
+#ifndef LIBGF_GF_CMD_HELP_H
+#define LIBGF_GF_CMD_HELP_H
 
 #pragma once
 
@@ -32,4 +32,4 @@ extern void gf_help_free(gf_command* cmd);
 
 extern gf_status gf_help_execute(gf_command* cmd);
 
-#endif  /* LIBGF_GF_HELP_H */
+#endif  /* LIBGF_GF_CMD_HELP_H */

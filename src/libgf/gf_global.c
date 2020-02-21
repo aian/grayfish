@@ -18,17 +18,18 @@
 
 #include <libgf/gf_countof.h>
 #include <libgf/gf_log.h>
-#include <libgf/gf_command.h>
-#include <libgf/gf_main.h>
-#include <libgf/gf_help.h>
-#include <libgf/gf_version.h>
-#include <libgf/gf_setup.h>
 #include <libgf/gf_config.h>
-#include <libgf/gf_update.h>
-#include <libgf/gf_build.h>
-#include <libgf/gf_clean.h>
-#include <libgf/gf_list.h>
-#include <libgf/gf_serve.h>
+
+#include <libgf/gf_command.h>
+#include <libgf/gf_cmd_main.h>
+#include <libgf/gf_cmd_help.h>
+#include <libgf/gf_cmd_version.h>
+#include <libgf/gf_cmd_setup.h>
+#include <libgf/gf_cmd_update.h>
+#include <libgf/gf_cmd_build.h>
+#include <libgf/gf_cmd_clean.h>
+#include <libgf/gf_cmd_list.h>
+#include <libgf/gf_cmd_serve.h>
 
 #include <libgf/gf_global.h>
 

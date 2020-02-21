@@ -3,11 +3,11 @@
  * 'LICENSE.md' in this package.
  */
 /*!
-** @file libgf/gf_list.h
+** @file libgf/gf_cmd_list.h
 ** @brief Initialize the system environment (private command).
 */
-#ifndef LIBGF_GF_LIST_H
-#define LIBGF_GF_LIST_H
+#ifndef LIBGF_GF_CMD_LIST_H
+#define LIBGF_GF_CMD_LIST_H
 
 #pragma once
 
@@ -38,4 +38,4 @@ extern void gf_list_free(gf_command* cmd);
 
 extern gf_status gf_list_execute(gf_command* cmd);
 
-#endif  /* LIBGF_GF_LIST_H */
+#endif  /* LIBGF_GF_CMD_LIST_H */

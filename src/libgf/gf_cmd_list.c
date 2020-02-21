@@ -3,7 +3,7 @@
  * 'LICENSE.md' in this package.
  */
 /*!
-** @file libgf/gf_list.c
+** @file libgf/gf_cmd_list.c
 ** @brief Module list.
 */
 
@@ -14,7 +14,7 @@
 #include <libgf/gf_config.h>
 #include <libgf/gf_system.h>
 #include <libgf/gf_site.h>
-#include <libgf/gf_list.h>
+#include <libgf/gf_cmd_list.h>
 
 #include "gf_local.h"
 

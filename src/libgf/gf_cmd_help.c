@@ -3,14 +3,14 @@
  * 'LICENSE.md' in this package.
  */
 /*!
-** @file libgf/gf_help.h
+** @file libgf/gf_cmd_help.h
 ** @brief Main routine of Grayfish.
 */
 #include <stdio.h>
 
 #include <libgf/gf_countof.h>
 #include <libgf/gf_memory.h>
-#include <libgf/gf_help.h>
+#include <libgf/gf_cmd_help.h>
 
 #include "gf_local.h"
 

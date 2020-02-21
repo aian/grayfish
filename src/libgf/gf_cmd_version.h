@@ -3,11 +3,11 @@
  * 'LICENSE.md' in this package.
  */
 /*!
-** @file libgf/gf_version.h
+** @file libgf/gf_cmd_version.h
 ** @brief Module version.
 */
-#ifndef LIBGF_GF_VERSION_H
-#define LIBGF_GF_VERSION_H
+#ifndef LIBGF_GF_CMD_VERSION_H
+#define LIBGF_GF_CMD_VERSION_H
 
 #pragma once
 
@@ -40,4 +40,4 @@ extern void gf_version_show_help(const gf_command* cmd);
 
 extern gf_status gf_version_execute(gf_command* cmd);
 
-#endif /* LIBGF_GF_VERSION_H */
+#endif /* LIBGF_GF_CMD_VERSION_H */

@@ -3,7 +3,7 @@
  * 'LICENSE.md' in this package.
  */
 /*!
-** @file libgf/gf_build.c
+** @file libgf/gf_cmd_build.c
 ** @brief Module build.
 */
 #include <string.h>
@@ -16,7 +16,7 @@
 #include <libgf/gf_site.h>
 #include <libgf/gf_system.h>
 #include <libgf/gf_convert.h>
-#include <libgf/gf_build.h>
+#include <libgf/gf_cmd_build.h>
 
 #include "gf_local.h"
 

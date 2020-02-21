@@ -3,11 +3,11 @@
  * 'LICENSE.md' in this package.
  */
 /*!
-** @file libgf/gf_update.h
+** @file libgf/gf_cmd_update.h
 ** @brief Initialize the system environment (private command).
 */
-#ifndef LIBGF_GF_UPDATE_H
-#define LIBGF_GF_UPDATE_H
+#ifndef LIBGF_GF_CMD_UPDATE_H
+#define LIBGF_GF_CMD_UPDATE_H
 
 #pragma once
 
@@ -38,4 +38,4 @@ extern void gf_update_free(gf_command* cmd);
 
 extern gf_status gf_update_execute(gf_command* cmd);
 
-#endif  /* LIBGF_GF_UPDATE_H */
+#endif  /* LIBGF_GF_CMD_UPDATE_H */

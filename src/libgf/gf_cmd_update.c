@@ -3,7 +3,7 @@
  * 'LICENSE.md' in this package.
  */
 /*!
-** @file libgf/gf_update.c
+** @file libgf/gf_cmd_update.c
 ** @brief Initialize the system environment (private command).
 */
 #include <assert.h>
@@ -16,7 +16,7 @@
 #include <libgf/gf_site.h>
 #include <libgf/gf_system.h>
 #include <libgf/gf_command.h>
-#include <libgf/gf_update.h>
+#include <libgf/gf_cmd_update.h>
 
 #include "gf_local.h"
 

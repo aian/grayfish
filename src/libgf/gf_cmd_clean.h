@@ -3,11 +3,11 @@
  * 'LICENSE.md' in this package.
  */
 /*!
-** @file libgf/gf_clean.h
+** @file libgf/gf_cmd_clean.h
 ** @brief Initialize the system environment (private command).
 */
-#ifndef LIBGF_GF_CLEAN_H
-#define LIBGF_GF_CLEAN_H
+#ifndef LIBGF_GF_CMD_CLEAN_H
+#define LIBGF_GF_CMD_CLEAN_H
 
 #pragma once
 
@@ -38,4 +38,4 @@ extern void gf_clean_free(gf_command* cmd);
 
 extern gf_status gf_clean_execute(gf_command* cmd);
 
-#endif  /* LIBGF_GF_CLEAN_H */
+#endif  /* LIBGF_GF_CMD_CLEAN_H */

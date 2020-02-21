@@ -3,13 +3,13 @@
  * 'LICENSE.md' in this package.
  */
 /*!
-** @file libgf/gf_version.c
+** @file libgf/gf_cmd_version.c
 ** @brief Module version.
 */
 
 #include <libgf/gf_countof.h>
 #include <libgf/gf_memory.h>
-#include <libgf/gf_version.h>
+#include <libgf/gf_cmd_version.h>
 
 #include "gf_local.h"
 
