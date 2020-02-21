@@ -15,7 +15,7 @@
 #include <libgf/gf_config.h>
 #include <libgf/gf_site.h>
 #include <libgf/gf_system.h>
-#include <libgf/gf_command.h>
+#include <libgf/gf_cmd_base.h>
 #include <libgf/gf_cmd_update.h>
 
 #include "gf_local.h"

@@ -3,11 +3,11 @@
  * 'LICENSE.md' in this package.
  */
 /*!
-** @file libgf/gf_command.h
+** @file libgf/gf_cmd_base.h
 ** @brief Abstract command interface and factory.
 */
-#ifndef LIBGF_GF_COMMAND_H
-#define LIBGF_GF_COMMAND_H
+#ifndef LIBGF_GF_CMD_BASE_H
+#define LIBGF_GF_CMD_BASE_H
 
 #pragma once
 
@@ -179,4 +179,4 @@ extern gf_status gf_command_create(gf_command** cmd, const char* name);
 
 ///@}
 
-#endif  /* LIBGF_GF_COMMAND_H */
+#endif  /* LIBGF_GF_CMD_BASE_H */

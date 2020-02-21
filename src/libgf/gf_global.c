@@ -20,7 +20,7 @@
 #include <libgf/gf_log.h>
 #include <libgf/gf_config.h>
 
-#include <libgf/gf_command.h>
+#include <libgf/gf_cmd_base.h>
 #include <libgf/gf_cmd_main.h>
 #include <libgf/gf_cmd_help.h>
 #include <libgf/gf_cmd_version.h>

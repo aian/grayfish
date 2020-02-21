@@ -15,7 +15,7 @@
 
 #include <libgf/gf_datatype.h>
 #include <libgf/gf_error.h>
-#include <libgf/gf_command.h>
+#include <libgf/gf_cmd_base.h>
 
 typedef struct gf_build gf_build;
 

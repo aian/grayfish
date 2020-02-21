@@ -3,7 +3,7 @@
  * 'LICENSE.md' in this package.
  */
 /*!
-** @file libgf/gf_command.c
+** @file libgf/gf_cmd_base.c
 ** @brief Abstract command interface and factory.
 */
 #include <assert.h>
@@ -14,7 +14,7 @@
 #include <libgf/gf_memory.h>
 #include <libgf/gf_log.h>
 
-#include <libgf/gf_command.h>
+#include <libgf/gf_cmd_base.h>
 
 #include "gf_local.h"
 

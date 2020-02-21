@@ -26,7 +26,7 @@
 #include <libgf/gf_datatype.h>
 #include <libgf/gf_error.h>
 #include <libgf/gf_path.h>
-#include <libgf/gf_command.h>
+#include <libgf/gf_cmd_base.h>
 
 extern gf_status gf_config_init(void);
 extern gf_status gf_config_clean(void);

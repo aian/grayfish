@@ -29,7 +29,7 @@
 #include <libgf/gf_site.h>
 #include <libgf/gf_convert.h>
 
-#include <libgf/gf_command.h>
+#include <libgf/gf_cmd_base.h>
 #include <libgf/gf_cmd_build.h>
 #include <libgf/gf_cmd_clean.h>
 #include <libgf/gf_cmd_help.h>
