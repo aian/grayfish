@@ -176,17 +176,17 @@ typedef enum gf_shell_traverse_order gf_shell_traverse_order;
 /*!
 ** @brief Traverse the directory tree recursively
 **
-** @param path  [in] The path of the root directory or file to be traversed.
-** @param trace [in] The path which is actually traced
-** @param order [in] The order when the specifed callback is called.
-** @param fn    [in] The pointer to the callback function.
-** @param data  [in, out] The user data with which the calllback is called.
+** @param path       [in] The path to be traversed.
+** @param trace_path [in] The path which is actually traced
+** @param order      [in] The order when the specifed callback is called.
+** @param fn         [in] The pointer to the callback function.
+** @param data       [in, out] The user data with which the calllback is called.
 **
 ** @return GF_SUCCESS on success, GF_E_* otherwise
 */
 
 extern gf_status gf_shell_traverse_tree(
-  const gf_path* path, const gf_path* trace, gf_shell_traverse_order order,
+  const gf_path* path, const gf_path* trace_path, gf_shell_traverse_order order,
   gf_shell_fn fn, gf_ptr data);
 
 /*!
