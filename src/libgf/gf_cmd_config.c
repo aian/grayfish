@@ -3,7 +3,7 @@
  * 'LICENSE.md' in this package.
  */
 /*!
-** @file libgf/gf_config.c
+** @file libgf/gf_cmd_config.c
 ** @brief Manages the Grayfish configuration.
 */
 #include <assert.h>
@@ -13,18 +13,18 @@
 #include <libgf/gf_countof.h>
 #include <libgf/gf_memory.h>
 #include <libgf/gf_string.h>
-#include <libgf/gf_config.h>
+#include <libgf/gf_cmd_config.h>
 
 #include "gf_local.h"
 
-struct gf_config {
+struct gf_cmd_config {
   gf_cmd_base base;
   xmlDocPtr  doc;
 };
 
-typedef struct gf_config gf_config;
+typedef struct gf_cmd_config gf_cmd_config;
 
-static gf_config config_ = { 0 };
+static gf_cmd_config config_ = { 0 };
 
 #define CONFIG_NODE_ROOT   BAD_CAST "config"
 #define CONFIG_NODE_PARAM  BAD_CAST "param"
@@ -438,9 +438,9 @@ static const gf_cmd_base_info info_ = {
     .name        = "config",
     .description = "Edit system configrations",
     .args        = NULL,
-    .create      = gf_config_new,
-    .free        = gf_config_free,
-    .execute     = gf_config_execute,
+    .create      = gf_cmd_config_new,
+    .free        = gf_cmd_config_free,
+    .execute     = gf_cmd_config_execute,
   },
   .options = {
     {
@@ -479,11 +479,11 @@ prepare(gf_cmd_base* cmd) {
 }
 
 gf_status
-gf_config_new(gf_cmd_base** cmd) {
+gf_cmd_config_new(gf_cmd_base** cmd) {
   gf_status rc = 0;
   gf_cmd_base* tmp = NULL;
 
-  _(gf_malloc((gf_ptr*)&tmp, sizeof(gf_config)));
+  _(gf_malloc((gf_ptr*)&tmp, sizeof(gf_cmd_config)));
 
   rc = init(tmp);
   if (rc != GF_SUCCESS) {
@@ -492,7 +492,7 @@ gf_config_new(gf_cmd_base** cmd) {
   }
   rc = prepare(tmp);
   if (rc != GF_SUCCESS) {
-    gf_config_free(tmp);
+    gf_cmd_config_free(tmp);
     return rc;
   }
 
@@ -502,14 +502,14 @@ gf_config_new(gf_cmd_base** cmd) {
 }
 
 void
-gf_config_free(gf_cmd_base* cmd) {
-  gf_config* config = NULL;
+gf_cmd_config_free(gf_cmd_base* cmd) {
+  gf_cmd_config* config = NULL;
 
   if (cmd) {
     /* Clear the base class */
     gf_cmd_base_clear(cmd);
     /* Clear and deallocate this class */
-    config = GF_CONFIG_CAST(cmd);
+    config = GF_CMD_CONFIG_CAST(cmd);
     // do nothing to clear for now.
     gf_free(config);
   }
@@ -561,7 +561,7 @@ config_show(gf_cmd_base* cmd) {
 }
 
 gf_status
-gf_config_execute(gf_cmd_base* cmd) {
+gf_cmd_config_execute(gf_cmd_base* cmd) {
 
   _(gf_args_parse(cmd->args));
 

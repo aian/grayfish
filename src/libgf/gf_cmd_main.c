@@ -17,7 +17,7 @@
 
 #include "gf_local.h"
 
-struct gf_main {
+struct gf_cmd_main {
   gf_cmd_base base;
   gf_bool  version;
   gf_bool  help;
@@ -41,9 +41,9 @@ static const gf_cmd_base_info info_ = {
     .name        = "main",
     .description = "Main process",
     .args        = NULL,
-    .create      = gf_main_new,
-    .free        = gf_main_free,
-    .execute     = gf_main_execute,
+    .create      = gf_cmd_main_new,
+    .free        = gf_cmd_main_free,
+    .execute     = gf_cmd_main_execute,
   },
   .options = {
     {
@@ -94,9 +94,9 @@ init(gf_cmd_base* cmd) {
   /* Initialize the base class */
   _(gf_cmd_base_init(cmd));
   /* Initialize the members of this class */
-  GF_MAIN_CAST(cmd)->version = NULL;
-  GF_MAIN_CAST(cmd)->help = NULL;
-  GF_MAIN_CAST(cmd)->base_path = NULL;
+  GF_CMD_MAIN_CAST(cmd)->version = NULL;
+  GF_CMD_MAIN_CAST(cmd)->help = NULL;
+  GF_CMD_MAIN_CAST(cmd)->base_path = NULL;
 
   return GF_SUCCESS;
 }
@@ -111,13 +111,13 @@ prepare(gf_cmd_base* cmd) {
 }
 
 gf_status
-gf_main_new(gf_cmd_base** cmd) {
+gf_cmd_main_new(gf_cmd_base** cmd) {
   gf_status rc = 0;
   gf_cmd_base* tmp = NULL;
   
   gf_validate(cmd);
 
-  _(gf_malloc((gf_ptr* )&tmp, sizeof(gf_main)));
+  _(gf_malloc((gf_ptr* )&tmp, sizeof(gf_cmd_main)));
 
   rc = init(tmp);
   if (rc != GF_SUCCESS) {
@@ -126,7 +126,7 @@ gf_main_new(gf_cmd_base** cmd) {
   }
   rc = prepare(tmp);
   if (rc != GF_SUCCESS) {
-    gf_main_free(tmp);
+    gf_cmd_main_free(tmp);
     return rc;
   }
 
@@ -136,9 +136,9 @@ gf_main_new(gf_cmd_base** cmd) {
 }
 
 void
-gf_main_free(gf_cmd_base* cmd) {
+gf_cmd_main_free(gf_cmd_base* cmd) {
   if (cmd) {
-    gf_main* main_cmd = GF_MAIN_CAST(cmd);
+    gf_cmd_main* main_cmd = GF_CMD_MAIN_CAST(cmd);
     /* Clear the base class members */
     (void)gf_cmd_base_clear(GF_CMD_BASE_CAST(cmd));
     /* Clear the thi object */
@@ -150,15 +150,15 @@ gf_main_free(gf_cmd_base* cmd) {
 }
 
 void
-gf_main_show_help(const gf_cmd_base* cmd) {
+gf_cmd_main_show_help(const gf_cmd_base* cmd) {
   if (cmd) {
-    gf_main* tmp = GF_MAIN_CAST(cmd);
+    gf_cmd_main* tmp = GF_CMD_MAIN_CAST(cmd);
     (void)tmp;
   }
 }
 
 static gf_status
-main_build_base_path(gf_main* cmd, gf_path** path) {
+main_build_base_path(gf_cmd_main* cmd, gf_path** path) {
   char** args = NULL;
   gf_path* tmp = NULL;
   gf_size_t count = 0;
@@ -181,7 +181,7 @@ main_build_base_path(gf_main* cmd, gf_path** path) {
 }
 
 static gf_status
-main_change_directory(gf_main* cmd) {
+main_change_directory(gf_cmd_main* cmd) {
   gf_validate(cmd);
   gf_validate(!gf_path_is_empty(cmd->base_path));
 
@@ -197,7 +197,7 @@ main_change_directory(gf_main* cmd) {
 }
 
 static gf_status
-main_set_options(gf_main* cmd) {
+main_set_options(gf_cmd_main* cmd) {
   /* Parse command line arguments */
   _(gf_args_parse(cmd->base.args));
   
@@ -235,28 +235,28 @@ main_process_command(gf_cmd_base* main_cmd, const char* str) {
 }
 
 gf_status
-gf_main_execute(gf_cmd_base* cmd) {
+gf_cmd_main_execute(gf_cmd_base* cmd) {
   gf_status rc = 0;
   int argc = 0;
   char* cmd_str = NULL;
   
   gf_validate(cmd);
 
-  _(main_set_options(GF_MAIN_CAST(cmd)));
+  _(main_set_options(GF_CMD_MAIN_CAST(cmd)));
 
   /* Count of the command argument */
   argc = gf_args_remain(cmd->args);
 
   /* Change directory */
-  assert(GF_MAIN_CAST(cmd)->base_path);
+  assert(GF_CMD_MAIN_CAST(cmd)->base_path);
   if (gf_args_is_specified(cmd->args, OPT_DIRECTORY)) {
-    _(main_change_directory(GF_MAIN_CAST(cmd)));
+    _(main_change_directory(GF_CMD_MAIN_CAST(cmd)));
   }
   
-  if (GF_MAIN_CAST(cmd)->version) {
+  if (GF_CMD_MAIN_CAST(cmd)->version) {
     /* Process version option */
     _(main_process_command(cmd, "version"));
-  } else if (GF_MAIN_CAST(cmd)->help) {
+  } else if (GF_CMD_MAIN_CAST(cmd)->help) {
     /* Process help option */
     _(main_process_command(cmd, "help"));
   } else if (argc > 0) {

@@ -14,17 +14,17 @@
 #include "gf_local.h"
 
 int
-gf_version_major(void) {
+gf_cmd_version_major(void) {
   return GF_VERSION_MAJOR;
 }
 
 int
-gf_version_minor(void) {
+gf_cmd_version_minor(void) {
   return GF_VERSION_MINOR;
 }
 
 int
-gf_version_patch(void) {
+gf_cmd_version_patch(void) {
   return GF_VERSION_PATCH;
 }
 
@@ -36,7 +36,7 @@ gf_get_version_string(void) {
 
 /* -------------------------------------------------------------------------- */
 
-struct gf_version {
+struct gf_cmd_version {
   gf_cmd_base base;
 };
 
@@ -54,9 +54,9 @@ static const gf_cmd_base_info info_ = {
     .name        = "version",
     .description = "Show version information",
     .args        = NULL,
-    .create      = gf_version_new,
-    .free        = gf_version_free,
-    .execute     = gf_version_execute,
+    .create      = gf_cmd_version_new,
+    .free        = gf_cmd_version_free,
+    .execute     = gf_cmd_version_execute,
   },
   .options = {
     {
@@ -95,11 +95,11 @@ prepare(gf_cmd_base* cmd) {
 }
 
 gf_status
-gf_version_new(gf_cmd_base** cmd) {
+gf_cmd_version_new(gf_cmd_base** cmd) {
   gf_status rc = 0;
   gf_cmd_base* tmp = NULL;
 
-  _(gf_malloc((gf_ptr*)&tmp, sizeof(gf_version)));
+  _(gf_malloc((gf_ptr*)&tmp, sizeof(gf_cmd_version)));
 
   rc = init(tmp);
   if (rc != GF_SUCCESS) {
@@ -108,7 +108,7 @@ gf_version_new(gf_cmd_base** cmd) {
   }
   rc = prepare(tmp);
   if (rc != GF_SUCCESS) {
-    gf_version_free(tmp);
+    gf_cmd_version_free(tmp);
     return rc;
   }
 
@@ -118,7 +118,7 @@ gf_version_new(gf_cmd_base** cmd) {
 }
 
 void
-gf_version_free(gf_cmd_base* cmd) {
+gf_cmd_version_free(gf_cmd_base* cmd) {
   if (cmd) {
     gf_cmd_base_clear(cmd);
     gf_free(cmd);
@@ -126,7 +126,7 @@ gf_version_free(gf_cmd_base* cmd) {
 }
 
 gf_status
-gf_version_execute(gf_cmd_base* cmd) {
+gf_cmd_version_execute(gf_cmd_base* cmd) {
   (void)cmd;
   gf_msg("Grayfish %s", gf_get_version_string());
   return GF_SUCCESS;

@@ -17,7 +17,7 @@
 #include <libgf/gf_memory.h>
 #include <libgf/gf_string.h>
 #include <libgf/gf_path.h>
-#include <libgf/gf_config.h>
+#include <libgf/gf_cmd_config.h>
 
 #include "gf_local.h"
 

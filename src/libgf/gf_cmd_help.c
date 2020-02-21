@@ -14,7 +14,7 @@
 
 #include "gf_local.h"
 
-struct gf_help {
+struct gf_cmd_help {
   gf_cmd_base base;
 };
 
@@ -33,9 +33,9 @@ static const gf_cmd_base_info info_ = {
     .name        = "help",
     .description = "Show help",
     .args        = NULL,
-    .create      = gf_help_new,
-    .free        = gf_help_free,
-    .execute     = gf_help_execute,
+    .create      = gf_cmd_help_new,
+    .free        = gf_cmd_help_free,
+    .execute     = gf_cmd_help_execute,
   },
   .options = {
     {
@@ -74,11 +74,11 @@ prepare(gf_cmd_base* cmd) {
 }
 
 gf_status
-gf_help_new(gf_cmd_base** cmd) {
+gf_cmd_help_new(gf_cmd_base** cmd) {
   gf_status rc = 0;
   gf_cmd_base* tmp = NULL;
 
-  _(gf_malloc((gf_ptr*)&tmp, sizeof(gf_help)));
+  _(gf_malloc((gf_ptr*)&tmp, sizeof(gf_cmd_help)));
 
   rc = init(tmp);
   if (rc != GF_SUCCESS) {
@@ -87,7 +87,7 @@ gf_help_new(gf_cmd_base** cmd) {
   }
   rc = prepare(tmp);
   if (rc != GF_SUCCESS) {
-    gf_help_free(tmp);
+    gf_cmd_help_free(tmp);
     return rc;
   }
 
@@ -97,7 +97,7 @@ gf_help_new(gf_cmd_base** cmd) {
 }
 
 void
-gf_help_free(gf_cmd_base* cmd) {
+gf_cmd_help_free(gf_cmd_base* cmd) {
   if (cmd) {
     gf_cmd_base_clear(cmd);
     gf_free(cmd);
@@ -105,7 +105,7 @@ gf_help_free(gf_cmd_base* cmd) {
 }
 
 gf_status
-gf_help_execute(gf_cmd_base* cmd) {
+gf_cmd_help_execute(gf_cmd_base* cmd) {
   (void)cmd;
   
   gf_msg("usage: gf [--version][--help] <command> [<args>]");

@@ -14,12 +14,12 @@
 #include <libgf/gf_path.h>
 #include <libgf/gf_cmd_base.h>
 #include <libgf/gf_system.h>
-#include <libgf/gf_config.h>
+#include <libgf/gf_cmd_config.h>
 #include <libgf/gf_cmd_setup.h>
 
 #include "gf_local.h"
 
-struct gf_setup {
+struct gf_cmd_setup {
   gf_cmd_base base;       ///< Base class object
   gf_path*   root_path;  ///< Project root path
   gf_path*   conf_path;  ///< Local configuration path
@@ -34,9 +34,9 @@ static const gf_cmd_base_info info_ = {
     .name        = "setup",
     .description = "Setup the new project",
     .args        = NULL,
-    .create      = gf_setup_new,
-    .free        = gf_setup_free,
-    .execute     = gf_setup_execute,
+    .create      = gf_cmd_setup_new,
+    .free        = gf_cmd_setup_free,
+    .execute     = gf_cmd_setup_execute,
   },
   .options = {
     /* Terminate */
@@ -55,8 +55,8 @@ init(gf_cmd_base* cmd) {
   /* Initialize the base class */
   _(gf_cmd_base_init(cmd));
   /* Initialize the members of this class */
-  GF_SETUP_CAST(cmd)->root_path = NULL;
-  GF_SETUP_CAST(cmd)->conf_path = NULL;
+  GF_CMD_SETUP_CAST(cmd)->root_path = NULL;
+  GF_CMD_SETUP_CAST(cmd)->conf_path = NULL;
 
   return GF_SUCCESS;
 }
@@ -71,13 +71,13 @@ prepare(gf_cmd_base* cmd) {
 }
 
 gf_status
-gf_setup_new(gf_cmd_base** cmd) {
+gf_cmd_setup_new(gf_cmd_base** cmd) {
   gf_status rc = 0;
   gf_cmd_base* tmp = NULL;
   
   gf_validate(cmd);
 
-  _(gf_malloc((gf_ptr *)&tmp, sizeof(gf_setup)));
+  _(gf_malloc((gf_ptr *)&tmp, sizeof(gf_cmd_setup)));
 
   rc = init(tmp);
   if (rc != GF_SUCCESS) {
@@ -86,7 +86,7 @@ gf_setup_new(gf_cmd_base** cmd) {
   }
   rc = prepare(tmp);
   if (rc != GF_SUCCESS) {
-    gf_setup_free(tmp);
+    gf_cmd_setup_free(tmp);
     return rc;
   }
 
@@ -96,7 +96,7 @@ gf_setup_new(gf_cmd_base** cmd) {
 }
 
 void
-gf_setup_free(gf_cmd_base* cmd) {
+gf_cmd_setup_free(gf_cmd_base* cmd) {
   if (cmd) {
     gf_cmd_base_clear(GF_CMD_BASE_CAST(cmd));
     gf_free(cmd);
@@ -104,7 +104,7 @@ gf_setup_free(gf_cmd_base* cmd) {
 }
 
 static gf_status
-setup_set_paths(gf_setup* cmd) {
+setup_set_paths(gf_cmd_setup* cmd) {
   gf_status rc = 0;
   char* project_name = NULL;
   int args_count = 0;
@@ -151,7 +151,7 @@ setup_set_paths(gf_setup* cmd) {
 }
 
 static gf_status
-setup_create_config_file(gf_setup* cmd) {
+setup_create_config_file(gf_cmd_setup* cmd) {
   gf_status rc = 0;
   gf_path* path = NULL;
   
@@ -171,7 +171,7 @@ setup_create_config_file(gf_setup* cmd) {
 }
 
 static gf_status
-setup_create_project_directory(gf_setup* cmd) {
+setup_create_project_directory(gf_cmd_setup* cmd) {
   const char* path = NULL;
   
   gf_validate(cmd);
@@ -199,7 +199,7 @@ setup_create_project_directory(gf_setup* cmd) {
 }
 
 static gf_status
-setup_create_document_directories(gf_setup* cmd) {
+setup_create_document_directories(gf_cmd_setup* cmd) {
   gf_status rc = 0;
   char* str = NULL;
   gf_path* pub_path = NULL;
@@ -258,7 +258,7 @@ setup_create_document_directories(gf_setup* cmd) {
 }
 
 static gf_status
-setup_process(gf_setup* cmd) {
+setup_process(gf_cmd_setup* cmd) {
   gf_validate(cmd);
 
   /* Set paths */
@@ -292,11 +292,11 @@ setup_process(gf_setup* cmd) {
 */
 
 gf_status
-gf_setup_execute(gf_cmd_base* cmd) {
+gf_cmd_setup_execute(gf_cmd_base* cmd) {
   gf_validate(cmd);
 
   _(gf_args_parse(cmd->args));
-  _(setup_process(GF_SETUP_CAST(cmd)));
+  _(setup_process(GF_CMD_SETUP_CAST(cmd)));
 
   return GF_SUCCESS;
 }

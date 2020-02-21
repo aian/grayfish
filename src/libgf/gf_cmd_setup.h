@@ -21,9 +21,9 @@
 extern "C" {
 #endif
 
-typedef struct gf_setup gf_setup;
+typedef struct gf_cmd_setup gf_cmd_setup;
 
-#define GF_SETUP_CAST(cmd) ((gf_setup*)(cmd))
+#define GF_CMD_SETUP_CAST(cmd) ((gf_cmd_setup*)(cmd))
 
 /*!
 ** @brief Create a new setup command object.
@@ -31,8 +31,8 @@ typedef struct gf_setup gf_setup;
 ** @param [out] cmd The pointer to the new setup command object
 */
 
-extern gf_status gf_setup_new(gf_cmd_base** cmd);
-extern void gf_setup_free(gf_cmd_base* cmd);
+extern gf_status gf_cmd_setup_new(gf_cmd_base** cmd);
+extern void gf_cmd_setup_free(gf_cmd_base* cmd);
 
 /*!
 ** @brief Execute the setup process.
@@ -40,7 +40,7 @@ extern void gf_setup_free(gf_cmd_base* cmd);
 ** @param [in] cmd Command object
 */
 
-extern gf_status gf_setup_execute(gf_cmd_base* cmd);
+extern gf_status gf_cmd_setup_execute(gf_cmd_base* cmd);
 
 #ifdef __cplusplus
 }

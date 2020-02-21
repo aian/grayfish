@@ -14,7 +14,7 @@
 
 #include "gf_local.h"
 
-struct gf_serve {
+struct gf_cmd_serve {
   gf_cmd_base   base;
   unsigned int port;
 };
@@ -33,9 +33,9 @@ static const gf_cmd_base_info info_ = {
     .name        = "serve",
     .description = "Run the local server.",
     .args        = NULL,
-    .create      = gf_serve_new,
-    .free        = gf_serve_free,
-    .execute     = gf_serve_execute,
+    .create      = gf_cmd_serve_new,
+    .free        = gf_cmd_serve_free,
+    .execute     = gf_cmd_serve_execute,
   },
   .options = {
     {
@@ -61,7 +61,7 @@ init(gf_cmd_base* cmd) {
 
   _(gf_cmd_base_init(cmd));
 
-  GF_SERVE_CAST(cmd)->port = GF_SERVE_PORT_DEFAULT;
+  GF_CMD_SERVE_CAST(cmd)->port = GF_SERVE_PORT_DEFAULT;
 
   return GF_SUCCESS;
 }
@@ -76,11 +76,11 @@ prepare(gf_cmd_base* cmd) {
 }
 
 gf_status
-gf_serve_new(gf_cmd_base** cmd) {
+gf_cmd_serve_new(gf_cmd_base** cmd) {
   gf_status rc = 0;
   gf_cmd_base* tmp = NULL;
 
-  _(gf_malloc((gf_ptr*)&tmp, sizeof(gf_serve)));
+  _(gf_malloc((gf_ptr*)&tmp, sizeof(gf_cmd_serve)));
 
   rc = init(tmp);
   if (rc != GF_SUCCESS) {
@@ -89,7 +89,7 @@ gf_serve_new(gf_cmd_base** cmd) {
   }
   rc = prepare(tmp);
   if (rc != GF_SUCCESS) {
-    gf_serve_free(tmp);
+    gf_cmd_serve_free(tmp);
     return rc;
   }
 
@@ -99,7 +99,7 @@ gf_serve_new(gf_cmd_base** cmd) {
 }
 
 void
-gf_serve_free(gf_cmd_base* cmd) {
+gf_cmd_serve_free(gf_cmd_base* cmd) {
   if (cmd) {
     /* Clear the base class */
     gf_cmd_base_clear(cmd);
@@ -109,7 +109,7 @@ gf_serve_free(gf_cmd_base* cmd) {
 }
 
 gf_status
-gf_serve_execute(gf_cmd_base* cmd) {
+gf_cmd_serve_execute(gf_cmd_base* cmd) {
   (void)cmd;
   return GF_SUCCESS;
 }

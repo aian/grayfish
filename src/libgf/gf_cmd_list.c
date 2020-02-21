@@ -11,14 +11,14 @@
 #include <libgf/gf_memory.h>
 #include <libgf/gf_string.h>
 #include <libgf/gf_path.h>
-#include <libgf/gf_config.h>
+#include <libgf/gf_cmd_config.h>
 #include <libgf/gf_system.h>
 #include <libgf/gf_site.h>
 #include <libgf/gf_cmd_list.h>
 
 #include "gf_local.h"
 
-struct gf_list {
+struct gf_cmd_list {
   gf_cmd_base base;
   gf_path*   root_path;
   gf_path*   conf_path;
@@ -38,9 +38,9 @@ static const gf_cmd_base_info info_ = {
     .name        = "list",
     .description = "List document status",
     .args        = NULL,
-    .create      = gf_list_new,
-    .free        = gf_list_free,
-    .execute     = gf_list_execute,
+    .create      = gf_cmd_list_new,
+    .free        = gf_cmd_list_free,
+    .execute     = gf_cmd_list_execute,
   },
   .options = {
     /* Terminate */
@@ -58,11 +58,11 @@ init(gf_cmd_base* cmd) {
 
   _(gf_cmd_base_init(cmd));
 
-  GF_LIST_CAST(cmd)->root_path = NULL;
-  GF_LIST_CAST(cmd)->conf_path = NULL;
-  GF_LIST_CAST(cmd)->site_path = NULL;
-  GF_LIST_CAST(cmd)->src_path = NULL;
-  GF_LIST_CAST(cmd)->site = NULL;
+  GF_CMD_LIST_CAST(cmd)->root_path = NULL;
+  GF_CMD_LIST_CAST(cmd)->conf_path = NULL;
+  GF_CMD_LIST_CAST(cmd)->site_path = NULL;
+  GF_CMD_LIST_CAST(cmd)->src_path = NULL;
+  GF_CMD_LIST_CAST(cmd)->site = NULL;
 
   return GF_SUCCESS;
 }
@@ -73,7 +73,7 @@ init(gf_cmd_base* cmd) {
 */
 
 static gf_status
-list_make_paths(gf_list* cmd) {
+list_make_paths(gf_cmd_list* cmd) {
   gf_status rc = 0;
   gf_path* path = NULL;
   char* str = NULL;
@@ -112,17 +112,17 @@ prepare(gf_cmd_base* cmd) {
   gf_validate(cmd);
 
   _(gf_cmd_base_set_info(cmd, &info_));
-  _(list_make_paths(GF_LIST_CAST(cmd)));
+  _(list_make_paths(GF_CMD_LIST_CAST(cmd)));
 
   return GF_SUCCESS;
 }
 
 gf_status
-gf_list_new(gf_cmd_base** cmd) {
+gf_cmd_list_new(gf_cmd_base** cmd) {
   gf_status rc = 0;
   gf_cmd_base* tmp = NULL;
 
-  _(gf_malloc((gf_ptr*)&tmp, sizeof(gf_list)));
+  _(gf_malloc((gf_ptr*)&tmp, sizeof(gf_cmd_list)));
 
   rc = init(tmp);
   if (rc != GF_SUCCESS) {
@@ -131,7 +131,7 @@ gf_list_new(gf_cmd_base** cmd) {
   }
   rc = prepare(tmp);
   if (rc != GF_SUCCESS) {
-    gf_list_free(tmp);
+    gf_cmd_list_free(tmp);
     return rc;
   }
 
@@ -141,30 +141,30 @@ gf_list_new(gf_cmd_base** cmd) {
 }
 
 void
-gf_list_free(gf_cmd_base* cmd) {
+gf_cmd_list_free(gf_cmd_base* cmd) {
   if (cmd) {
     gf_cmd_base_clear(GF_CMD_BASE_CAST(cmd));
 
-    if (GF_LIST_CAST(cmd)->root_path) {
-      gf_path_free(GF_LIST_CAST(cmd)->root_path);
-      GF_LIST_CAST(cmd)->root_path = NULL;
+    if (GF_CMD_LIST_CAST(cmd)->root_path) {
+      gf_path_free(GF_CMD_LIST_CAST(cmd)->root_path);
+      GF_CMD_LIST_CAST(cmd)->root_path = NULL;
     }
-    if (GF_LIST_CAST(cmd)->conf_path) {
-      gf_path_free(GF_LIST_CAST(cmd)->conf_path);
-      GF_LIST_CAST(cmd)->conf_path = NULL;
+    if (GF_CMD_LIST_CAST(cmd)->conf_path) {
+      gf_path_free(GF_CMD_LIST_CAST(cmd)->conf_path);
+      GF_CMD_LIST_CAST(cmd)->conf_path = NULL;
     }
-    if (GF_LIST_CAST(cmd)->site_path) {
-      gf_path_free(GF_LIST_CAST(cmd)->site_path);
-      GF_LIST_CAST(cmd)->site_path = NULL;
+    if (GF_CMD_LIST_CAST(cmd)->site_path) {
+      gf_path_free(GF_CMD_LIST_CAST(cmd)->site_path);
+      GF_CMD_LIST_CAST(cmd)->site_path = NULL;
     }
-    if (GF_LIST_CAST(cmd)->src_path) {
-      gf_path_free(GF_LIST_CAST(cmd)->src_path);
-      GF_LIST_CAST(cmd)->src_path = NULL;
+    if (GF_CMD_LIST_CAST(cmd)->src_path) {
+      gf_path_free(GF_CMD_LIST_CAST(cmd)->src_path);
+      GF_CMD_LIST_CAST(cmd)->src_path = NULL;
     }
 
-    if (GF_LIST_CAST(cmd)->site) {
-      gf_site_free(GF_LIST_CAST(cmd)->site);
-      GF_LIST_CAST(cmd)->site = NULL;
+    if (GF_CMD_LIST_CAST(cmd)->site) {
+      gf_site_free(GF_CMD_LIST_CAST(cmd)->site);
+      GF_CMD_LIST_CAST(cmd)->site = NULL;
     }
     gf_free(cmd);
   }
@@ -173,7 +173,7 @@ gf_list_free(gf_cmd_base* cmd) {
 /* -------------------------------------------------------------------------- */
 
 static gf_status
-list_read_site_file(gf_list* cmd) {
+list_read_site_file(gf_cmd_list* cmd) {
   if (!gf_path_file_exists(cmd->site_path)) {
     gf_raise(GF_E_STATE, "Here is not a project directory. (%s)",
              gf_path_get_string(cmd->site_path));
@@ -219,7 +219,7 @@ list_print_node(gf_site_node* node, int depth) {
 }
 
 static gf_status
-list_process(gf_list* cmd) {
+list_process(gf_cmd_list* cmd) {
   gf_status rc = 0;
   gf_site_node* node = NULL;
 
@@ -240,10 +240,10 @@ list_process(gf_list* cmd) {
 }
 
 gf_status
-gf_list_execute(gf_cmd_base* cmd) {
+gf_cmd_list_execute(gf_cmd_base* cmd) {
   gf_validate(cmd);
 
-  _(list_process(GF_LIST_CAST(cmd)));
+  _(list_process(GF_CMD_LIST_CAST(cmd)));
   
   return GF_SUCCESS;
 }

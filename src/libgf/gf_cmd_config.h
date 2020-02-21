@@ -3,7 +3,7 @@
  * 'LICENSE.md' in this package.
  */
 /*!
-** @file libgf/gf_config.h
+** @file libgf/gf_cmd_config.h
 ** @brief Manages the Grayfish configuration.
 */
 
@@ -61,10 +61,10 @@ extern gf_status gf_config_set_path(const char* key, const gf_path* value);
 **
 */
 
-#define GF_CONFIG_CAST(cmd) ((gf_config*)(cmd))
+#define GF_CMD_CONFIG_CAST(cmd) ((gf_cmd_config*)(cmd))
 
-extern gf_status gf_config_new(gf_cmd_base** cmd);
-extern void gf_config_free(gf_cmd_base* cmd);
+extern gf_status gf_cmd_config_new(gf_cmd_base** cmd);
+extern void gf_cmd_config_free(gf_cmd_base* cmd);
 
 /*!
 ** @brief Execute the 'config' process of Grayfish
@@ -72,7 +72,7 @@ extern void gf_config_free(gf_cmd_base* cmd);
 ** @param [in] cmd Command object
 */
 
-extern gf_status gf_config_execute(gf_cmd_base* cmd);
+extern gf_status gf_cmd_config_execute(gf_cmd_base* cmd);
 
 #ifdef __cplusplus
 }

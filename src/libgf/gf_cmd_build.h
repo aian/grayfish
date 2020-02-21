@@ -21,9 +21,9 @@
 extern "C" {
 #endif
 
-typedef struct gf_build gf_build;
+typedef struct gf_cmd_build gf_cmd_build;
 
-#define GF_BUILD_CAST(cmd) ((gf_build*)(cmd))
+#define GF_CMD_BUILD_CAST(cmd) ((gf_cmd_build*)(cmd))
 
 /*!
 ** @brief Create a new build command object.
@@ -31,8 +31,8 @@ typedef struct gf_build gf_build;
 ** @param [out] cmd The pointer to the new build command object
 */
 
-extern gf_status gf_build_new(gf_cmd_base** cmd);
-extern void gf_build_free(gf_cmd_base* cmd);
+extern gf_status gf_cmd_build_new(gf_cmd_base** cmd);
+extern void gf_cmd_build_free(gf_cmd_base* cmd);
 
 /*!
 ** @brief Execute the build process.
@@ -40,7 +40,7 @@ extern void gf_build_free(gf_cmd_base* cmd);
 ** @param [in] cmd Command object
 */
 
-extern gf_status gf_build_execute(gf_cmd_base* cmd);
+extern gf_status gf_cmd_build_execute(gf_cmd_base* cmd);
 
 #ifdef __cplusplus
 }

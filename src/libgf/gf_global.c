@@ -18,9 +18,9 @@
 
 #include <libgf/gf_countof.h>
 #include <libgf/gf_log.h>
-#include <libgf/gf_config.h>
 
 #include <libgf/gf_cmd_base.h>
+#include <libgf/gf_cmd_config.h>
 #include <libgf/gf_cmd_main.h>
 #include <libgf/gf_cmd_help.h>
 #include <libgf/gf_cmd_version.h>
@@ -36,16 +36,16 @@
 #include <libgf/gf_local.h>
 
 static const gf_cmd_base_index command_index_[] = {
-  { "main",    gf_main_new    },
-  { "help",    gf_help_new    },
-  { "version", gf_version_new },
-  { "setup",   gf_setup_new,  },
-  { "config",  gf_config_new, },
-  { "update",  gf_update_new, },
-  { "build",   gf_build_new,  },
-  { "clean",   gf_clean_new,  },
-  { "list",    gf_list_new,   },
-  { "serve",   gf_serve_new,  },
+  { "main",    gf_cmd_main_new    },
+  { "help",    gf_cmd_help_new    },
+  { "version", gf_cmd_version_new },
+  { "setup",   gf_cmd_setup_new,  },
+  { "config",  gf_cmd_config_new, },
+  { "update",  gf_cmd_update_new, },
+  { "build",   gf_cmd_build_new,  },
+  { "clean",   gf_cmd_clean_new,  },
+  { "list",    gf_cmd_list_new,   },
+  { "serve",   gf_cmd_serve_new,  },
 };
 
 static gf_status

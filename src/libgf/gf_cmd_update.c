@@ -12,7 +12,7 @@
 #include <libgf/gf_memory.h>
 #include <libgf/gf_string.h>
 #include <libgf/gf_path.h>
-#include <libgf/gf_config.h>
+#include <libgf/gf_cmd_config.h>
 #include <libgf/gf_site.h>
 #include <libgf/gf_system.h>
 #include <libgf/gf_cmd_base.h>
@@ -20,7 +20,7 @@
 
 #include "gf_local.h"
 
-struct gf_update {
+struct gf_cmd_update {
   gf_cmd_base base;
   gf_path*   root_path;
   gf_path*   conf_path;
@@ -38,9 +38,9 @@ static const gf_cmd_base_info info_ = {
     .name        = "update",
     .description = "Update the status of the documents",
     .args        = NULL,
-    .create      = gf_update_new,
-    .free        = gf_update_free,
-    .execute     = gf_update_execute,
+    .create      = gf_cmd_update_new,
+    .free        = gf_cmd_update_free,
+    .execute     = gf_cmd_update_execute,
   },
   .options = {
     /* Terminate */
@@ -58,22 +58,22 @@ init(gf_cmd_base* cmd) {
 
   _(gf_cmd_base_init(cmd));
 
-  GF_UPDATE_CAST(cmd)->root_path = NULL;
-  GF_UPDATE_CAST(cmd)->conf_path = NULL;
-  GF_UPDATE_CAST(cmd)->site_path = NULL;
-  GF_UPDATE_CAST(cmd)->src_path = NULL;
-  GF_UPDATE_CAST(cmd)->site = NULL;
+  GF_CMD_UPDATE_CAST(cmd)->root_path = NULL;
+  GF_CMD_UPDATE_CAST(cmd)->conf_path = NULL;
+  GF_CMD_UPDATE_CAST(cmd)->site_path = NULL;
+  GF_CMD_UPDATE_CAST(cmd)->src_path = NULL;
+  GF_CMD_UPDATE_CAST(cmd)->site = NULL;
 
   return GF_SUCCESS;
 }
 
 /*
-** NOTE: This function is almost the same as gf_update.c:update_make_paths(),
+** NOTE: This function is almost the same as gf_cmd_update.c:update_make_paths(),
 ** We should refactor to call this as a common function.
 */
 
 static gf_status
-update_make_paths(gf_update* cmd) {
+update_make_paths(gf_cmd_update* cmd) {
   gf_status rc = 0;
   gf_path* path = NULL;
   char* str = NULL;
@@ -112,19 +112,19 @@ prepare(gf_cmd_base* cmd) {
   gf_validate(cmd);
 
   _(gf_cmd_base_set_info(cmd, &info_));
-  _(update_make_paths(GF_UPDATE_CAST(cmd)));
+  _(update_make_paths(GF_CMD_UPDATE_CAST(cmd)));
   
   return GF_SUCCESS;
 }
 
 gf_status
-gf_update_new(gf_cmd_base** cmd) {
+gf_cmd_update_new(gf_cmd_base** cmd) {
   gf_status rc = 0;
   gf_cmd_base* tmp = NULL;
   
   gf_validate(cmd);
 
-  _(gf_malloc((gf_ptr *)&tmp, sizeof(gf_update)));
+  _(gf_malloc((gf_ptr *)&tmp, sizeof(gf_cmd_update)));
 
   rc = init(tmp);
   if (rc != GF_SUCCESS) {
@@ -133,7 +133,7 @@ gf_update_new(gf_cmd_base** cmd) {
   }
   rc = prepare(tmp);
   if (rc != GF_SUCCESS) {
-    gf_update_free(tmp);
+    gf_cmd_update_free(tmp);
     return rc;
   }
 
@@ -143,37 +143,37 @@ gf_update_new(gf_cmd_base** cmd) {
 }
 
 void
-gf_update_free(gf_cmd_base* cmd) {
+gf_cmd_update_free(gf_cmd_base* cmd) {
   if (cmd) {
     gf_cmd_base_clear(GF_CMD_BASE_CAST(cmd));
 
-    if (GF_UPDATE_CAST(cmd)->root_path) {
-      gf_path_free(GF_UPDATE_CAST(cmd)->root_path);
-      GF_UPDATE_CAST(cmd)->root_path = NULL;
+    if (GF_CMD_UPDATE_CAST(cmd)->root_path) {
+      gf_path_free(GF_CMD_UPDATE_CAST(cmd)->root_path);
+      GF_CMD_UPDATE_CAST(cmd)->root_path = NULL;
     }
-    if (GF_UPDATE_CAST(cmd)->conf_path) {
-      gf_path_free(GF_UPDATE_CAST(cmd)->conf_path);
-      GF_UPDATE_CAST(cmd)->conf_path = NULL;
+    if (GF_CMD_UPDATE_CAST(cmd)->conf_path) {
+      gf_path_free(GF_CMD_UPDATE_CAST(cmd)->conf_path);
+      GF_CMD_UPDATE_CAST(cmd)->conf_path = NULL;
     }
-    if (GF_UPDATE_CAST(cmd)->site_path) {
-      gf_path_free(GF_UPDATE_CAST(cmd)->site_path);
-      GF_UPDATE_CAST(cmd)->site_path = NULL;
+    if (GF_CMD_UPDATE_CAST(cmd)->site_path) {
+      gf_path_free(GF_CMD_UPDATE_CAST(cmd)->site_path);
+      GF_CMD_UPDATE_CAST(cmd)->site_path = NULL;
     }
-    if (GF_UPDATE_CAST(cmd)->src_path) {
-      gf_path_free(GF_UPDATE_CAST(cmd)->src_path);
-      GF_UPDATE_CAST(cmd)->src_path = NULL;
+    if (GF_CMD_UPDATE_CAST(cmd)->src_path) {
+      gf_path_free(GF_CMD_UPDATE_CAST(cmd)->src_path);
+      GF_CMD_UPDATE_CAST(cmd)->src_path = NULL;
     }
 
-    if (GF_UPDATE_CAST(cmd)->site) {
-      gf_site_free(GF_UPDATE_CAST(cmd)->site);
-      GF_UPDATE_CAST(cmd)->site = NULL;
+    if (GF_CMD_UPDATE_CAST(cmd)->site) {
+      gf_site_free(GF_CMD_UPDATE_CAST(cmd)->site);
+      GF_CMD_UPDATE_CAST(cmd)->site = NULL;
     }
     gf_free(cmd);
   }
 }
 
 static gf_status
-update_read_site_file(gf_update* cmd) {
+update_read_site_file(gf_cmd_update* cmd) {
   if (gf_path_file_exists(cmd->site_path)) {
     _(gf_site_read_file(&cmd->site, cmd->site_path));
   } else {
@@ -183,7 +183,7 @@ update_read_site_file(gf_update* cmd) {
 }
 
 static gf_status
-update_scan_directory(gf_update* cmd) {
+update_scan_directory(gf_cmd_update* cmd) {
   gf_validate(cmd);
   gf_validate(!gf_path_is_empty(cmd->src_path));
 
@@ -193,7 +193,7 @@ update_scan_directory(gf_update* cmd) {
 }
 
 static gf_status
-update_write_file(gf_update* cmd) {
+update_write_file(gf_cmd_update* cmd) {
   gf_validate(cmd);
 
   _(gf_site_write_file(cmd->site, cmd->site_path));
@@ -202,7 +202,7 @@ update_write_file(gf_update* cmd) {
 }
 
 static gf_status
-update_process(gf_update* cmd) {
+update_process(gf_cmd_update* cmd) {
   gf_validate(cmd);
 
   /* Read the existing site file */
@@ -216,12 +216,12 @@ update_process(gf_update* cmd) {
 }
 
 gf_status
-gf_update_execute(gf_cmd_base* cmd) {
+gf_cmd_update_execute(gf_cmd_base* cmd) {
   gf_validate(cmd);
 
   gf_msg("Update the project directory ...");
 
-  _(update_process(GF_UPDATE_CAST(cmd)));
+  _(update_process(GF_CMD_UPDATE_CAST(cmd)));
 
   gf_msg("Done.");
 

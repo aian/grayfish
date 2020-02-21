@@ -21,9 +21,9 @@
 extern "C" {
 #endif
 
-typedef struct gf_list gf_list;
+typedef struct gf_cmd_list gf_cmd_list;
 
-#define GF_LIST_CAST(cmd) ((gf_list*)(cmd))
+#define GF_CMD_LIST_CAST(cmd) ((gf_cmd_list*)(cmd))
 
 /*!
 ** @brief Create a new list command object.
@@ -31,8 +31,8 @@ typedef struct gf_list gf_list;
 ** @param [out] cmd The pointer to the new list command object
 */
 
-extern gf_status gf_list_new(gf_cmd_base** cmd);
-extern void gf_list_free(gf_cmd_base* cmd);
+extern gf_status gf_cmd_list_new(gf_cmd_base** cmd);
+extern void gf_cmd_list_free(gf_cmd_base* cmd);
 
 /*!
 ** @brief Execute the list process.
@@ -40,7 +40,7 @@ extern void gf_list_free(gf_cmd_base* cmd);
 ** @param [in] cmd Command object
 */
 
-extern gf_status gf_list_execute(gf_cmd_base* cmd);
+extern gf_status gf_cmd_list_execute(gf_cmd_base* cmd);
 
 #ifdef __cplusplus
 }

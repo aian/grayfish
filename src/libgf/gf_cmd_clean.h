@@ -21,9 +21,9 @@
 extern "C" {
 #endif
 
-typedef struct gf_clean gf_clean;
+typedef struct gf_cmd_clean gf_cmd_clean;
 
-#define GF_CLEAN_CAST(cmd) ((gf_clean*)(cmd))
+#define GF_CMD_CLEAN_CAST(cmd) ((gf_cmd_clean*)(cmd))
 
 /*!
 ** @brief Create a new clean command object.
@@ -31,8 +31,8 @@ typedef struct gf_clean gf_clean;
 ** @param [out] cmd The pointer to the new clean command object
 */
 
-extern gf_status gf_clean_new(gf_cmd_base** cmd);
-extern void gf_clean_free(gf_cmd_base* cmd);
+extern gf_status gf_cmd_clean_new(gf_cmd_base** cmd);
+extern void gf_cmd_clean_free(gf_cmd_base* cmd);
 
 /*!
 ** @brief Execute the clean process.
@@ -40,7 +40,7 @@ extern void gf_clean_free(gf_cmd_base* cmd);
 ** @param [in] cmd Command object
 */
 
-extern gf_status gf_clean_execute(gf_cmd_base* cmd);
+extern gf_status gf_cmd_clean_execute(gf_cmd_base* cmd);
 
 #ifdef __cplusplus
 }

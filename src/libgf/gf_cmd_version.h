@@ -21,20 +21,20 @@
 extern "C" {
 #endif
 
-extern int gf_version_major(void);
-extern int gf_version_minor(void);
-extern int gf_version_patch(void);
+extern int gf_cmd_version_major(void);
+extern int gf_cmd_version_minor(void);
+extern int gf_cmd_version_patch(void);
 
 extern const char* gf_get_version_string(void);
 
 
-typedef struct gf_version gf_version;
+typedef struct gf_cmd_version gf_cmd_version;
 
-#define GF_VERSION_CAST(cmd) ((gf_version*)(cmd))
+#define GF_CMD_VERSION_CAST(cmd) ((gf_cmd_version*)(cmd))
 
-extern gf_status gf_version_new(gf_cmd_base** cmd);
-extern void gf_version_free(gf_cmd_base* cmd);
-extern void gf_version_show_help(const gf_cmd_base* cmd);
+extern gf_status gf_cmd_version_new(gf_cmd_base** cmd);
+extern void gf_cmd_version_free(gf_cmd_base* cmd);
+extern void gf_cmd_version_show_help(const gf_cmd_base* cmd);
 
 /*!
 ** @brief Execute the 'version' process of Grayfish
@@ -42,7 +42,7 @@ extern void gf_version_show_help(const gf_cmd_base* cmd);
 ** @param [in] cmd Command object
 */
 
-extern gf_status gf_version_execute(gf_cmd_base* cmd);
+extern gf_status gf_cmd_version_execute(gf_cmd_base* cmd);
 
 #ifdef __cplusplus
 }

@@ -12,7 +12,7 @@
 #include <libgf/gf_memory.h>
 #include <libgf/gf_string.h>
 #include <libgf/gf_path.h>
-#include <libgf/gf_config.h>
+#include <libgf/gf_cmd_config.h>
 #include <libgf/gf_site.h>
 #include <libgf/gf_system.h>
 #include <libgf/gf_convert.h>
@@ -20,7 +20,7 @@
 
 #include "gf_local.h"
 
-struct gf_build {
+struct gf_cmd_build {
   gf_cmd_base       base;
   gf_path*         root_path;
   gf_path*         conf_path;
@@ -45,9 +45,9 @@ static const gf_cmd_base_info info_ = {
     .name        = "build",
     .description = "Build the static website",
     .args        = NULL,
-    .create      = gf_build_new,
-    .free        = gf_build_free,
-    .execute     = gf_build_execute,
+    .create      = gf_cmd_build_new,
+    .free        = gf_cmd_build_free,
+    .execute     = gf_cmd_build_execute,
   },
   .options = {
     /* Terminate */
@@ -65,13 +65,13 @@ init(gf_cmd_base* cmd) {
 
   _(gf_cmd_base_init(cmd));
   
-  GF_BUILD_CAST(cmd)->root_path = NULL;
-  GF_BUILD_CAST(cmd)->conf_path = NULL;
-  GF_BUILD_CAST(cmd)->site_path = NULL;
-  GF_BUILD_CAST(cmd)->src_path = NULL;
-  GF_BUILD_CAST(cmd)->dst_path = NULL;
-  GF_BUILD_CAST(cmd)->site = NULL;
-  GF_BUILD_CAST(cmd)->ctxt = NULL;
+  GF_CMD_BUILD_CAST(cmd)->root_path = NULL;
+  GF_CMD_BUILD_CAST(cmd)->conf_path = NULL;
+  GF_CMD_BUILD_CAST(cmd)->site_path = NULL;
+  GF_CMD_BUILD_CAST(cmd)->src_path = NULL;
+  GF_CMD_BUILD_CAST(cmd)->dst_path = NULL;
+  GF_CMD_BUILD_CAST(cmd)->site = NULL;
+  GF_CMD_BUILD_CAST(cmd)->ctxt = NULL;
 
   return GF_SUCCESS;
 }
@@ -82,7 +82,7 @@ init(gf_cmd_base* cmd) {
 */
 
 static gf_status
-build_make_paths(gf_build* cmd) {
+build_make_paths(gf_cmd_build* cmd) {
   gf_status rc = 0;
   gf_path* path = NULL;
   char* str = NULL;
@@ -127,7 +127,7 @@ build_make_paths(gf_build* cmd) {
 }
 
 static gf_status
-build_read_style_file(gf_build* cmd) {
+build_read_style_file(gf_cmd_build* cmd) {
   gf_status rc = 0;
   gf_path* style_path = NULL;
   
@@ -155,18 +155,18 @@ prepare(gf_cmd_base* cmd) {
   gf_validate(cmd);
 
   _(gf_cmd_base_set_info(cmd, &info_));
-  _(build_make_paths(GF_BUILD_CAST(cmd)));
-  _(build_read_style_file(GF_BUILD_CAST(cmd)));
+  _(build_make_paths(GF_CMD_BUILD_CAST(cmd)));
+  _(build_read_style_file(GF_CMD_BUILD_CAST(cmd)));
 
   return GF_SUCCESS;
 }
 
 gf_status
-gf_build_new(gf_cmd_base** cmd) {
+gf_cmd_build_new(gf_cmd_base** cmd) {
   gf_status rc = 0;
   gf_cmd_base* tmp = NULL;
 
-  _(gf_malloc((gf_ptr*)&tmp, sizeof(gf_build)));
+  _(gf_malloc((gf_ptr*)&tmp, sizeof(gf_cmd_build)));
 
   rc = init(tmp);
   if (rc != GF_SUCCESS) {
@@ -175,7 +175,7 @@ gf_build_new(gf_cmd_base** cmd) {
   }
   rc = prepare(tmp);
   if (rc != GF_SUCCESS) {
-    gf_build_free(tmp);
+    gf_cmd_build_free(tmp);
     return rc;
   }
 
@@ -185,39 +185,39 @@ gf_build_new(gf_cmd_base** cmd) {
 }
 
 void
-gf_build_free(gf_cmd_base* cmd) {
+gf_cmd_build_free(gf_cmd_base* cmd) {
   if (cmd) {
     /* Clear the base class */
     gf_cmd_base_clear(cmd);
     /* Clear and deallocate this class */
-    if (GF_BUILD_CAST(cmd)->root_path) {
-      gf_path_free(GF_BUILD_CAST(cmd)->root_path);
-      GF_BUILD_CAST(cmd)->root_path = NULL;
+    if (GF_CMD_BUILD_CAST(cmd)->root_path) {
+      gf_path_free(GF_CMD_BUILD_CAST(cmd)->root_path);
+      GF_CMD_BUILD_CAST(cmd)->root_path = NULL;
     }
-    if (GF_BUILD_CAST(cmd)->conf_path) {
-      gf_path_free(GF_BUILD_CAST(cmd)->conf_path);
-      GF_BUILD_CAST(cmd)->conf_path = NULL;
+    if (GF_CMD_BUILD_CAST(cmd)->conf_path) {
+      gf_path_free(GF_CMD_BUILD_CAST(cmd)->conf_path);
+      GF_CMD_BUILD_CAST(cmd)->conf_path = NULL;
     }
-    if (GF_BUILD_CAST(cmd)->site_path) {
-      gf_path_free(GF_BUILD_CAST(cmd)->site_path);
-      GF_BUILD_CAST(cmd)->site_path = NULL;
+    if (GF_CMD_BUILD_CAST(cmd)->site_path) {
+      gf_path_free(GF_CMD_BUILD_CAST(cmd)->site_path);
+      GF_CMD_BUILD_CAST(cmd)->site_path = NULL;
     }
-    if (GF_BUILD_CAST(cmd)->src_path) {
-      gf_path_free(GF_BUILD_CAST(cmd)->src_path);
-      GF_BUILD_CAST(cmd)->src_path = NULL;
+    if (GF_CMD_BUILD_CAST(cmd)->src_path) {
+      gf_path_free(GF_CMD_BUILD_CAST(cmd)->src_path);
+      GF_CMD_BUILD_CAST(cmd)->src_path = NULL;
     }
-    if (GF_BUILD_CAST(cmd)->dst_path) {
-      gf_path_free(GF_BUILD_CAST(cmd)->dst_path);
-      GF_BUILD_CAST(cmd)->dst_path = NULL;
+    if (GF_CMD_BUILD_CAST(cmd)->dst_path) {
+      gf_path_free(GF_CMD_BUILD_CAST(cmd)->dst_path);
+      GF_CMD_BUILD_CAST(cmd)->dst_path = NULL;
     }
 
-    if (GF_BUILD_CAST(cmd)->site) {
-      gf_site_free(GF_BUILD_CAST(cmd)->site);
-      GF_BUILD_CAST(cmd)->site = NULL;
+    if (GF_CMD_BUILD_CAST(cmd)->site) {
+      gf_site_free(GF_CMD_BUILD_CAST(cmd)->site);
+      GF_CMD_BUILD_CAST(cmd)->site = NULL;
     }
-    if (GF_BUILD_CAST(cmd)->ctxt) {
-      gf_convert_ctxt_free(GF_BUILD_CAST(cmd)->ctxt);
-      GF_BUILD_CAST(cmd)->site = NULL;
+    if (GF_CMD_BUILD_CAST(cmd)->ctxt) {
+      gf_convert_ctxt_free(GF_CMD_BUILD_CAST(cmd)->ctxt);
+      GF_CMD_BUILD_CAST(cmd)->site = NULL;
     }
 
     gf_free(cmd);
@@ -225,7 +225,7 @@ gf_build_free(gf_cmd_base* cmd) {
 }
 
 static gf_status
-build_read_site_file(gf_build* cmd) {
+build_read_site_file(gf_cmd_build* cmd) {
   gf_validate(cmd);
 
   if (!gf_path_file_exists(cmd->site_path)) {
@@ -238,7 +238,7 @@ build_read_site_file(gf_build* cmd) {
 }
 
 static gf_status
-build_copy_directory(gf_build* cmd, gf_site_node* node) {
+build_copy_directory(gf_cmd_build* cmd, gf_site_node* node) {
   gf_validate(cmd);
   gf_validate(node);
 
@@ -249,7 +249,7 @@ build_copy_directory(gf_build* cmd, gf_site_node* node) {
 
 static gf_status
 build_convert_file(
-  gf_build* cmd, gf_path* src_path, gf_path* dst_path, const char* filename) {
+  gf_cmd_build* cmd, gf_path* src_path, gf_path* dst_path, const char* filename) {
   gf_status rc = 0;
   gf_path* cur_path = NULL;
   const char* src = NULL;
@@ -285,7 +285,7 @@ build_convert_file(
 */
 
 static gf_status
-build_convert_index(gf_build* cmd, gf_site_node* node) {
+build_convert_index(gf_cmd_build* cmd, gf_site_node* node) {
   gf_status rc = 0;
   gf_path* doc_path = NULL;
   gf_path* dst_path = NULL;
@@ -348,7 +348,7 @@ build_convert_index(gf_build* cmd, gf_site_node* node) {
 }
 
 static gf_status
-build_convert_document(gf_build* cmd, gf_site_node* node) {
+build_convert_document(gf_cmd_build* cmd, gf_site_node* node) {
   gf_validate(cmd);
   gf_validate(node);
 
@@ -359,7 +359,7 @@ build_convert_document(gf_build* cmd, gf_site_node* node) {
 }
 
 static gf_status
-build_convert_files(gf_build* cmd) {
+build_convert_files(gf_cmd_build* cmd) {
   gf_status rc = 0;
   char* name = NULL;
   gf_site_node* node = NULL;
@@ -398,7 +398,7 @@ build_convert_files(gf_build* cmd) {
 }
 
 static gf_status
-build_process(gf_build* cmd) {
+build_process(gf_cmd_build* cmd) {
   gf_validate(cmd);
 
   /* Read the existing site file */
@@ -410,12 +410,12 @@ build_process(gf_build* cmd) {
 }
 
 gf_status
-gf_build_execute(gf_cmd_base* cmd) {
+gf_cmd_build_execute(gf_cmd_base* cmd) {
   gf_validate(cmd);
 
   gf_msg("Compiling documents ...");
 
-  _(build_process(GF_BUILD_CAST(cmd)));
+  _(build_process(GF_CMD_BUILD_CAST(cmd)));
   
   gf_msg("Done.");
   

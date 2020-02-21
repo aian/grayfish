@@ -13,7 +13,7 @@
 
 #include "gf_local.h"
 
-struct gf_clean {
+struct gf_cmd_clean {
   gf_cmd_base base;
 };
 
@@ -28,9 +28,9 @@ static const gf_cmd_base_info info_ = {
     .name        = "clean",
     .description = "Clean the site directory",
     .args        = NULL,
-    .create      = gf_clean_new,
-    .free        = gf_clean_free,
-    .execute     = gf_clean_execute,
+    .create      = gf_cmd_clean_new,
+    .free        = gf_cmd_clean_free,
+    .execute     = gf_cmd_clean_execute,
   },
   .options = {
     /* Terminate */
@@ -61,11 +61,11 @@ prepare(gf_cmd_base* cmd) {
 }
 
 gf_status
-gf_clean_new(gf_cmd_base** cmd) {
+gf_cmd_clean_new(gf_cmd_base** cmd) {
   gf_status rc = 0;
   gf_cmd_base* tmp = NULL;
 
-  _(gf_malloc((gf_ptr*)&tmp, sizeof(gf_clean)));
+  _(gf_malloc((gf_ptr*)&tmp, sizeof(gf_cmd_clean)));
 
   rc = init(tmp);
   if (rc != GF_SUCCESS) {
@@ -74,7 +74,7 @@ gf_clean_new(gf_cmd_base** cmd) {
   }
   rc = prepare(tmp);
   if (rc != GF_SUCCESS) {
-    gf_clean_free(tmp);
+    gf_cmd_clean_free(tmp);
     return rc;
   }
 
@@ -84,7 +84,7 @@ gf_clean_new(gf_cmd_base** cmd) {
 }
 
 void
-gf_clean_free(gf_cmd_base* cmd) {
+gf_cmd_clean_free(gf_cmd_base* cmd) {
   if (cmd) {
     gf_cmd_base_clear(cmd);
     gf_free(cmd);
@@ -92,7 +92,7 @@ gf_clean_free(gf_cmd_base* cmd) {
 }
 
 gf_status
-gf_clean_execute(gf_cmd_base* cmd) {
+gf_cmd_clean_execute(gf_cmd_base* cmd) {
   (void)cmd;
   return GF_SUCCESS;
 }
