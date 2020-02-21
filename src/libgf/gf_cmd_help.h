@@ -25,8 +25,8 @@ typedef struct gf_help gf_help;
 
 #define GF_HELP_CAST(cmd) ((gf_help*)(cmd))
 
-extern gf_status gf_help_new(gf_command** cmd);
-extern void gf_help_free(gf_command* cmd);
+extern gf_status gf_help_new(gf_cmd_base** cmd);
+extern void gf_help_free(gf_cmd_base* cmd);
 
 /*!
 ** @brief Execute the 'help' process of Grayfish
@@ -34,7 +34,7 @@ extern void gf_help_free(gf_command* cmd);
 ** @param [in] cmd Command object
 */
 
-extern gf_status gf_help_execute(gf_command* cmd);
+extern gf_status gf_help_execute(gf_cmd_base* cmd);
 
 #ifdef __cplusplus
 }

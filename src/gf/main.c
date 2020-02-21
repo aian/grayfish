@@ -153,20 +153,20 @@ gfc_init_process(void) {
 gf_status
 gfc_main_process(int argc, char *argv[]) {
   gf_status rc = 0;
-  gf_command *cmd = NULL;
+  gf_cmd_base *cmd = NULL;
 
   rc = gfc_init_process();
   if (rc != GF_SUCCESS) {
     return rc;
   }
   
-  rc = gf_command_create(&cmd, "main");
+  rc = gf_cmd_base_create(&cmd, "main");
   if (rc != GF_SUCCESS) {
     return rc;
   }
-  rc = gf_command_set_args(cmd, &argc, &argv);
+  rc = gf_cmd_base_set_args(cmd, &argc, &argv);
   if (rc != GF_SUCCESS) {
-    gf_command_free(cmd);
+    gf_cmd_base_free(cmd);
     return rc;
   }
   /*
@@ -174,13 +174,13 @@ gfc_main_process(int argc, char *argv[]) {
   ** The argv[0] represents the executalbe command module, which is not needed
   ** in this module.
   */
-  rc = gf_command_consume_args(cmd, NULL);
+  rc = gf_cmd_base_consume_args(cmd, NULL);
   if (rc != GF_SUCCESS) {
-    gf_command_free(cmd);
+    gf_cmd_base_free(cmd);
     return rc;
   }
-  rc = gf_command_execute(cmd);
-  gf_command_free(cmd);
+  rc = gf_cmd_base_execute(cmd);
+  gf_cmd_base_free(cmd);
   if (rc != GF_SUCCESS) {
     return rc;
   }

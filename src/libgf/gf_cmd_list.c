@@ -19,7 +19,7 @@
 #include "gf_local.h"
 
 struct gf_list {
-  gf_command base;
+  gf_cmd_base base;
   gf_path*   root_path;
   gf_path*   conf_path;
   gf_path*   site_path;
@@ -33,7 +33,7 @@ struct gf_list {
 **
 */
 
-static const gf_command_info info_ = {
+static const gf_cmd_base_info info_ = {
   .base = {
     .name        = "list",
     .description = "List document status",
@@ -53,10 +53,10 @@ static const gf_command_info info_ = {
 */
 
 static gf_status
-init(gf_command* cmd) {
+init(gf_cmd_base* cmd) {
   gf_validate(cmd);
 
-  _(gf_command_init(cmd));
+  _(gf_cmd_base_init(cmd));
 
   GF_LIST_CAST(cmd)->root_path = NULL;
   GF_LIST_CAST(cmd)->conf_path = NULL;
@@ -108,19 +108,19 @@ list_make_paths(gf_list* cmd) {
 }
 
 static gf_status
-prepare(gf_command* cmd) {
+prepare(gf_cmd_base* cmd) {
   gf_validate(cmd);
 
-  _(gf_command_set_info(cmd, &info_));
+  _(gf_cmd_base_set_info(cmd, &info_));
   _(list_make_paths(GF_LIST_CAST(cmd)));
 
   return GF_SUCCESS;
 }
 
 gf_status
-gf_list_new(gf_command** cmd) {
+gf_list_new(gf_cmd_base** cmd) {
   gf_status rc = 0;
-  gf_command* tmp = NULL;
+  gf_cmd_base* tmp = NULL;
 
   _(gf_malloc((gf_ptr*)&tmp, sizeof(gf_list)));
 
@@ -141,9 +141,9 @@ gf_list_new(gf_command** cmd) {
 }
 
 void
-gf_list_free(gf_command* cmd) {
+gf_list_free(gf_cmd_base* cmd) {
   if (cmd) {
-    gf_command_clear(GF_COMMAND_CAST(cmd));
+    gf_cmd_base_clear(GF_CMD_BASE_CAST(cmd));
 
     if (GF_LIST_CAST(cmd)->root_path) {
       gf_path_free(GF_LIST_CAST(cmd)->root_path);
@@ -240,7 +240,7 @@ list_process(gf_list* cmd) {
 }
 
 gf_status
-gf_list_execute(gf_command* cmd) {
+gf_list_execute(gf_cmd_base* cmd) {
   gf_validate(cmd);
 
   _(list_process(GF_LIST_CAST(cmd)));

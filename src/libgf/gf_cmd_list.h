@@ -31,8 +31,8 @@ typedef struct gf_list gf_list;
 ** @param [out] cmd The pointer to the new list command object
 */
 
-extern gf_status gf_list_new(gf_command** cmd);
-extern void gf_list_free(gf_command* cmd);
+extern gf_status gf_list_new(gf_cmd_base** cmd);
+extern void gf_list_free(gf_cmd_base* cmd);
 
 /*!
 ** @brief Execute the list process.
@@ -40,7 +40,7 @@ extern void gf_list_free(gf_command* cmd);
 ** @param [in] cmd Command object
 */
 
-extern gf_status gf_list_execute(gf_command* cmd);
+extern gf_status gf_list_execute(gf_cmd_base* cmd);
 
 #ifdef __cplusplus
 }

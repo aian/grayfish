@@ -22,7 +22,7 @@
 #define COMMAND_DESCRIPTION_DEFAULT ""
 
 gf_status
-gf_command_init(gf_command* cmd) {
+gf_cmd_base_init(gf_cmd_base* cmd) {
   gf_validate(cmd);
 
   cmd->name = NULL;
@@ -35,7 +35,7 @@ gf_command_init(gf_command* cmd) {
 }
 
 gf_status
-gf_command_prepare(gf_command* cmd) {
+gf_cmd_base_prepare(gf_cmd_base* cmd) {
   gf_status rc = 0;
   gf_validate(cmd);
 
@@ -66,7 +66,7 @@ gf_command_prepare(gf_command* cmd) {
 }
 
 void
-gf_command_clear(gf_command* cmd) {
+gf_cmd_base_clear(gf_cmd_base* cmd) {
   if (cmd) {
     /* Base structure member */
     if (cmd->name) {
@@ -78,19 +78,19 @@ gf_command_clear(gf_command* cmd) {
     if (cmd->args) {
       gf_args_free(cmd->args);
     }
-    (void)gf_command_init(cmd);
+    (void)gf_cmd_base_init(cmd);
   }
 }
 
 gf_status
-gf_command_set_info(gf_command* cmd, const gf_command_info* info) {
+gf_cmd_base_set_info(gf_cmd_base* cmd, const gf_cmd_base_info* info) {
   gf_validate(cmd);
   gf_validate(info);
 
-  _(gf_command_prepare(cmd));
-  _(gf_command_set_name(cmd, info->base.name));
-  _(gf_command_set_description(cmd, info->base.description));
-  _(gf_command_add_options(cmd, info->options));
+  _(gf_cmd_base_prepare(cmd));
+  _(gf_cmd_base_set_name(cmd, info->base.name));
+  _(gf_cmd_base_set_description(cmd, info->base.description));
+  _(gf_cmd_base_add_options(cmd, info->options));
 
   cmd->create = info->base.create;
   cmd->free = info->base.free;
@@ -101,7 +101,7 @@ gf_command_set_info(gf_command* cmd, const gf_command_info* info) {
 
 
 gf_status
-gf_command_add_options(gf_command* cmd, const gf_option* options) {
+gf_cmd_base_add_options(gf_cmd_base* cmd, const gf_option* options) {
   gf_validate(cmd);
   gf_validate(options);
 
@@ -111,7 +111,7 @@ gf_command_add_options(gf_command* cmd, const gf_option* options) {
 }
 
 gf_status
-gf_command_set_args(gf_command* cmd, int* argc,  char*** argv) {
+gf_cmd_base_set_args(gf_cmd_base* cmd, int* argc,  char*** argv) {
   gf_validate(cmd);
   gf_validate(argc);
   gf_validate(argv);
@@ -122,7 +122,7 @@ gf_command_set_args(gf_command* cmd, int* argc,  char*** argv) {
 }
 
 gf_status
-gf_command_inherit_args(gf_command* dst, const gf_command* src) {
+gf_cmd_base_inherit_args(gf_cmd_base* dst, const gf_cmd_base* src) {
   gf_validate(dst);
   gf_validate(src);
   gf_validate(dst->args);
@@ -134,7 +134,7 @@ gf_command_inherit_args(gf_command* dst, const gf_command* src) {
 }
 
 gf_status
-gf_command_consume_args(gf_command* cmd, char** str) {
+gf_cmd_base_consume_args(gf_cmd_base* cmd, char** str) {
   gf_validate(cmd);
 
   if (!cmd->args) {
@@ -147,7 +147,7 @@ gf_command_consume_args(gf_command* cmd, char** str) {
 }
 
 gf_status
-gf_command_set_name(gf_command* cmd, const char* name) {
+gf_cmd_base_set_name(gf_cmd_base* cmd, const char* name) {
   gf_validate(cmd);
   gf_validate(!gf_strnull(name));
 
@@ -157,7 +157,7 @@ gf_command_set_name(gf_command* cmd, const char* name) {
 }
 
 gf_status
-gf_command_set_description(gf_command* cmd, const char* description) {
+gf_cmd_base_set_description(gf_cmd_base* cmd, const char* description) {
   gf_validate(cmd);
   gf_validate(!gf_strnull(description));
 
@@ -167,7 +167,7 @@ gf_command_set_description(gf_command* cmd, const char* description) {
 }
 
 void
-gf_command_free(gf_command* cmd) {
+gf_cmd_base_free(gf_cmd_base* cmd) {
   if (cmd) {
     if (cmd->free) {
       (void)cmd->free(cmd);
@@ -176,7 +176,7 @@ gf_command_free(gf_command* cmd) {
 }
 
 gf_status
-gf_command_execute(gf_command* cmd) {
+gf_cmd_base_execute(gf_cmd_base* cmd) {
   gf_validate(cmd);
 
   if (!cmd->execute) {
@@ -189,53 +189,53 @@ gf_command_execute(gf_command* cmd) {
 
 /* -------------------------------------------------------------------------- */
 
-#ifndef COMMAND_FACTORY_SIZE
-#define COMMAND_FACTORY_SIZE 16
-#endif  /* COMMAND_FACTORY_SIZE */
+#ifndef CMD_FACTORY_SIZE
+#define CMD_FACTORY_SIZE 16
+#endif  /* CMD_FACTORY_SIZE */
 
-struct command_factory {
-  gf_command_index* entries;
+struct cmd_factory {
+  gf_cmd_base_index* entries;
   gf_size_t used;
   gf_size_t size;
 };
-typedef struct command_factory command_factory;
+typedef struct cmd_factory cmd_factory;
 
 
-static command_factory factory_ = { 0 };
+static cmd_factory factory_ = { 0 };
 
 /*!
 ** @brief Returns GF_TRUE if the command factory is initialized
 */
 
 static gf_bool
-command_factory_is_initialized(void) {
+cmd_factory_is_initialized(void) {
   return factory_.size == 0 ? GF_FALSE : GF_TRUE;
 }
 
 gf_status
-gf_command_factory_init(void) {
-  gf_command_index* tmp = NULL;
+gf_cmd_factory_init(void) {
+  gf_cmd_base_index* tmp = NULL;
 
-  static const gf_size_t size = sizeof(*tmp) * COMMAND_FACTORY_SIZE;
+  static const gf_size_t size = sizeof(*tmp) * CMD_FACTORY_SIZE;
 
   _(gf_malloc((gf_ptr* )&tmp, size));
   /* Initialize */
-  for (gf_size_t i = 0; i < COMMAND_FACTORY_SIZE; i++) {
+  for (gf_size_t i = 0; i < CMD_FACTORY_SIZE; i++) {
     tmp[i].name = NULL;
     tmp[i].create = NULL;
   }
   /* Assign */
   factory_.entries = tmp;
   factory_.used = 0;
-  factory_.size = COMMAND_FACTORY_SIZE;
+  factory_.size = CMD_FACTORY_SIZE;
 
   return GF_SUCCESS;
 }
 
 void
-gf_command_factory_clean(void) {
+gf_cmd_factory_clean(void) {
   if (factory_.entries) {
-    for (gf_size_t i = 0; i < COMMAND_FACTORY_SIZE; i++) {
+    for (gf_size_t i = 0; i < CMD_FACTORY_SIZE; i++) {
       if (factory_.entries[i].name) {
         gf_free(factory_.entries[i].name);
       }
@@ -251,12 +251,12 @@ gf_command_factory_clean(void) {
 }
 
 static gf_status
-command_factory_add(const gf_command_index* entry) {
+cmd_factory_add(const gf_cmd_base_index* entry) {
   gf_validate(entry);
 
   /* Auto initialization */
-  if (!command_factory_is_initialized()) {
-    _(gf_command_factory_init());
+  if (!cmd_factory_is_initialized()) {
+    _(gf_cmd_factory_init());
   }
   /* Extend the entries array */
   if (factory_.used >= factory_.size) {
@@ -277,37 +277,37 @@ command_factory_add(const gf_command_index* entry) {
 }
 
 gf_status
-gf_command_factory_add_commands(const gf_command_index* index, gf_size_t size) {
+gf_cmd_factory_add_commands(const gf_cmd_base_index* index, gf_size_t size) {
   gf_validate(index);
 
   for (gf_size_t i = 0; i < size; i++) {
-    _(command_factory_add(&index[i]));
+    _(cmd_factory_add(&index[i]));
   }
   
   return GF_SUCCESS;
 }
 
 gf_status
-gf_command_factory_show_helps(void) {
+gf_cmd_factory_show_helps(void) {
   for (gf_size_t i = 1; i < factory_.used; i++) {
-    gf_command* cmd = NULL;
+    gf_cmd_base* cmd = NULL;
 
-    _(gf_command_create(&cmd, factory_.entries[i].name));
+    _(gf_cmd_base_create(&cmd, factory_.entries[i].name));
     gf_msg("  %-16s %s", cmd->name, cmd->description);
-    gf_command_free(cmd);
+    gf_cmd_base_free(cmd);
   }
   return GF_SUCCESS;
 }
 
 
 gf_status
-gf_command_create(gf_command** cmd, const char* name) {
-  gf_command* tmp = NULL;
+gf_cmd_base_create(gf_cmd_base** cmd, const char* name) {
+  gf_cmd_base* tmp = NULL;
   
   gf_validate(cmd);
   gf_validate(!gf_strnull(name));
 
-  if (!command_factory_is_initialized()) {
+  if (!cmd_factory_is_initialized()) {
     gf_raise(GF_E_STATE, "The command factory is not initialized.");
   }
   for (gf_size_t i = 0; i < factory_.used; i++) {

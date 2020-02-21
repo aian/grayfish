@@ -20,7 +20,7 @@
 #include "gf_local.h"
 
 struct gf_setup {
-  gf_command base;       ///< Base class object
+  gf_cmd_base base;       ///< Base class object
   gf_path*   root_path;  ///< Project root path
   gf_path*   conf_path;  ///< Local configuration path
 };
@@ -29,7 +29,7 @@ struct gf_setup {
 **
 */
 
-static const gf_command_info info_ = {
+static const gf_cmd_base_info info_ = {
   .base = {
     .name        = "setup",
     .description = "Setup the new project",
@@ -49,11 +49,11 @@ static const gf_command_info info_ = {
 */
 
 static gf_status
-init(gf_command* cmd) {
+init(gf_cmd_base* cmd) {
   gf_validate(cmd);
 
   /* Initialize the base class */
-  _(gf_command_init(cmd));
+  _(gf_cmd_base_init(cmd));
   /* Initialize the members of this class */
   GF_SETUP_CAST(cmd)->root_path = NULL;
   GF_SETUP_CAST(cmd)->conf_path = NULL;
@@ -62,18 +62,18 @@ init(gf_command* cmd) {
 }
 
 static gf_status
-prepare(gf_command* cmd) {
+prepare(gf_cmd_base* cmd) {
   gf_validate(cmd);
 
-  _(gf_command_set_info(cmd, &info_));
+  _(gf_cmd_base_set_info(cmd, &info_));
 
   return GF_SUCCESS;
 }
 
 gf_status
-gf_setup_new(gf_command** cmd) {
+gf_setup_new(gf_cmd_base** cmd) {
   gf_status rc = 0;
-  gf_command* tmp = NULL;
+  gf_cmd_base* tmp = NULL;
   
   gf_validate(cmd);
 
@@ -96,9 +96,9 @@ gf_setup_new(gf_command** cmd) {
 }
 
 void
-gf_setup_free(gf_command* cmd) {
+gf_setup_free(gf_cmd_base* cmd) {
   if (cmd) {
-    gf_command_clear(GF_COMMAND_CAST(cmd));
+    gf_cmd_base_clear(GF_CMD_BASE_CAST(cmd));
     gf_free(cmd);
   }
 }
@@ -292,7 +292,7 @@ setup_process(gf_setup* cmd) {
 */
 
 gf_status
-gf_setup_execute(gf_command* cmd) {
+gf_setup_execute(gf_cmd_base* cmd) {
   gf_validate(cmd);
 
   _(gf_args_parse(cmd->args));

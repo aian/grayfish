@@ -18,7 +18,7 @@
 #include "gf_local.h"
 
 struct gf_main {
-  gf_command base;
+  gf_cmd_base base;
   gf_bool  version;
   gf_bool  help;
   gf_path* base_path;
@@ -36,7 +36,7 @@ enum {
   OPT_DIRECTORY,
 };
 
-static const gf_command_info info_ = {
+static const gf_cmd_base_info info_ = {
   .base = {
     .name        = "main",
     .description = "Main process",
@@ -88,11 +88,11 @@ static const gf_command_info info_ = {
 */
 
 static gf_status
-init(gf_command* cmd) {
+init(gf_cmd_base* cmd) {
   gf_validate(cmd);
 
   /* Initialize the base class */
-  _(gf_command_init(cmd));
+  _(gf_cmd_base_init(cmd));
   /* Initialize the members of this class */
   GF_MAIN_CAST(cmd)->version = NULL;
   GF_MAIN_CAST(cmd)->help = NULL;
@@ -102,18 +102,18 @@ init(gf_command* cmd) {
 }
 
 static gf_status
-prepare(gf_command* cmd) {
+prepare(gf_cmd_base* cmd) {
   gf_validate(cmd);
 
-  _(gf_command_set_info(cmd, &info_));
+  _(gf_cmd_base_set_info(cmd, &info_));
 
   return GF_SUCCESS;
 }
 
 gf_status
-gf_main_new(gf_command** cmd) {
+gf_main_new(gf_cmd_base** cmd) {
   gf_status rc = 0;
-  gf_command* tmp = NULL;
+  gf_cmd_base* tmp = NULL;
   
   gf_validate(cmd);
 
@@ -136,11 +136,11 @@ gf_main_new(gf_command** cmd) {
 }
 
 void
-gf_main_free(gf_command* cmd) {
+gf_main_free(gf_cmd_base* cmd) {
   if (cmd) {
     gf_main* main_cmd = GF_MAIN_CAST(cmd);
     /* Clear the base class members */
-    (void)gf_command_clear(GF_COMMAND_CAST(cmd));
+    (void)gf_cmd_base_clear(GF_CMD_BASE_CAST(cmd));
     /* Clear the thi object */
     main_cmd->version = GF_FALSE;
     main_cmd->help = GF_FALSE;
@@ -150,7 +150,7 @@ gf_main_free(gf_command* cmd) {
 }
 
 void
-gf_main_show_help(const gf_command* cmd) {
+gf_main_show_help(const gf_cmd_base* cmd) {
   if (cmd) {
     gf_main* tmp = GF_MAIN_CAST(cmd);
     (void)tmp;
@@ -210,23 +210,23 @@ main_set_options(gf_main* cmd) {
 }
 
 static gf_status
-main_process_command(gf_command* main_cmd, const char* str) {
+main_process_command(gf_cmd_base* main_cmd, const char* str) {
   gf_status rc = 0;
-  gf_command* cmd = NULL;
+  gf_cmd_base* cmd = NULL;
   
   gf_validate(main_cmd);
   gf_validate(!gf_strnull(str));
 
-  _(gf_command_create(&cmd, str));
+  _(gf_cmd_base_create(&cmd, str));
 
-  rc = gf_command_inherit_args(cmd, main_cmd);
+  rc = gf_cmd_base_inherit_args(cmd, main_cmd);
   if (rc != GF_SUCCESS) {
-    gf_command_free(cmd);
+    gf_cmd_base_free(cmd);
     return rc;
   }
 
-  rc = gf_command_execute(cmd);
-  gf_command_free(cmd);
+  rc = gf_cmd_base_execute(cmd);
+  gf_cmd_base_free(cmd);
   if (rc != GF_SUCCESS) {
     return rc;
   }
@@ -235,7 +235,7 @@ main_process_command(gf_command* main_cmd, const char* str) {
 }
 
 gf_status
-gf_main_execute(gf_command* cmd) {
+gf_main_execute(gf_cmd_base* cmd) {
   gf_status rc = 0;
   int argc = 0;
   char* cmd_str = NULL;

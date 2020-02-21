@@ -22,7 +22,7 @@ extern "C" {
 #endif
 
 /*!
-** @defgroup gf_command The Commmand
+** @defgroup gf_cmd_base The Commmand
 **
 ** @brief The command module.
 **
@@ -31,40 +31,40 @@ extern "C" {
 */
 ///@{
 
-typedef struct gf_command gf_command;
+typedef struct gf_cmd_base gf_cmd_base;
 
-typedef gf_status (*gf_command_create_fn)(gf_command** cmd);
-typedef void (*gf_command_free_fn)(gf_command* cmd);
-typedef gf_status (*gf_command_execute_fn)(gf_command* cmd);
+typedef gf_status (*gf_cmd_base_create_fn)(gf_cmd_base** cmd);
+typedef void (*gf_cmd_base_free_fn)(gf_cmd_base* cmd);
+typedef gf_status (*gf_cmd_base_execute_fn)(gf_cmd_base* cmd);
 
 /*!
 ** @brief 
 */
 
-struct gf_command {
+struct gf_cmd_base {
   char*                 name;
   char*                 description;
   gf_args*              args;
-  gf_command_create_fn  create;
-  gf_command_free_fn    free;
-  gf_command_execute_fn execute;
+  gf_cmd_base_create_fn  create;
+  gf_cmd_base_free_fn    free;
+  gf_cmd_base_execute_fn execute;
 };
 
-#define GF_COMMAND_CAST(cmd) ((gf_command* )(cmd))
+#define GF_CMD_BASE_CAST(cmd) ((gf_cmd_base* )(cmd))
 
-struct gf_command_info {
-  gf_command base;
+struct gf_cmd_base_info {
+  gf_cmd_base base;
   gf_option  options[];
 };
 
-typedef struct gf_command_info gf_command_info;
+typedef struct gf_cmd_base_info gf_cmd_base_info;
 
 /*!
 ** @brief Initialize the command object.
 **
 **
 ** @warning This function is expected to be called by the derived objects of the
-** <code>gf_command</code> internally. Because it may cause memory leaks or
+** <code>gf_cmd_base</code> internally. Because it may cause memory leaks or
 ** crash the process, you should not call this function directly.
 **
 ** @param [in, out] cmd The command object
@@ -72,11 +72,11 @@ typedef struct gf_command_info gf_command_info;
 ** @return Returns GF_SUCCESS on success, GF_E_* otherwise
 */
 
-extern gf_status gf_command_init(gf_command* cmd);
+extern gf_status gf_cmd_base_init(gf_cmd_base* cmd);
 
-extern gf_status gf_command_prepare(gf_command* cmd);
+extern gf_status gf_cmd_base_prepare(gf_cmd_base* cmd);
 
-extern void gf_command_clear(gf_command* cmd);
+extern void gf_cmd_base_clear(gf_cmd_base* cmd);
 
 /*!
 ** @brief Set the attributes of the commmand class.
@@ -90,18 +90,18 @@ extern void gf_command_clear(gf_command* cmd);
 ** @return Returns GF_SUCCESS on success, GF_E_* otherwise
 */
 
-extern gf_status gf_command_set_info(
-  gf_command* cmd, const gf_command_info* info);
+extern gf_status gf_cmd_base_set_info(
+  gf_cmd_base* cmd, const gf_cmd_base_info* info);
 
-extern gf_status gf_command_set_name(gf_command* cmd, const char* name);
+extern gf_status gf_cmd_base_set_name(gf_cmd_base* cmd, const char* name);
 
-extern gf_status gf_command_set_description(
-  gf_command* cmd, const char* description);
+extern gf_status gf_cmd_base_set_description(
+  gf_cmd_base* cmd, const char* description);
 
-extern gf_status gf_command_add_options(
-  gf_command* cmd, const gf_option* options);
+extern gf_status gf_cmd_base_add_options(
+  gf_cmd_base* cmd, const gf_option* options);
 
-extern gf_status gf_command_set_args(gf_command* cmd, int* argc,  char*** argv);
+extern gf_status gf_cmd_base_set_args(gf_cmd_base* cmd, int* argc,  char*** argv);
 
 /*!
 ** @brief Inherit the command argument state from the base command object.
@@ -112,20 +112,20 @@ extern gf_status gf_command_set_args(gf_command* cmd, int* argc,  char*** argv);
 ** @return Returns GF_SUCCESS on success, GF_E_* otherwise
 */
 
-extern gf_status gf_command_inherit_args(gf_command* dst, const gf_command* src);
+extern gf_status gf_cmd_base_inherit_args(gf_cmd_base* dst, const gf_cmd_base* src);
 
-extern gf_status gf_command_consume_args(gf_command* cmd, char** str);
+extern gf_status gf_cmd_base_consume_args(gf_cmd_base* cmd, char** str);
 
-extern void gf_command_free(gf_command* cmd);
+extern void gf_cmd_base_free(gf_cmd_base* cmd);
 
-extern gf_status gf_command_help(const gf_command* cmd);
+extern gf_status gf_cmd_base_help(const gf_cmd_base* cmd);
 
-extern gf_status gf_command_execute(gf_command* cmd);
+extern gf_status gf_cmd_base_execute(gf_cmd_base* cmd);
 
 ///@}
 
 /*!
-** @defgroup gf_command_fcatory The Command Factory
+** @defgroup gf_cmd_base_fcatory The Command Factory
 **
 ** @brief Command 
 **
@@ -135,26 +135,26 @@ extern gf_status gf_command_execute(gf_command* cmd);
 */
 ///@{
 
-struct gf_command_index {
+struct gf_cmd_base_index {
   char*                name;
-  gf_command_create_fn create;
+  gf_cmd_base_create_fn create;
 };
 
-typedef struct gf_command_index gf_command_index;
+typedef struct gf_cmd_base_index gf_cmd_base_index;
 
 /*!
 ** @brief
 **
 */
 
-extern gf_status gf_command_factory_init(void);
+extern gf_status gf_cmd_factory_init(void);
 
 /*!
 ** @brief
 **
 */
 
-extern void gf_command_factory_clean(void);
+extern void gf_cmd_factory_clean(void);
 
 /*!
 ** @brief Add concrete command entry.
@@ -163,14 +163,14 @@ extern void gf_command_factory_clean(void);
 ** @param [in] size  The size of the command index array
 */
 
-extern gf_status gf_command_factory_add_commands(
-  const gf_command_index* index, gf_size_t size);
+extern gf_status gf_cmd_factory_add_commands(
+  const gf_cmd_base_index* index, gf_size_t size);
 
 /*!
 ** @brief Show helps for each commands
 */
 
-extern gf_status gf_command_factory_show_helps(void);
+extern gf_status gf_cmd_factory_show_helps(void);
 
 /*!
 ** @brief Generates the command object.
@@ -179,7 +179,7 @@ extern gf_status gf_command_factory_show_helps(void);
 ** @param [in]  name Key string to generate the concrete command
 */
 
-extern gf_status gf_command_create(gf_command** cmd, const char* name);
+extern gf_status gf_cmd_base_create(gf_cmd_base** cmd, const char* name);
 
 ///@}
 

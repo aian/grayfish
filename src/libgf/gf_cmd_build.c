@@ -21,7 +21,7 @@
 #include "gf_local.h"
 
 struct gf_build {
-  gf_command       base;
+  gf_cmd_base       base;
   gf_path*         root_path;
   gf_path*         conf_path;
   gf_path*         site_path;
@@ -40,7 +40,7 @@ enum {
   OPT_BUILD_OPTIONS,
 };
 
-static const gf_command_info info_ = {
+static const gf_cmd_base_info info_ = {
   .base = {
     .name        = "build",
     .description = "Build the static website",
@@ -60,10 +60,10 @@ static const gf_command_info info_ = {
 */
 
 static gf_status
-init(gf_command* cmd) {
+init(gf_cmd_base* cmd) {
   gf_validate(cmd);
 
-  _(gf_command_init(cmd));
+  _(gf_cmd_base_init(cmd));
   
   GF_BUILD_CAST(cmd)->root_path = NULL;
   GF_BUILD_CAST(cmd)->conf_path = NULL;
@@ -151,10 +151,10 @@ build_read_style_file(gf_build* cmd) {
 }
 
 static gf_status
-prepare(gf_command* cmd) {
+prepare(gf_cmd_base* cmd) {
   gf_validate(cmd);
 
-  _(gf_command_set_info(cmd, &info_));
+  _(gf_cmd_base_set_info(cmd, &info_));
   _(build_make_paths(GF_BUILD_CAST(cmd)));
   _(build_read_style_file(GF_BUILD_CAST(cmd)));
 
@@ -162,9 +162,9 @@ prepare(gf_command* cmd) {
 }
 
 gf_status
-gf_build_new(gf_command** cmd) {
+gf_build_new(gf_cmd_base** cmd) {
   gf_status rc = 0;
-  gf_command* tmp = NULL;
+  gf_cmd_base* tmp = NULL;
 
   _(gf_malloc((gf_ptr*)&tmp, sizeof(gf_build)));
 
@@ -185,10 +185,10 @@ gf_build_new(gf_command** cmd) {
 }
 
 void
-gf_build_free(gf_command* cmd) {
+gf_build_free(gf_cmd_base* cmd) {
   if (cmd) {
     /* Clear the base class */
-    gf_command_clear(cmd);
+    gf_cmd_base_clear(cmd);
     /* Clear and deallocate this class */
     if (GF_BUILD_CAST(cmd)->root_path) {
       gf_path_free(GF_BUILD_CAST(cmd)->root_path);
@@ -410,7 +410,7 @@ build_process(gf_build* cmd) {
 }
 
 gf_status
-gf_build_execute(gf_command* cmd) {
+gf_build_execute(gf_cmd_base* cmd) {
   gf_validate(cmd);
 
   gf_msg("Compiling documents ...");

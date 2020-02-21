@@ -63,8 +63,8 @@ extern gf_status gf_config_set_path(const char* key, const gf_path* value);
 
 #define GF_CONFIG_CAST(cmd) ((gf_config*)(cmd))
 
-extern gf_status gf_config_new(gf_command** cmd);
-extern void gf_config_free(gf_command* cmd);
+extern gf_status gf_config_new(gf_cmd_base** cmd);
+extern void gf_config_free(gf_cmd_base* cmd);
 
 /*!
 ** @brief Execute the 'config' process of Grayfish
@@ -72,7 +72,7 @@ extern void gf_config_free(gf_command* cmd);
 ** @param [in] cmd Command object
 */
 
-extern gf_status gf_config_execute(gf_command* cmd);
+extern gf_status gf_config_execute(gf_cmd_base* cmd);
 
 #ifdef __cplusplus
 }

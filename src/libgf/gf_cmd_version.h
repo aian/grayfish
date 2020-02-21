@@ -32,9 +32,9 @@ typedef struct gf_version gf_version;
 
 #define GF_VERSION_CAST(cmd) ((gf_version*)(cmd))
 
-extern gf_status gf_version_new(gf_command** cmd);
-extern void gf_version_free(gf_command* cmd);
-extern void gf_version_show_help(const gf_command* cmd);
+extern gf_status gf_version_new(gf_cmd_base** cmd);
+extern void gf_version_free(gf_cmd_base* cmd);
+extern void gf_version_show_help(const gf_cmd_base* cmd);
 
 /*!
 ** @brief Execute the 'version' process of Grayfish
@@ -42,7 +42,7 @@ extern void gf_version_show_help(const gf_command* cmd);
 ** @param [in] cmd Command object
 */
 
-extern gf_status gf_version_execute(gf_command* cmd);
+extern gf_status gf_version_execute(gf_cmd_base* cmd);
 
 #ifdef __cplusplus
 }

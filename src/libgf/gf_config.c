@@ -18,7 +18,7 @@
 #include "gf_local.h"
 
 struct gf_config {
-  gf_command base;
+  gf_cmd_base base;
   xmlDocPtr  doc;
 };
 
@@ -433,7 +433,7 @@ enum {
   OPT_WRITE,
 };
 
-static const gf_command_info info_ = {
+static const gf_cmd_base_info info_ = {
   .base = {
     .name        = "config",
     .description = "Edit system configrations",
@@ -461,27 +461,27 @@ static const gf_command_info info_ = {
 */
 
 static gf_status
-init(gf_command* cmd) {
+init(gf_cmd_base* cmd) {
   gf_validate(cmd);
 
-  _(gf_command_init(cmd));
+  _(gf_cmd_base_init(cmd));
 
   return GF_SUCCESS;
 }
 
 static gf_status
-prepare(gf_command* cmd) {
+prepare(gf_cmd_base* cmd) {
   gf_validate(cmd);
 
-  _(gf_command_set_info(cmd, &info_));
+  _(gf_cmd_base_set_info(cmd, &info_));
 
   return GF_SUCCESS;
 }
 
 gf_status
-gf_config_new(gf_command** cmd) {
+gf_config_new(gf_cmd_base** cmd) {
   gf_status rc = 0;
-  gf_command* tmp = NULL;
+  gf_cmd_base* tmp = NULL;
 
   _(gf_malloc((gf_ptr*)&tmp, sizeof(gf_config)));
 
@@ -502,12 +502,12 @@ gf_config_new(gf_command** cmd) {
 }
 
 void
-gf_config_free(gf_command* cmd) {
+gf_config_free(gf_cmd_base* cmd) {
   gf_config* config = NULL;
 
   if (cmd) {
     /* Clear the base class */
-    gf_command_clear(cmd);
+    gf_cmd_base_clear(cmd);
     /* Clear and deallocate this class */
     config = GF_CONFIG_CAST(cmd);
     // do nothing to clear for now.
@@ -516,7 +516,7 @@ gf_config_free(gf_command* cmd) {
 }
 
 static gf_status
-config_write_file(gf_command* cmd) {
+config_write_file(gf_cmd_base* cmd) {
   gf_status rc = 0;
   char** opt = NULL;
   gf_path* path = NULL;
@@ -537,7 +537,7 @@ config_write_file(gf_command* cmd) {
 }
 
 static gf_status
-config_show(gf_command* cmd) {
+config_show(gf_cmd_base* cmd) {
   xmlNodePtr root = NULL;
 
   (void)cmd;
@@ -561,7 +561,7 @@ config_show(gf_command* cmd) {
 }
 
 gf_status
-gf_config_execute(gf_command* cmd) {
+gf_config_execute(gf_cmd_base* cmd) {
 
   _(gf_args_parse(cmd->args));
 

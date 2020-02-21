@@ -35,7 +35,7 @@
 
 #include <libgf/gf_local.h>
 
-static const gf_command_index command_index_[] = {
+static const gf_cmd_base_index command_index_[] = {
   { "main",    gf_main_new    },
   { "help",    gf_help_new    },
   { "version", gf_version_new },
@@ -50,7 +50,7 @@ static const gf_command_index command_index_[] = {
 
 static gf_status
 register_commands(void) {
-  _(gf_command_factory_add_commands(command_index_, gf_countof(command_index_)));
+  _(gf_cmd_factory_add_commands(command_index_, gf_countof(command_index_)));
   return GF_SUCCESS;
 }
 
@@ -85,7 +85,7 @@ gf_global_clean(void) {
   gf_status rc = 0;
   
   /* Clean the command factory registory */
-  gf_command_factory_clean();
+  gf_cmd_factory_clean();
   /* Finalize the XML/XSLT libraries */
   xsltCleanupGlobals();
   /* NOTE: xmlCleanupParser() does not clean up parser state and does not
