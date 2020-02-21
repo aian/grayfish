@@ -24,6 +24,9 @@
 
 #define GF_PATH_SYSTEM_DIR ".gf"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 ///@{ @name The Path Object
 
@@ -247,5 +250,9 @@ extern gf_status gf_uri_split(gf_uri** uri, const char* path, gf_size_t len);
 extern gf_status gf_uri_build_directory_path(gf_path** path, gf_uri* uri);
 
 extern gf_bool gf_uri_match_extension(const char* path, const char* ext);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif  /* LIBGF_GF_PATH_H */

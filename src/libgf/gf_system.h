@@ -17,6 +17,9 @@
 #include <libgf/gf_error.h>
 #include <libgf/gf_path.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /*!
 ** @brief 
@@ -56,5 +59,8 @@ extern gf_status gf_system_get_system_config_path(gf_path** path);
 
 extern gf_status gf_system_get_system_config_file_path(gf_path** path);
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif  /* LIBGF_GF_SYSTEM_H */

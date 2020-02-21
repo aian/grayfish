@@ -16,6 +16,10 @@
 #include <wchar.h>
 #include <stddef.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef _Bool   gf_bool;
 typedef size_t  gf_size_t;
 typedef wchar_t gf_char;    /* For now, this code is for Winddows OS */
@@ -43,5 +47,9 @@ enum gf_status {
 };
 
 typedef enum gf_status gf_status;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif  /* LIBGF_GF_DATATYPE_H */

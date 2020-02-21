@@ -17,6 +17,10 @@
 #include <libgf/gf_error.h>
 #include <libgf/gf_cmd_base.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct gf_main gf_main;
 
 #define GF_MAIN_CAST(cmd) ((gf_main*)(cmd))
@@ -33,5 +37,8 @@ extern void gf_main_show_help(const gf_command* cmd);
 
 extern gf_status gf_main_execute(gf_command* cmd);
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif  /* LIBGF_GF_CMD_MAIN_H */

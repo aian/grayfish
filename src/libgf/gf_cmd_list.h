@@ -17,6 +17,10 @@
 #include <libgf/gf_error.h>
 #include <libgf/gf_cmd_base.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct gf_list gf_list;
 
 #define GF_LIST_CAST(cmd) ((gf_list*)(cmd))
@@ -37,5 +41,9 @@ extern void gf_list_free(gf_command* cmd);
 */
 
 extern gf_status gf_list_execute(gf_command* cmd);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif  /* LIBGF_GF_CMD_LIST_H */

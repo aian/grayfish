@@ -17,6 +17,10 @@
 #include <libgf/gf_error.h>
 #include <libgf/gf_cmd_base.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern int gf_version_major(void);
 extern int gf_version_minor(void);
 extern int gf_version_patch(void);
@@ -39,5 +43,9 @@ extern void gf_version_show_help(const gf_command* cmd);
 */
 
 extern gf_status gf_version_execute(gf_command* cmd);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* LIBGF_GF_CMD_VERSION_H */

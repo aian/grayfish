@@ -14,11 +14,18 @@
 #include <libgf/gf_datatype.h>
 #include <libgf/gf_error.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern gf_status gf_malloc(gf_ptr* ptr, gf_size_t size);
 
 extern gf_status gf_realloc(gf_ptr* ptr, gf_size_t size);
 
 extern void gf_free(gf_ptr ptr);
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif  /* LIBGF_GF_MEMORY_H */

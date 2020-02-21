@@ -20,6 +20,10 @@
 #include <libgf/gf_datatype.h>
 #include <libgf/gf_log.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*!
 ** @brief Make error report.
 **
@@ -80,6 +84,8 @@ extern void gf_safe_error(
     }                                              \
   } while(0)
 
-
+#ifdef __cplusplus
+}
+#endif
 
 #endif  /* LIBGF_GF_ERROR_H */

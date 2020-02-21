@@ -15,6 +15,10 @@
 
 #include <string.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*!
 ** @brief Return the size of two objects.
 **
@@ -44,5 +48,8 @@
     memcpy_s(&lhs, sizeof(lhs), tmp_, sizeof(lhs)); \
   } while (0);
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif  /* LIBGF_GF_SWAP_H */

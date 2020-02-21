@@ -17,6 +17,10 @@
 #include <libgf/gf_error.h>
 #include <libgf/gf_cmd_base.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct gf_serve gf_serve;
 
 #define GF_SERVE_CAST(cmd) ((gf_serve*)(cmd))
@@ -37,5 +41,9 @@ extern void gf_serve_free(gf_command* cmd);
 */
 
 extern gf_status gf_serve_execute(gf_command* cmd);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif  /* LIBGF_GF_CMD_SERVE_H */

@@ -18,6 +18,10 @@
 #include <libgf/gf_error.h>
 #include <libgf/gf_stream.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct gf_log gf_log;
 
 /*!
@@ -117,5 +121,8 @@ extern gf_status gf_log_write(
 
 extern gf_status gf_msg(const char* fmt, ...);
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif  /* LIBGF_GF_LOG_H */

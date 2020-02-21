@@ -17,6 +17,10 @@
 #include <libgf/gf_error.h>
 #include <libgf/gf_cmd_base.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct gf_update gf_update;
 
 #define GF_UPDATE_CAST(cmd) ((gf_update*)(cmd))
@@ -37,5 +41,9 @@ extern void gf_update_free(gf_command* cmd);
 */
 
 extern gf_status gf_update_execute(gf_command* cmd);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif  /* LIBGF_GF_CMD_UPDATE_H */

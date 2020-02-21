@@ -16,6 +16,10 @@
 #include <libgf/gf_datatype.h>
 #include <libgf/gf_error.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 enum gf_convert_type {
   GF_CONVERT_TYPE_UNKNOWN = 0,
   GF_CONVERT_TYPE_XSLT,
@@ -75,5 +79,9 @@ extern gf_status gf_convert_ctxt_read_template(
 
 extern gf_status gf_convert_file(
   gf_convert_ctxt* ctxt, const char* dst, const char* src);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif  /* LIBGF_GF_CONVERT_H */

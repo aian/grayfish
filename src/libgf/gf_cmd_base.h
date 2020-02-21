@@ -17,6 +17,10 @@
 #include <libgf/gf_error.h>
 #include <libgf/gf_args.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*!
 ** @defgroup gf_command The Commmand
 **
@@ -178,5 +182,9 @@ extern gf_status gf_command_factory_show_helps(void);
 extern gf_status gf_command_create(gf_command** cmd, const char* name);
 
 ///@}
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif  /* LIBGF_GF_CMD_BASE_H */

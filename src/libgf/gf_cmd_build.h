@@ -17,6 +17,10 @@
 #include <libgf/gf_error.h>
 #include <libgf/gf_cmd_base.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct gf_build gf_build;
 
 #define GF_BUILD_CAST(cmd) ((gf_build*)(cmd))
@@ -37,5 +41,9 @@ extern void gf_build_free(gf_command* cmd);
 */
 
 extern gf_status gf_build_execute(gf_command* cmd);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif  /* LIBGF_GF_CMD_BUILD_H */

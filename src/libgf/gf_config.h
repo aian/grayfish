@@ -28,6 +28,10 @@
 #include <libgf/gf_path.h>
 #include <libgf/gf_cmd_base.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern gf_status gf_config_init(void);
 extern gf_status gf_config_clean(void);
 extern gf_status gf_config_read_file(const gf_path* path);
@@ -70,6 +74,9 @@ extern void gf_config_free(gf_command* cmd);
 
 extern gf_status gf_config_execute(gf_command* cmd);
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif  /* LIBGF_GF_CONFIG_H */
 /// @}

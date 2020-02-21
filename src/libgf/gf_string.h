@@ -14,6 +14,10 @@
 #include <libgf/gf_datatype.h>
 #include <libgf/gf_error.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*!
 ** @brief Returns GF_TRUE when 
 **
@@ -51,5 +55,9 @@ extern gf_status gf_strdup(char** dst, const char* src);
 */
 
 extern gf_status gf_strassign(char** dst, const char* src);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif  /* LIBGF_GF_STRING_H */

@@ -17,6 +17,10 @@
 #include <libgf/gf_error.h>
 #include <libgf/gf_path.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct gf_site gf_site;
 
 /*!
@@ -150,5 +154,9 @@ extern const char* gf_doc_info_path(const gf_doc_info* info);
 extern const char* gf_doc_info_date(const gf_doc_info* info);
 extern const char* gf_doc_info_status(const gf_doc_info* info);
 extern gf_status gf_doc_info_print(FILE* fp, const gf_site_node* node);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif  /* LIBGF_GF_SITE_H */
