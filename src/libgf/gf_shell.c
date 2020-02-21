@@ -57,7 +57,7 @@ shell_has_attributes(const gf_path* path, DWORD flags) {
 /* -------------------------------------------------------------------------- */
 
 gf_bool
-gf_shell_is_file_exists(const gf_path* path) {
+gf_shell_file_exists(const gf_path* path) {
   DWORD attr = 0;
   
   if (gf_path_is_empty(path)) {
@@ -311,7 +311,7 @@ shell_copy_callback(
   assert(!gf_path_is_empty(dst));
 
   if (shell_has_specified_attributes(attr, FILE_ATTRIBUTE_DIRECTORY)) {
-    if (!gf_shell_is_file_exists(dst)) {
+    if (!gf_shell_file_exists(dst)) {
       rc = gf_shell_make_directory(dst);
       gf_path_free(dst);
       if (rc != GF_SUCCESS) {

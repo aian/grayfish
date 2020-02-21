@@ -29,7 +29,7 @@ extern "C" {
 ** @return GF_TRUE if the file exists, GF_FALSE otherwise.
 */
 
-extern gf_bool gf_shell_is_file_exists(const gf_path* path);
+extern gf_bool gf_shell_file_exists(const gf_path* path);
 
 /*!
 ** @brief File information type
