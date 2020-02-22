@@ -33,7 +33,7 @@ Prerequisites
 - Microsoft Windows 10 >= v1903 build 18362.657
 - [LibXML](http://xmlsoft.org/) >= 2.9.9
 - [LibXSLT](http://xmlsoft.org/libxslt/) >= 1.1.33
-- [LibMongoose](https://github.com/jactry/libmongoose) >= 6.14.1
+- [LibMongoose](https://github.com/jactry/libmongoose) >= 5.6
 
 ### To Build
 
@@ -45,7 +45,7 @@ Prerequisites
 Building Modules
 ----------------
 
-*THIS BUILD PROCESS WILL BE CHANGED IN FUTURE.
+**THIS BUILD PROCESS WILL BE CHANGED IN FUTURE.**
 
 The file `configure` is a CMake script to manage simple build system.
 To build modules, just do as below:
