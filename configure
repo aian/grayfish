@@ -101,6 +101,8 @@ endif()
 #> 
 #> find_package(LibXml2 REQUIRED)
 #> find_package(LibXslt REQUIRED)
+#> find_package(PkgConfig REQUIRED)
+#> pkg_check_modules(MONGOOSE REQUIRED mongoose)
 #> 
 #> #---------------------------------------------------------------------------#
 #> # SETTINGS                                                                  #
@@ -159,6 +161,7 @@ endif()
 #> include_directories(
 #>   ${LIBXML2_INCLUDE_DIR}
 #>   ${LIBXSLT_INCLUDE_DIR} 
+#>   ${MONGOOSE_INCLUDE_DIR} 
 #>   ${CMAKE_SOURCE_DIR}/src)
 #> 
 #> add_library(gf SHARED ${GF_LIBGF_SOURCE} ${GF_LIBGF_HEADER})
@@ -168,6 +171,7 @@ endif()
 #>     ${LIBXML2_LIBRARIES}
 #>     ${LIBXSLT_LIBRARIES}
 #>     ${LIBXSLT_EXSLT_LIBRARY}
+#>     ${MONGOOSE_LIBRARIES} 
 #>     shlwapi
 #>     advapi32
 #> )
