@@ -99,10 +99,21 @@ test_ctxt_get_root_path(char** path) {
     }
 
     (void)GetTempPath(len, tmp);
-  
-    if (test_ctxt_is_path_writable_directory(tmp)) {
-        free(tmp);
-        tmp = NULL;
+
+    if (!test_ctxt_is_path_writable_directory(tmp)) {
+      free(tmp);
+      tmp = NULL;
+    } else if (len > 1 && (tmp[len - 2] == '\\' || tmp[len - 2] == '/')) {
+      /*
+      ** If the path string ends with '\\' or '/', we remove it.
+      **
+      ** Because `len', which is returned by the function GetTempPath() is a
+      ** string length **including null character** (not a return size of
+      ** strlen(3), the index of the last character is `len - 2'.
+      */
+      tmp[len - 2] = '\0';
+    } else {
+      /* Do nothing */
     }
   }
   /* Check if the tmp path is alive */
@@ -148,9 +159,9 @@ test_ctxt_get_work_path(char** path, const char* root) {
   (void)WideCharToMultiByte(CP_UTF8, 0, w_str, -1, a_str, BUFSIZE, NULL, NULL);
 
   /* Allocate work path buffer */
-  len = strlen(root) + strlen(delimiter) + strlen(prefix) + strlen(a_str);
+  len = strlen(root) + strlen(delimiter) + strlen(prefix) + strlen(a_str) + 1;
   assert(len > 0);
-  tmp = malloc((len + 1) * sizeof(char));
+  tmp = malloc(len * sizeof(char));
   if (!tmp) {
     return 1;
   }
