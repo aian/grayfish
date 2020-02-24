@@ -25,7 +25,7 @@
 #ifdef BUFSIZE
 #undef BUFSIZE
 #endif
-#define BUFSIZE 256
+#define BUFSIZE 512
 
 
 struct gft_test_ctxt {
@@ -51,6 +51,21 @@ test_ctxt_get_current_path(char** path) {
 
   *path = tmp;
   
+  return 0;
+}
+
+static int
+test_ctxt_set_current_path(const char* path) {
+  BOOL ret = FALSE;
+  
+  if (!path || !path[0]) {
+    return 1;
+  }
+  ret = SetCurrentDirectory(path);
+  if (!ret) {
+    return 1;
+  }
+
   return 0;
 }
 
@@ -175,13 +190,28 @@ test_ctxt_get_work_path(char** path, const char* root) {
 }
 
 static int
+test_ctxt_make_path(const char* path) {
+  BOOL ret = FALSE;
+  
+  if (!path || !path[0]) {
+    return 1;
+  }
+  ret = CreateDirectory(path, NULL);
+  if (!ret) {
+    return 1;
+  }
+  
+  return 0;
+}
+
+static int
 test_ctxt_prepare(gft_test_ctxt* ctxt) {
   int rc = 0;
 
   if (!ctxt) {
     return 1;
   }
-  /* Prepare */
+  /* Prepare paths */
   rc = test_ctxt_get_root_path(&ctxt->root_path);
   if (rc != 0) {
     return rc;
@@ -191,6 +221,19 @@ test_ctxt_prepare(gft_test_ctxt* ctxt) {
     return rc;
   }
   rc = test_ctxt_get_current_path(&ctxt->orig_path);
+  if (rc != 0) {
+    return rc;
+  }
+  /* Change directory */
+  rc = test_ctxt_set_current_path(ctxt->root_path);
+  if (rc != 0) {
+    return rc;
+  }
+  rc = test_ctxt_make_path(ctxt->work_path);
+  if (rc != 0) {
+    return rc;
+  }
+  rc = test_ctxt_set_current_path(ctxt->work_path);
   if (rc != 0) {
     return rc;
   }
@@ -238,6 +281,56 @@ gft_test_ctxt_new(gft_test_ctxt** ctxt) {
   return 0;
 }
 
+static int
+test_ctxt_delete_files(const char* root) {
+  DWORD attr = 0;
+
+  if (!root || !root[0]) {
+    assert(0);
+    return 0;
+  }
+
+  attr = GetFileAttributes(root);
+  if (attr == INVALID_FILE_ATTRIBUTES) {
+    assert(0);
+    return 0;
+  }
+  if (attr & FILE_ATTRIBUTE_DIRECTORY) {
+    int rc = 0;
+    char path[BUFSIZE] = { 0 };
+    HANDLE hFind = INVALID_HANDLE_VALUE;
+    WIN32_FIND_DATA fd = { 0 };
+    
+    _snprintf_s(path, BUFSIZE, _TRUNCATE, "%s\\*.*", root);
+
+    hFind = FindFirstFile(path, &fd);
+    if (hFind == INVALID_HANDLE_VALUE) {
+      return 1;
+    }
+    do {
+      char child[BUFSIZE] = { 0 };
+
+      if (!strcmp(fd.cFileName, ".") || !strcmp(fd.cFileName, "..")) {
+        continue;
+      }
+      _snprintf_s(child, BUFSIZE, _TRUNCATE, "%s\\%s", root, fd.cFileName);
+      /* Delete childs */
+      rc = test_ctxt_delete_files(child);
+      if (rc != 0) {
+        FindClose(hFind);
+        return rc;
+      }
+    } while (FindNextFile(hFind, &fd));
+    
+    FindClose(hFind);
+    RemoveDirectory(root);
+  } else {
+    DeleteFile(root);
+  }
+  
+  return 0;
+}
+
 void
 gft_test_ctxt_free(gft_test_ctxt* ctxt) {
   if (ctxt) {
@@ -246,8 +339,13 @@ gft_test_ctxt_free(gft_test_ctxt* ctxt) {
       ctxt->root_path = NULL;
     }
     if (ctxt->work_path) {
-      // TODO: Change current path back to the original path
-      // TODO: Cleanup the work path
+      if (ctxt->orig_path) {
+        /* Restore the current path */
+        (void)test_ctxt_set_current_path(ctxt->orig_path);
+      }
+      /* Delete actual files */
+      (void)test_ctxt_delete_files(ctxt->work_path);
+      /* Deallocate path string */
       free(ctxt->work_path);
       ctxt->work_path = NULL;
     }
