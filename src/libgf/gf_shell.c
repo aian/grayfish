@@ -98,8 +98,54 @@ gf_shell_is_normal_file(const gf_path* path) {
     return GF_TRUE;
   }
 
-  /* not reaches here */
+  /* not reaches here. */
   return GF_TRUE;
+}
+
+int
+gf_shell_compare_files(gf_path* f1, gf_path* f2) {
+  static const int ERR = -1;
+  
+  FILE* fp1 = NULL;
+  FILE* fp2 = NULL;
+
+  if (gf_path_is_empty(f1)) {
+    return ERR;
+  }
+  if (gf_path_is_empty(f2)) {
+    return ERR;
+  }
+  fp1 = fopen(gf_path_get_string(f1), "rb");
+  if (!fp1) {
+    return ERR;
+  }
+  fp2 = fopen(gf_path_get_string(f2), "rb");
+  if (!fp2) {
+    fclose(fp1);
+    return ERR;
+  }
+  while (GF_TRUE) {
+    int ch1 = fgetc(fp1);
+    int ch2 = fgetc(fp2);
+
+    if (ch1 != ch2) {
+      fclose(fp1);
+      fclose(fp2);
+      return 1;
+    }
+    if (ch1 == EOF) {
+      fclose(fp1);
+      fclose(fp2);
+      assert(ch2 == EOF);
+      return 0;
+    }
+  }
+
+  /* not reaches here. */
+  fclose(fp1);
+  fclose(fp2);
+  assert(0);
+  return ERR;
 }
 
 gf_status

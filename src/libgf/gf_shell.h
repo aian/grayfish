@@ -69,6 +69,18 @@ extern gf_bool gf_shell_is_directory(const gf_path* path);
 extern gf_bool gf_shell_is_normal_file(const gf_path* path);
 
 /*!
+** @brief Compare the file contents of the two files
+**
+** @param [in] f1 The path of the file
+** @param [in] f2 The path of the other file
+**
+** @return 0 if the files have the same content. If they are different from each
+**         other, it returns 1. It returns the other value on error.
+*/
+
+extern int gf_shell_compare_files(gf_path* f1, gf_path* f2);
+
+/*!
 ** @brief Copy file
 **
 ** @param dst [in] The path to the file to which is copied
