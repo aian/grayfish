@@ -303,6 +303,7 @@ copy_tree_in_normal(void) {
   rc = gf_shell_touch(s_file);
   CU_ASSERT_EQUAL_FATAL(rc, GF_SUCCESS);
 
+  /* TEST */
   rc = gf_shell_copy_tree(d_dir1, s_dir1);
   CU_ASSERT_EQUAL(rc, GF_SUCCESS);
 
@@ -321,6 +322,15 @@ copy_tree_in_normal(void) {
   ret = gf_shell_is_normal_file(d_file);
   CU_ASSERT_EQUAL(ret, GF_TRUE);
   
+  /* Cleanup */
+  gf_shell_remove_file(s_file);
+  gf_shell_remove_directory(s_dir2);
+  gf_shell_remove_directory(s_dir1);
+
+  gf_shell_remove_file(d_file);
+  gf_shell_remove_directory(d_dir2);
+  gf_shell_remove_directory(d_dir1);
+
   gf_path_free(s_dir1);
   gf_path_free(s_dir2);
   gf_path_free(s_file);
@@ -330,6 +340,38 @@ copy_tree_in_normal(void) {
   gf_path_free(d_file);
 }
 
+/* -------------------------------------------------------------------------- */
+
+void
+remove_tree_in_normal(void) {
+  gf_status rc = 0;
+  gf_path* s_dir1 = NULL;
+  gf_path* s_dir2 = NULL;
+  gf_path* s_file = NULL;
+
+  rc = gf_path_new(&s_dir1, "d1");
+  CU_ASSERT_EQUAL_FATAL(rc, GF_SUCCESS);
+  rc = gf_path_new(&s_dir2, "d1\\d2");
+  CU_ASSERT_EQUAL_FATAL(rc, GF_SUCCESS);
+  rc = gf_path_new(&s_file, "d1\\d2\\f");
+  CU_ASSERT_EQUAL_FATAL(rc, GF_SUCCESS);
+  
+  rc = gf_shell_make_directory(s_dir1);
+  CU_ASSERT_EQUAL_FATAL(rc, GF_SUCCESS);
+  rc = gf_shell_make_directory(s_dir2);
+  CU_ASSERT_EQUAL_FATAL(rc, GF_SUCCESS);
+  rc = gf_shell_touch(s_file);
+  CU_ASSERT_EQUAL_FATAL(rc, GF_SUCCESS);
+
+  /* TEST */
+  rc = gf_shell_remove_tree(s_dir1);
+  CU_ASSERT_EQUAL(rc, GF_SUCCESS);
+  
+  /* Cleanup */
+  gf_path_free(s_dir1);
+  gf_path_free(s_dir2);
+  gf_path_free(s_file);
+}
 
 /* -------------------------------------------------------------------------- */
 
@@ -387,4 +429,6 @@ gft_shell_add_tests(void) {
   CU_add_test(s, "copy file with null", copy_file_with_null);
   /* copy tree */
   CU_add_test(s, "copy tree in normal", copy_tree_in_normal);
+  /* remove tree */
+  CU_add_test(s, "remove tree in normal", remove_tree_in_normal);
 }

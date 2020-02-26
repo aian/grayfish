@@ -460,12 +460,23 @@ gf_shell_remove_tree(const gf_path* path) {
   
   gf_validate(!gf_path_is_empty(path));
 
-  rc = gf_shell_traverse_tree(
-    path, NULL, GF_SHELL_TRAVERSE_POSTORDER, shell_remove_callback, NULL);
-  if (rc != GF_SUCCESS) {
-    gf_throw(rc);
+  if (gf_shell_is_directory(path)) {
+    rc = gf_shell_traverse_tree(
+      path, NULL, GF_SHELL_TRAVERSE_POSTORDER, shell_remove_callback, NULL);
+    if (rc != GF_SUCCESS) {
+      gf_throw(rc);
+    }
+    rc = gf_shell_remove_directory(path);
+    if (rc != GF_SUCCESS) {
+      gf_throw(rc);
+    }
+  } else {
+    rc = gf_shell_remove_file(path);
+    if (rc != GF_SUCCESS) {
+      gf_throw(rc);
+    }
   }
-
+  
   return GF_SUCCESS;
 }
 
