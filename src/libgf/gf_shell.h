@@ -32,23 +32,6 @@ extern "C" {
 extern gf_bool gf_shell_file_exists(const gf_path* path);
 
 /*!
-** @brief File information type
-*/
-
-typedef struct gf_file_info gf_file_info;
-
-/*!
-** @brief Get the information of the specified file
-**
-** @param info [out] The file information of the specified file.
-** @param path [in]  The path to the file to get information
-**
-** @return GF_SUCCESS on success, GF_E_* otherwise
-*/
-
-extern gf_status gf_shell_get_file_info(gf_file_info** info, const gf_path* path);
-
-/*!
 ** @brief Test if the specified file is a directory
 **
 ** @param path [in]  The path to the file

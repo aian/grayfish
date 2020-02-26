@@ -230,6 +230,107 @@ copy_file_in_normal(void) {
   gf_path_free(dst);
 }
 
+static void
+copy_file_with_null(void) {
+  gf_status rc = 0;
+  gf_path* path = NULL;
+  gf_path* null = NULL;
+  FILE* fp = NULL;
+
+  /* Prepare */
+  rc = gf_path_new(&path, "file");
+  CU_ASSERT_EQUAL_FATAL(rc, GF_SUCCESS);
+  rc = gf_path_new(&null, "");
+  CU_ASSERT_EQUAL_FATAL(rc, GF_SUCCESS);
+
+  rc = gf_shell_touch(path);
+  CU_ASSERT_EQUAL_FATAL(rc, GF_SUCCESS);
+  fp = fopen(gf_path_get_string(path), "w");
+  CU_ASSERT_PTR_NOT_NULL_FATAL(fp);
+  fprintf(fp, "THIS IS A TEST SOURCE FILE");
+  fclose(fp);
+
+  /* COPY TEST*/
+  rc = gf_shell_copy_file(path, null);
+  CU_ASSERT_NOT_EQUAL(rc, GF_SUCCESS);
+  rc = gf_shell_copy_file(path, NULL);
+  CU_ASSERT_NOT_EQUAL(rc, GF_SUCCESS);
+  rc = gf_shell_copy_file(null, path);
+  CU_ASSERT_NOT_EQUAL(rc, GF_SUCCESS);
+  rc = gf_shell_copy_file(NULL, path);
+  CU_ASSERT_NOT_EQUAL(rc, GF_SUCCESS);
+
+  /* Cleanup */
+  rc = gf_shell_remove_file(path);
+  CU_ASSERT_EQUAL_FATAL(rc, GF_SUCCESS);
+
+  gf_path_free(path);
+  gf_path_free(null);
+}
+
+/* -------------------------------------------------------------------------- */
+
+void
+copy_tree_in_normal(void) {
+  gf_status rc = 0;
+  gf_bool ret = GF_FALSE;
+  gf_path* s_dir1 = NULL;
+  gf_path* s_dir2 = NULL;
+  gf_path* s_file = NULL;
+
+  gf_path* d_dir1 = NULL;
+  gf_path* d_dir2 = NULL;
+  gf_path* d_file = NULL;
+
+  rc = gf_path_new(&s_dir1, "d1");
+  CU_ASSERT_EQUAL_FATAL(rc, GF_SUCCESS);
+  rc = gf_path_new(&s_dir2, "d1\\d2");
+  CU_ASSERT_EQUAL_FATAL(rc, GF_SUCCESS);
+  rc = gf_path_new(&s_file, "d1\\d2\\f");
+  CU_ASSERT_EQUAL_FATAL(rc, GF_SUCCESS);
+
+  rc = gf_path_new(&d_dir1, "dst");
+  CU_ASSERT_EQUAL_FATAL(rc, GF_SUCCESS);
+  rc = gf_path_new(&d_dir2, "dst\\d2");
+  CU_ASSERT_EQUAL_FATAL(rc, GF_SUCCESS);
+  rc = gf_path_new(&d_file, "dst\\d2\\f");
+  CU_ASSERT_EQUAL_FATAL(rc, GF_SUCCESS);
+  
+  rc = gf_shell_make_directory(s_dir1);
+  CU_ASSERT_EQUAL_FATAL(rc, GF_SUCCESS);
+  rc = gf_shell_make_directory(s_dir2);
+  CU_ASSERT_EQUAL_FATAL(rc, GF_SUCCESS);
+  rc = gf_shell_touch(s_file);
+  CU_ASSERT_EQUAL_FATAL(rc, GF_SUCCESS);
+
+  rc = gf_shell_copy_tree(d_dir1, s_dir1);
+  CU_ASSERT_EQUAL(rc, GF_SUCCESS);
+
+  ret = gf_shell_file_exists(d_dir1);
+  CU_ASSERT_EQUAL(ret, GF_TRUE);
+  ret = gf_shell_is_directory(d_dir1);
+  CU_ASSERT_EQUAL(ret, GF_TRUE);
+
+  ret = gf_shell_file_exists(d_dir2);
+  CU_ASSERT_EQUAL(ret, GF_TRUE);
+  ret = gf_shell_is_directory(d_dir2);
+  CU_ASSERT_EQUAL(ret, GF_TRUE);
+
+  ret = gf_shell_file_exists(d_file);
+  CU_ASSERT_EQUAL(ret, GF_TRUE);
+  ret = gf_shell_is_normal_file(d_file);
+  CU_ASSERT_EQUAL(ret, GF_TRUE);
+  
+  gf_path_free(s_dir1);
+  gf_path_free(s_dir2);
+  gf_path_free(s_file);
+
+  gf_path_free(d_dir1);
+  gf_path_free(d_dir2);
+  gf_path_free(d_file);
+}
+
+
 /* -------------------------------------------------------------------------- */
 
 /*!
@@ -283,4 +384,7 @@ gft_shell_add_tests(void) {
   CU_add_test(s, "compare different files", compare_different_files);
   /* copy file */
   CU_add_test(s, "copy file in normal", copy_file_in_normal);
+  CU_add_test(s, "copy file with null", copy_file_with_null);
+  /* copy tree */
+  CU_add_test(s, "copy tree in normal", copy_tree_in_normal);
 }

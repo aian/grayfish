@@ -68,17 +68,6 @@ gf_shell_file_exists(const gf_path* path) {
   return attr != INVALID_FILE_ATTRIBUTES ? GF_TRUE : GF_FALSE;
 }
 
-struct gf_file_info {
-  gf_path* path;
-};
-
-gf_status
-gf_shell_get_file_info(gf_file_info** info, const gf_path* path) {
-  gf_validate(info);
-  gf_validate(!gf_path_is_empty(path));
-  return GF_SUCCESS;
-}
-
 gf_bool
 gf_shell_is_directory(const gf_path* path) {
   return shell_has_attributes(path, FILE_ATTRIBUTE_DIRECTORY);
@@ -310,8 +299,8 @@ gf_shell_traverse_tree(
       gf_throw(rc);
     }
     /* Trace path */
-    if (trace_path) {
-      rc = gf_path_append_string(&trace, path, name);
+    if (!gf_path_is_empty(trace_path)) {
+      rc = gf_path_append_string(&trace, trace_path, name);
       if (rc != GF_SUCCESS) {
         gf_path_free(find_path);
         FindClose(finder);
@@ -330,6 +319,7 @@ gf_shell_traverse_tree(
       if (fn) {
         rc = fn(child, trace, &find_data, data);
         if (rc != GF_SUCCESS) {
+          gf_path_free(trace);
           gf_path_free(child);
           gf_path_free(find_path);
           FindClose(finder);
@@ -341,6 +331,7 @@ gf_shell_traverse_tree(
     if (shell_has_specified_attributes(attr, FILE_ATTRIBUTE_DIRECTORY)) {
       rc = gf_shell_traverse_tree(child, trace, order, fn, data);
       if (rc != GF_SUCCESS) {
+        gf_path_free(trace);
         gf_path_free(child);
         gf_path_free(find_path);
         FindClose(finder);
@@ -350,8 +341,9 @@ gf_shell_traverse_tree(
     /* Postorder processing */
     if (order == GF_SHELL_TRAVERSE_POSTORDER) {
       if (fn) {
-        rc = fn(child, NULL, &find_data, data);
+        rc = fn(child, trace, &find_data, data);
         if (rc != GF_SUCCESS) {
+          gf_path_free(trace);
           gf_path_free(child);
           gf_path_free(find_path);
           FindClose(finder);
@@ -359,6 +351,7 @@ gf_shell_traverse_tree(
         }
       }
     }
+    gf_path_free(trace);
     gf_path_free(child);
   } while (FindNextFile(finder, &find_data));
 
