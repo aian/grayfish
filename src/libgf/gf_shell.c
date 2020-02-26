@@ -129,7 +129,25 @@ gf_shell_make_directory(const gf_path* path) {
 
 gf_status
 gf_shell_touch(const gf_path* path) {
+  HANDLE hFile = INVALID_HANDLE_VALUE;
+  const char* s = gf_path_get_string(path);
+  
   gf_validate(!gf_path_is_empty(path));
+
+  hFile = CreateFile(
+    s,                         /* Filename             */
+    GENERIC_WRITE,             /* Access mode          */
+    0,                         /* Share mode           */
+    NULL,                      /* Security attributes  */
+    OPEN_ALWAYS,               /* Creation disposition */
+    FILE_ATTRIBUTE_NORMAL,     /* Flags and attributes */
+    NULL
+    );
+  if (hFile == INVALID_HANDLE_VALUE) {
+    gf_raise(GF_E_OPEN, "Failed to touch the file (%s)", s);
+  }
+  CloseHandle(hFile);
+  
   return GF_SUCCESS;
 }
 
