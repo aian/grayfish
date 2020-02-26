@@ -86,7 +86,20 @@ gf_shell_is_directory(const gf_path* path) {
 
 gf_bool
 gf_shell_is_normal_file(const gf_path* path) {
-  return shell_has_attributes(path, FILE_ATTRIBUTE_NORMAL);
+  DWORD attr = 0;
+  const DWORD flags = FILE_ATTRIBUTE_DIRECTORY | FILE_ATTRIBUTE_DEVICE;
+
+  attr = shell_get_file_attributes(path);
+  if (attr == INVALID_FILE_ATTRIBUTES) {
+    return GF_FALSE;
+  } else if (shell_has_attributes(path, flags)) {
+    return GF_FALSE;
+  } else {
+    return GF_TRUE;
+  }
+
+  /* not reaches here */
+  return GF_TRUE;
 }
 
 gf_status

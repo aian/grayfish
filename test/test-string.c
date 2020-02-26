@@ -117,7 +117,7 @@ test_strassign(void) {
 
 void
 gft_string_add_tests(void) {
-  CU_pSuite s = CU_add_suite("Tests for gf_path", NULL, NULL);
+  CU_pSuite s = CU_add_suite("Tests for gf_string", NULL, NULL);
   /* gf_strnull() */
   CU_add_test(s, "gf_strnull",   test_strnull);
   /* gf_strlen() */

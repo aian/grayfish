@@ -19,17 +19,86 @@ static gft_test_ctxt* ctxt_ = NULL;
 /* -------------------------------------------------------------------------- */
 
 static void
-create_remove_file_in_normal(void) {
+create_file_in_normal(void) {
   gf_status rc = 0;
   gf_path* path = NULL;
+  gf_bool ret = GF_FALSE;
 
   rc = gf_path_new(&path, "test-file");
   CU_ASSERT_EQUAL_FATAL(rc, GF_SUCCESS);
 
   rc = gf_shell_touch(path);
   CU_ASSERT_EQUAL(rc, GF_SUCCESS);
+  ret = gf_shell_file_exists(path);
+  CU_ASSERT_EQUAL(ret, GF_TRUE);
+  ret = gf_shell_is_normal_file(path);
+  CU_ASSERT_EQUAL(ret, GF_TRUE);
+  ret = gf_shell_is_directory(path);
+  CU_ASSERT_EQUAL(ret, GF_FALSE);
   rc = gf_shell_remove_file(path);
   CU_ASSERT_EQUAL(rc, GF_SUCCESS);
+
+  gf_path_free(path);
+}
+
+static void
+create_file_with_null(void) {
+  gf_status rc = 0;
+  gf_path* path = NULL;
+  gf_bool ret = GF_FALSE;
+
+  rc = gf_path_new(&path, "");
+  CU_ASSERT_EQUAL_FATAL(rc, GF_SUCCESS);
+
+  rc = gf_shell_touch(path);
+  CU_ASSERT_NOT_EQUAL(rc, GF_SUCCESS);
+  ret = gf_shell_is_normal_file(path);
+  CU_ASSERT_EQUAL(ret, GF_FALSE);
+  ret = gf_shell_is_directory(path);
+  CU_ASSERT_EQUAL(ret, GF_FALSE);
+  rc = gf_shell_remove_file(path);
+  CU_ASSERT_NOT_EQUAL(rc, GF_SUCCESS);
+  gf_path_free(path);
+
+  rc = gf_shell_touch(NULL);
+  CU_ASSERT_NOT_EQUAL(rc, GF_SUCCESS);
+  ret = gf_shell_is_normal_file(path);
+  CU_ASSERT_EQUAL(ret, GF_FALSE);
+  ret = gf_shell_is_directory(path);
+  CU_ASSERT_EQUAL(ret, GF_FALSE);
+  rc = gf_shell_remove_file(NULL);
+  CU_ASSERT_NOT_EQUAL(rc, GF_SUCCESS);
+}
+
+static void
+create_directory_in_normal(void) {
+  gf_status rc = 0;
+  gf_path* path = NULL;
+
+  rc = gf_path_new(&path, "dir");
+  CU_ASSERT_EQUAL_FATAL(rc, GF_SUCCESS);
+
+  rc = gf_shell_make_directory(path);
+  CU_ASSERT_EQUAL(rc, GF_SUCCESS);
+  rc = gf_shell_remove_directory(path);
+  CU_ASSERT_EQUAL(rc, GF_SUCCESS);
+
+  gf_path_free(path);
+}
+
+static void
+create_directory_with_null(void) {
+  gf_status rc = 0;
+  gf_path* path = NULL;
+
+  rc = gf_path_new(&path, "");
+  CU_ASSERT_EQUAL_FATAL(rc, GF_SUCCESS);
+
+  rc = gf_shell_make_directory(path);
+  CU_ASSERT_NOT_EQUAL(rc, GF_SUCCESS);
+
+  rc = gf_shell_remove_directory(path);
+  CU_ASSERT_NOT_EQUAL(rc, GF_SUCCESS);
 
   gf_path_free(path);
 }
@@ -75,8 +144,12 @@ shell_cleanup(void) {
 
 void
 gft_shell_add_tests(void) {
-  CU_pSuite s = CU_add_suite("Tests for gf_path", shell_init, shell_cleanup);
+  CU_pSuite s = CU_add_suite("Tests for gf_shell", shell_init, shell_cleanup);
 
   /* create and remove */
-  CU_add_test(s, "create/remove file in normal", create_remove_file_in_normal);
+  CU_add_test(s, "create file in normal", create_file_in_normal);
+  CU_add_test(s, "create file with null", create_file_with_null);
+  CU_add_test(s, "create directory in normal", create_directory_in_normal);
+  CU_add_test(s, "create directory with null", create_directory_with_null);
+  
 }
