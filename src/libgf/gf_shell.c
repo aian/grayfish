@@ -106,6 +106,7 @@ int
 gf_shell_compare_files(gf_path* f1, gf_path* f2) {
   static const int ERR = -1;
   
+  int ret = 0;
   FILE* fp1 = NULL;
   FILE* fp2 = NULL;
 
@@ -124,28 +125,26 @@ gf_shell_compare_files(gf_path* f1, gf_path* f2) {
     fclose(fp1);
     return ERR;
   }
+    
   while (GF_TRUE) {
-    int ch1 = fgetc(fp1);
-    int ch2 = fgetc(fp2);
-
+    const int ch1 = fgetc(fp1);
+    const int ch2 = fgetc(fp2);
+    
     if (ch1 != ch2) {
-      fclose(fp1);
-      fclose(fp2);
-      return 1;
+      ret = 1;
+      break;
     }
     if (ch1 == EOF) {
-      fclose(fp1);
-      fclose(fp2);
       assert(ch2 == EOF);
-      return 0;
+      ret = 0;
+      break;
     }
   }
 
-  /* not reaches here. */
   fclose(fp1);
   fclose(fp2);
-  assert(0);
-  return ERR;
+
+  return ret;
 }
 
 gf_status
