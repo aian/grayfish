@@ -24,6 +24,7 @@
 #include <libgf/gf_log.h>
 #include <libgf/gf_path.h>
 #include <libgf/gf_system.h>
+#include <libgf/gf_config.h>
 #include <libgf/gf_args.h>
 #include <libgf/gf_site.h>
 #include <libgf/gf_convert.h>

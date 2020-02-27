@@ -18,6 +18,7 @@
 
 #include <libgf/gf_countof.h>
 #include <libgf/gf_log.h>
+#include <libgf/gf_config.h>
 
 #include <libgf/gf_cmd_base.h>
 #include <libgf/gf_cmd_config.h>
