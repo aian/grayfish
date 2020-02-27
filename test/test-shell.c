@@ -270,6 +270,110 @@ copy_file_with_null(void) {
 
 /* -------------------------------------------------------------------------- */
 
+static void
+rename_file_in_normal(void) {
+  gf_bool ret = 0;
+  gf_status rc = 0;
+  gf_path* src_1 = NULL;
+  gf_path* src_2 = NULL;
+  gf_path* dst_1 = NULL;
+  gf_path* dst_2 = NULL;
+
+  /* Prepare */
+  rc = gf_path_new(&src_1, "src_1");
+  CU_ASSERT_EQUAL_FATAL(rc, GF_SUCCESS);
+  rc = gf_path_new(&src_2, "src_2");
+  CU_ASSERT_EQUAL_FATAL(rc, GF_SUCCESS);
+  rc = gf_path_new(&dst_1, "dst_1");
+  CU_ASSERT_EQUAL_FATAL(rc, GF_SUCCESS);
+  rc = gf_path_new(&dst_2, "dst_2");
+  CU_ASSERT_EQUAL_FATAL(rc, GF_SUCCESS);
+
+  rc = gf_shell_touch(src_1);
+  CU_ASSERT_EQUAL_FATAL(rc, GF_SUCCESS);
+  rc = gf_shell_touch(src_2);
+  CU_ASSERT_EQUAL_FATAL(rc, GF_SUCCESS);
+  
+  /* RENAME TEST*/
+  rc = gf_shell_rename(dst_1, src_1);
+  CU_ASSERT_EQUAL(rc, GF_SUCCESS);
+  ret = gf_shell_file_exists(src_1);
+  CU_ASSERT_EQUAL(ret, GF_FALSE);
+  ret = gf_shell_file_exists(dst_1);
+  CU_ASSERT_EQUAL(ret, GF_TRUE);
+
+  rc = gf_shell_move(dst_2, src_2);
+  CU_ASSERT_EQUAL(rc, GF_SUCCESS);
+  ret = gf_shell_file_exists(src_1);
+  CU_ASSERT_EQUAL(ret, GF_FALSE);
+  ret = gf_shell_file_exists(dst_1);
+  CU_ASSERT_EQUAL(ret, GF_TRUE);
+  
+  /* Cleanup */
+  rc = gf_shell_remove_file(dst_1);
+  CU_ASSERT_EQUAL_FATAL(rc, GF_SUCCESS);
+  rc = gf_shell_remove_file(dst_2);
+  CU_ASSERT_EQUAL_FATAL(rc, GF_SUCCESS);
+
+  gf_path_free(src_1);
+  gf_path_free(src_2);
+  gf_path_free(dst_1);
+  gf_path_free(dst_2);
+}
+
+static void
+rename_directory_in_normal(void) {
+  gf_bool ret = 0;
+  gf_status rc = 0;
+  gf_path* src_1 = NULL;
+  gf_path* src_2 = NULL;
+  gf_path* dst_1 = NULL;
+  gf_path* dst_2 = NULL;
+
+  /* Prepare */
+  rc = gf_path_new(&src_1, "src_1");
+  CU_ASSERT_EQUAL_FATAL(rc, GF_SUCCESS);
+  rc = gf_path_new(&src_2, "src_2");
+  CU_ASSERT_EQUAL_FATAL(rc, GF_SUCCESS);
+  rc = gf_path_new(&dst_1, "dst_1");
+  CU_ASSERT_EQUAL_FATAL(rc, GF_SUCCESS);
+  rc = gf_path_new(&dst_2, "dst_2");
+  CU_ASSERT_EQUAL_FATAL(rc, GF_SUCCESS);
+
+  rc = gf_shell_make_directory(src_1);
+  CU_ASSERT_EQUAL_FATAL(rc, GF_SUCCESS);
+  rc = gf_shell_make_directory(src_2);
+  CU_ASSERT_EQUAL_FATAL(rc, GF_SUCCESS);
+  
+  /* RENAME TEST*/
+  rc = gf_shell_rename(dst_1, src_1);
+  CU_ASSERT_EQUAL(rc, GF_SUCCESS);
+  ret = gf_shell_file_exists(src_1);
+  CU_ASSERT_EQUAL(ret, GF_FALSE);
+  ret = gf_shell_file_exists(dst_1);
+  CU_ASSERT_EQUAL(ret, GF_TRUE);
+
+  rc = gf_shell_move(dst_2, src_2);
+  CU_ASSERT_EQUAL(rc, GF_SUCCESS);
+  ret = gf_shell_file_exists(src_1);
+  CU_ASSERT_EQUAL(ret, GF_FALSE);
+  ret = gf_shell_file_exists(dst_1);
+  CU_ASSERT_EQUAL(ret, GF_TRUE);
+  
+  /* Cleanup */
+  rc = gf_shell_remove_directory(dst_1);
+  CU_ASSERT_EQUAL_FATAL(rc, GF_SUCCESS);
+  rc = gf_shell_remove_directory(dst_2);
+  CU_ASSERT_EQUAL_FATAL(rc, GF_SUCCESS);
+
+  gf_path_free(src_1);
+  gf_path_free(src_2);
+  gf_path_free(dst_1);
+  gf_path_free(dst_2);
+}
+
+/* -------------------------------------------------------------------------- */
+
 void
 copy_tree_in_normal(void) {
   gf_status rc = 0;
@@ -427,6 +531,9 @@ gft_shell_add_tests(void) {
   /* copy file */
   CU_add_test(s, "copy file in normal", copy_file_in_normal);
   CU_add_test(s, "copy file with null", copy_file_with_null);
+  /* rename file */
+  CU_add_test(s, "rename file in normal", rename_file_in_normal);
+  CU_add_test(s, "rename directory in normal", rename_directory_in_normal);
   /* copy tree */
   CU_add_test(s, "copy tree in normal", copy_tree_in_normal);
   /* remove tree */
