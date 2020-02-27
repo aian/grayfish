@@ -33,21 +33,21 @@ extern "C" {
 
 typedef struct gf_cmd_base gf_cmd_base;
 
-typedef gf_status (*gf_cmd_base_create_fn)(gf_cmd_base** cmd);
-typedef void (*gf_cmd_base_free_fn)(gf_cmd_base* cmd);
-typedef gf_status (*gf_cmd_base_execute_fn)(gf_cmd_base* cmd);
+typedef gf_status (*gf_cmd_create_fn)(gf_cmd_base** cmd);
+typedef void (*gf_cmd_free_fn)(gf_cmd_base* cmd);
+typedef gf_status (*gf_cmd_execute_fn)(gf_cmd_base* cmd);
 
 /*!
 ** @brief 
 */
 
 struct gf_cmd_base {
-  char*                 name;
-  char*                 description;
-  gf_args*              args;
-  gf_cmd_base_create_fn  create;
-  gf_cmd_base_free_fn    free;
-  gf_cmd_base_execute_fn execute;
+  char*             name;
+  char*             description;
+  gf_args*          args;
+  gf_cmd_create_fn  create;
+  gf_cmd_free_fn    free;
+  gf_cmd_execute_fn execute;
 };
 
 #define GF_CMD_BASE_CAST(cmd) ((gf_cmd_base* )(cmd))
@@ -125,7 +125,7 @@ extern gf_status gf_cmd_base_execute(gf_cmd_base* cmd);
 ///@}
 
 /*!
-** @defgroup gf_cmd_base_fcatory The Command Factory
+** @defgroup gf_cmd_fcatory The Command Factory
 **
 ** @brief Command 
 **
@@ -135,12 +135,12 @@ extern gf_status gf_cmd_base_execute(gf_cmd_base* cmd);
 */
 ///@{
 
-struct gf_cmd_base_index {
-  char*                name;
-  gf_cmd_base_create_fn create;
+struct gf_cmd_index {
+  char*            name;
+  gf_cmd_create_fn create;
 };
 
-typedef struct gf_cmd_base_index gf_cmd_base_index;
+typedef struct gf_cmd_index gf_cmd_index;
 
 /*!
 ** @brief
@@ -164,7 +164,7 @@ extern void gf_cmd_factory_clean(void);
 */
 
 extern gf_status gf_cmd_factory_add_commands(
-  const gf_cmd_base_index* index, gf_size_t size);
+  const gf_cmd_index* index, gf_size_t size);
 
 /*!
 ** @brief Show helps for each commands
@@ -176,10 +176,10 @@ extern gf_status gf_cmd_factory_show_helps(void);
 ** @brief Generates the command object.
 **
 ** @param [out] cmd  Generated command object
-** @param [in]  name Key string to generate the concrete command
+** @param [in]  name The key string to generate the concrete command
 */
 
-extern gf_status gf_cmd_base_create(gf_cmd_base** cmd, const char* name);
+extern gf_status gf_cmd_create(gf_cmd_base** cmd, const char* name);
 
 ///@}
 

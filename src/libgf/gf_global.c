@@ -35,7 +35,7 @@
 
 #include <libgf/gf_local.h>
 
-static const gf_cmd_base_index command_index_[] = {
+static const gf_cmd_index command_index_[] = {
   { "main",    gf_cmd_main_new    },
   { "help",    gf_cmd_help_new    },
   { "version", gf_cmd_version_new },

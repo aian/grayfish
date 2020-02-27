@@ -217,7 +217,7 @@ main_process_command(gf_cmd_base* main_cmd, const char* str) {
   gf_validate(main_cmd);
   gf_validate(!gf_strnull(str));
 
-  _(gf_cmd_base_create(&cmd, str));
+  _(gf_cmd_create(&cmd, str));
 
   rc = gf_cmd_base_inherit_args(cmd, main_cmd);
   if (rc != GF_SUCCESS) {

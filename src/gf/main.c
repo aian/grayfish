@@ -160,7 +160,7 @@ gfc_main_process(int argc, char *argv[]) {
     return rc;
   }
   
-  rc = gf_cmd_base_create(&cmd, "main");
+  rc = gf_cmd_create(&cmd, "main");
   if (rc != GF_SUCCESS) {
     return rc;
   }
