@@ -20,7 +20,7 @@
 #include "gf_local.h"
 
 struct gf_cmd_setup {
-  gf_cmd_base base;       ///< Base class object
+  gf_cmd_base base;      ///< Base class object
   gf_path*   root_path;  ///< Project root path
   gf_path*   conf_path;  ///< Local configuration path
 };
@@ -275,17 +275,6 @@ setup_process(gf_cmd_setup* cmd) {
 }
 
 /*!
-** By default, it creates the forllowing directory tree:
-**
-** <pre>
-**  PROJECT/
-**      .gf/
-**          gf.conf   ... The local configuration file
-**          index.dat ... The File index (updated with `gf update').
-**      src/          ... The document direcory where we write the contents.
-**      pub/          ... The direcotry into which gf will publish.
-** </pre>
-**
 ** This function tries to create a new directory. If the directory path, which
 ** is specified by the project name, already exist, it renames the existing one
 ** into the other name.

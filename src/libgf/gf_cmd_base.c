@@ -13,55 +13,182 @@
 #include <libgf/gf_string.h>
 #include <libgf/gf_memory.h>
 #include <libgf/gf_log.h>
+#include <libgf/gf_system.h>
+#include <libgf/gf_cmd_config.h>
 
 #include <libgf/gf_cmd_base.h>
 
 #include "gf_local.h"
 
 #define COMMAND_NAME_DEFAULT "<NO NAME>"
-#define COMMAND_DESCRIPTION_DEFAULT ""
+#define COMMAND_DESCRIPTION_DEFAULT "<NO DESCRIPTION>"
 
 gf_status
 gf_cmd_base_init(gf_cmd_base* cmd) {
   gf_validate(cmd);
 
-  cmd->name = NULL;
+  cmd->name        = NULL;
   cmd->description = NULL;
-  cmd->args = NULL;
-  cmd->free = NULL;
-  cmd->execute = NULL;
+  cmd->args        = NULL;
+  cmd->root_path   = NULL;
+  cmd->conf_path   = NULL;
+  cmd->conf_file   = NULL;
+  cmd->site_path   = NULL;
+  cmd->src_path    = NULL;
+  cmd->dst_path    = NULL;
+  cmd->create      = NULL;
+  cmd->free        = NULL;
+  cmd->execute     = NULL;
+
+  return GF_SUCCESS;
+}
+
+static gf_status
+cmd_base_init_name(gf_cmd_base* cmd) {
+  _(gf_cmd_base_set_name(cmd, COMMAND_NAME_DEFAULT));
+  return GF_SUCCESS;
+}
+
+static gf_status
+cmd_base_init_description(gf_cmd_base* cmd) {
+  _(gf_cmd_base_set_description(cmd, COMMAND_DESCRIPTION_DEFAULT));
+  return GF_SUCCESS;
+}
+
+static gf_status
+cmd_base_init_args(gf_cmd_base* cmd) {
+  gf_validate(cmd);
+  
+  if (cmd->args) {
+    gf_args_free(cmd->args);
+    cmd->args = NULL;
+  }
+  _(gf_args_new(&cmd->args));
+
+  return GF_SUCCESS;
+}
+
+static gf_status
+cmd_base_init_paths(gf_cmd_base* cmd) {
+  gf_status rc = 0;
+  gf_path* path = NULL;
+
+  static const char CONF_PATH[] = ".gf";
+  static const char CONF_FILE[] = "gf.conf";
+
+  gf_validate(cmd);
+
+  /* The root path of the project */
+  rc = gf_path_get_current_path(&path);
+  if (rc != GF_SUCCESS) {
+    gf_throw(rc);
+  }
+  rc = gf_path_canonicalize(path);
+  if (rc != GF_SUCCESS) {
+    gf_path_free(path);
+    gf_throw(rc);
+  }
+  rc = gf_path_absolute_path(path);
+  if (rc != GF_SUCCESS) {
+    gf_path_free(path);
+    gf_throw(rc);
+  }
+  if (cmd->root_path) {
+    gf_path_free(cmd->root_path);
+    cmd->root_path = NULL;
+  }
+  cmd->root_path = path;
+  
+  /* The config directory */
+  if (cmd->conf_path) {
+    gf_path_free(cmd->conf_path);
+    cmd->conf_path = NULL;
+  }
+  if (!gf_path_is_empty(cmd->root_path)) {
+    _(gf_path_append_string(&cmd->conf_path, cmd->root_path, CONF_PATH));
+  }
+
+  /* The config file path */
+  if (cmd->conf_file) {
+    gf_path_free(cmd->conf_file);
+    cmd->conf_file = NULL;
+  }
+  if (!gf_path_is_empty(cmd->conf_path)) {
+    _(gf_path_append_string(&cmd->conf_file, cmd->conf_path, CONF_FILE));
+  }
+  
+  /* The source file path */
+  if (cmd->src_path) {
+    gf_path_free(cmd->src_path);
+    cmd->src_path = NULL;
+  }
+  if (!gf_path_is_empty(cmd->root_path)) {
+    char* str = gf_config_get_string("site.src-path");
+    
+    if (!gf_strnull(str)) {
+      rc = gf_path_append_string(&cmd->src_path, cmd->root_path, str);
+    } else {
+      rc = gf_path_append_string(&cmd->src_path, cmd->root_path, "src");
+    }
+    if (str) {
+      gf_free(str);
+    }
+    if (rc != GF_SUCCESS) {
+      return rc;
+    }
+  }
+
+  /* The destination file path */
+  if (cmd->dst_path) {
+    gf_path_free(cmd->dst_path);
+    cmd->dst_path = NULL;
+  }
+  if (!gf_path_is_empty(cmd->root_path)) {
+    char* str = gf_config_get_string("site.pub-path");
+    
+    if (!gf_strnull(str)) {
+      rc = gf_path_append_string(&cmd->dst_path, cmd->root_path, str);
+    } else {
+      rc = gf_path_append_string(&cmd->dst_path, cmd->root_path, "pub");
+    }
+    if (str) {
+      gf_free(str);
+    }
+    if (rc != GF_SUCCESS) {
+      return rc;
+    }
+  }
+  
+  /* The site file path */
+  if (cmd->site_path) {
+    gf_path_free(cmd->site_path);
+    cmd->site_path = NULL;
+  }
+  if (!gf_path_is_empty(cmd->conf_path)) {
+    _(gf_path_append_string(&cmd->site_path, cmd->conf_path, GF_SITE_FILE_NAME));
+  }
 
   return GF_SUCCESS;
 }
 
 gf_status
 gf_cmd_base_prepare(gf_cmd_base* cmd) {
-  gf_status rc = 0;
   gf_validate(cmd);
 
   /* Name */
-  rc = gf_strassign(&cmd->name, COMMAND_NAME_DEFAULT);
-  if (rc != GF_SUCCESS) {
-    return rc;
-  }
+  _(cmd_base_init_name(cmd));
   /* Description */
-  rc = gf_strassign(&cmd->description, COMMAND_DESCRIPTION_DEFAULT);
-  if (rc != GF_SUCCESS) {
-    return rc;
-  }
-  /* Argument */
-  if (cmd->args) {
-    gf_args_free(cmd->args);
-    cmd->args = NULL;
-  }
-  rc = gf_args_new(&cmd->args);
-  if (rc != GF_SUCCESS) {
-    return rc;
-  }
-  /* Virtual functions defined by the drived objects. */
-  cmd->free = NULL;
+  _(cmd_base_init_description(cmd));
+  /* Command arguments */
+  _(cmd_base_init_args(cmd));
+  /* System paths */
+  _(cmd_base_init_paths(cmd));
+  
+  /* Virtual functions */
+  cmd->create  = NULL;
+  cmd->free    = NULL;
   cmd->execute = NULL;
-
+ 
   return GF_SUCCESS;
 }
 
@@ -78,6 +205,24 @@ gf_cmd_base_clear(gf_cmd_base* cmd) {
     if (cmd->args) {
       gf_args_free(cmd->args);
     }
+    if (cmd->root_path) {
+      gf_path_free(cmd->root_path);
+    }
+    if (cmd->conf_path) {
+      gf_path_free(cmd->conf_path);
+    }
+    if (cmd->conf_file) {
+      gf_path_free(cmd->conf_file);
+    }
+    if (cmd->site_path) {
+      gf_path_free(cmd->site_path);
+    }
+    if (cmd->src_path) {
+      gf_path_free(cmd->src_path);
+    }
+    if (cmd->dst_path) {
+      gf_path_free(cmd->dst_path);
+    }
     (void)gf_cmd_base_init(cmd);
   }
 }
@@ -92,8 +237,8 @@ gf_cmd_base_set_info(gf_cmd_base* cmd, const gf_cmd_base_info* info) {
   _(gf_cmd_base_set_description(cmd, info->base.description));
   _(gf_cmd_base_add_options(cmd, info->options));
 
-  cmd->create = info->base.create;
-  cmd->free = info->base.free;
+  cmd->create  = info->base.create;
+  cmd->free    = info->base.free;
   cmd->execute = info->base.execute;
   
   return GF_SUCCESS;

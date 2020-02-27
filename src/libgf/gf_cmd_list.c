@@ -20,10 +20,6 @@
 
 struct gf_cmd_list {
   gf_cmd_base base;
-  gf_path*   root_path;
-  gf_path*   conf_path;
-  gf_path*   site_path;
-  gf_path*   src_path;
   gf_site*   site;
 };
 
@@ -58,51 +54,7 @@ init(gf_cmd_base* cmd) {
 
   _(gf_cmd_base_init(cmd));
 
-  GF_CMD_LIST_CAST(cmd)->root_path = NULL;
-  GF_CMD_LIST_CAST(cmd)->conf_path = NULL;
-  GF_CMD_LIST_CAST(cmd)->site_path = NULL;
-  GF_CMD_LIST_CAST(cmd)->src_path = NULL;
   GF_CMD_LIST_CAST(cmd)->site = NULL;
-
-  return GF_SUCCESS;
-}
-
-/*
-** NOTE: This function is almost the same as gf_update.c:update_make_paths(),
-** We should refactor to call this as a common function.
-*/
-
-static gf_status
-list_make_paths(gf_cmd_list* cmd) {
-  gf_status rc = 0;
-  gf_path* path = NULL;
-  char* str = NULL;
-  
-  gf_validate(cmd);
-
-  /* Check if the path here is the project directory */
-  _(gf_path_get_current_path(&path));
-  if (!gf_system_is_project_path(path)) {
-    gf_path_free(path);
-    gf_raise(GF_E_STATE, "The current path is not a project directory.");
-  }
-  cmd->root_path = path;
-  /* Config path */
-  _(gf_path_append_string(&cmd->conf_path, cmd->root_path, GF_CONFIG_DIRECTORY));
-  assert(gf_path_file_exists(cmd->conf_path));
-  /* Source path */
-  str = gf_config_get_string("site.src-path");
-  if (gf_strnull(str)) {
-    gf_raise(GF_E_PARAM, "The source path is not specified on config file");
-  }
-  rc = gf_path_append_string(&cmd->src_path, cmd->root_path, str);
-  gf_free(str);
-  if (rc != GF_SUCCESS) {
-    return rc;
-  }
-  /* Site file path */
-  /* NOTE: We don't test whether the site file path exists. */
-  _(gf_path_append_string(&cmd->site_path, cmd->conf_path, GF_SITE_FILE_NAME));
 
   return GF_SUCCESS;
 }
@@ -112,7 +64,6 @@ prepare(gf_cmd_base* cmd) {
   gf_validate(cmd);
 
   _(gf_cmd_base_set_info(cmd, &info_));
-  _(list_make_paths(GF_CMD_LIST_CAST(cmd)));
 
   return GF_SUCCESS;
 }
@@ -145,21 +96,21 @@ gf_cmd_list_free(gf_cmd_base* cmd) {
   if (cmd) {
     gf_cmd_base_clear(GF_CMD_BASE_CAST(cmd));
 
-    if (GF_CMD_LIST_CAST(cmd)->root_path) {
-      gf_path_free(GF_CMD_LIST_CAST(cmd)->root_path);
-      GF_CMD_LIST_CAST(cmd)->root_path = NULL;
+    if (cmd->root_path) {
+      gf_path_free(cmd->root_path);
+      cmd->root_path = NULL;
     }
-    if (GF_CMD_LIST_CAST(cmd)->conf_path) {
-      gf_path_free(GF_CMD_LIST_CAST(cmd)->conf_path);
-      GF_CMD_LIST_CAST(cmd)->conf_path = NULL;
+    if (cmd->conf_path) {
+      gf_path_free(cmd->conf_path);
+      cmd->conf_path = NULL;
     }
-    if (GF_CMD_LIST_CAST(cmd)->site_path) {
-      gf_path_free(GF_CMD_LIST_CAST(cmd)->site_path);
-      GF_CMD_LIST_CAST(cmd)->site_path = NULL;
+    if (cmd->site_path) {
+      gf_path_free(cmd->site_path);
+      cmd->site_path = NULL;
     }
-    if (GF_CMD_LIST_CAST(cmd)->src_path) {
-      gf_path_free(GF_CMD_LIST_CAST(cmd)->src_path);
-      GF_CMD_LIST_CAST(cmd)->src_path = NULL;
+    if (cmd->src_path) {
+      gf_path_free(cmd->src_path);
+      cmd->src_path = NULL;
     }
 
     if (GF_CMD_LIST_CAST(cmd)->site) {
@@ -174,11 +125,11 @@ gf_cmd_list_free(gf_cmd_base* cmd) {
 
 static gf_status
 list_read_site_file(gf_cmd_list* cmd) {
-  if (!gf_path_file_exists(cmd->site_path)) {
+  if (!gf_path_file_exists(GF_CMD_BASE_CAST(cmd)->site_path)) {
     gf_raise(GF_E_STATE, "Here is not a project directory. (%s)",
-             gf_path_get_string(cmd->site_path));
+             gf_path_get_string(GF_CMD_BASE_CAST(cmd)->site_path));
   }
-  _(gf_site_read_file(&cmd->site, cmd->site_path));
+  _(gf_site_read_file(&cmd->site, GF_CMD_BASE_CAST(cmd)->site_path));
 
   return GF_SUCCESS;
 }

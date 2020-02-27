@@ -15,6 +15,7 @@
 
 #include <libgf/gf_datatype.h>
 #include <libgf/gf_error.h>
+#include <libgf/gf_path.h>
 #include <libgf/gf_args.h>
 
 #ifdef __cplusplus
@@ -38,23 +39,30 @@ typedef void (*gf_cmd_free_fn)(gf_cmd_base* cmd);
 typedef gf_status (*gf_cmd_execute_fn)(gf_cmd_base* cmd);
 
 /*!
-** @brief 
+** @brief The base class of the command classes
+**
 */
 
 struct gf_cmd_base {
-  char*             name;
-  char*             description;
-  gf_args*          args;
-  gf_cmd_create_fn  create;
-  gf_cmd_free_fn    free;
-  gf_cmd_execute_fn execute;
+  char*             name;        ///< The name specified in the command line
+  char*             description; ///< The command description shown by help etc.
+  gf_args*          args;        ///< The args specified in the command line
+  gf_path*          root_path;   ///< The root of the project directory
+  gf_path*          conf_path;   ///< The directory in which config file located
+  gf_path*          conf_file;   ///< The local config file path 
+  gf_path*          site_path;   ///< The path of the `site file'
+  gf_path*          src_path;    ///< The root path of the source files
+  gf_path*          dst_path;    ///< The root path of the destination files
+  gf_cmd_create_fn  create;      ///< The function to create this object
+  gf_cmd_free_fn    free;        ///< The function to deallocate this object
+  gf_cmd_execute_fn execute;     ///< The function to execute command
 };
 
 #define GF_CMD_BASE_CAST(cmd) ((gf_cmd_base* )(cmd))
 
 struct gf_cmd_base_info {
   gf_cmd_base base;
-  gf_option  options[];
+  gf_option   options[];
 };
 
 typedef struct gf_cmd_base_info gf_cmd_base_info;

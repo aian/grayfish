@@ -21,12 +21,7 @@
 #include "gf_local.h"
 
 struct gf_cmd_build {
-  gf_cmd_base       base;
-  gf_path*         root_path;
-  gf_path*         conf_path;
-  gf_path*         site_path;
-  gf_path*         src_path;
-  gf_path*         dst_path;
+  gf_cmd_base      base;
   gf_site*         site;
   gf_convert_ctxt* ctxt;
 };
@@ -65,63 +60,8 @@ init(gf_cmd_base* cmd) {
 
   _(gf_cmd_base_init(cmd));
   
-  GF_CMD_BUILD_CAST(cmd)->root_path = NULL;
-  GF_CMD_BUILD_CAST(cmd)->conf_path = NULL;
-  GF_CMD_BUILD_CAST(cmd)->site_path = NULL;
-  GF_CMD_BUILD_CAST(cmd)->src_path = NULL;
-  GF_CMD_BUILD_CAST(cmd)->dst_path = NULL;
   GF_CMD_BUILD_CAST(cmd)->site = NULL;
   GF_CMD_BUILD_CAST(cmd)->ctxt = NULL;
-
-  return GF_SUCCESS;
-}
-
-/*
-** NOTE: This function is almost the same as gf_update.c:update_make_paths(),
-** We should refactor to call this as a common function.
-*/
-
-static gf_status
-build_make_paths(gf_cmd_build* cmd) {
-  gf_status rc = 0;
-  gf_path* path = NULL;
-  char* str = NULL;
-  
-  gf_validate(cmd);
-
-  /* Check if the path here is the project directory */
-  _(gf_path_get_current_path(&path));
-  if (!gf_system_is_project_path(path)) {
-    gf_path_free(path);
-    gf_raise(GF_E_STATE, "The current path is not a project directory.");
-  }
-  cmd->root_path = path;
-  /* Config path */
-  _(gf_path_append_string(&cmd->conf_path, cmd->root_path, GF_CONFIG_DIRECTORY));
-  assert(gf_path_file_exists(cmd->conf_path));
-  /* Source path */
-  str = gf_config_get_string("site.src-path");
-  if (gf_strnull(str)) {
-    gf_raise(GF_E_PARAM, "The source path is not specified on config file");
-  }
-  rc = gf_path_append_string(&cmd->src_path, cmd->root_path, str);
-  gf_free(str);
-  if (rc != GF_SUCCESS) {
-    return rc;
-  }
-  /* Destination path */
-  str = gf_config_get_string("site.pub-path");
-  if (gf_strnull(str)) {
-    gf_raise(GF_E_PARAM, "The source path is not specified on config file");
-  }
-  rc = gf_path_append_string(&cmd->dst_path, cmd->root_path, str);
-  gf_free(str);
-  if (rc != GF_SUCCESS) {
-    return rc;
-  }
-  /* Site file path */
-  /* NOTE: We don't test whether the site file path exists. */
-  _(gf_path_append_string(&cmd->site_path, cmd->conf_path, GF_SITE_FILE_NAME));
 
   return GF_SUCCESS;
 }
@@ -155,8 +95,6 @@ prepare(gf_cmd_base* cmd) {
   gf_validate(cmd);
 
   _(gf_cmd_base_set_info(cmd, &info_));
-  _(build_make_paths(GF_CMD_BUILD_CAST(cmd)));
-  _(build_read_style_file(GF_CMD_BUILD_CAST(cmd)));
 
   return GF_SUCCESS;
 }
@@ -190,27 +128,6 @@ gf_cmd_build_free(gf_cmd_base* cmd) {
     /* Clear the base class */
     gf_cmd_base_clear(cmd);
     /* Clear and deallocate this class */
-    if (GF_CMD_BUILD_CAST(cmd)->root_path) {
-      gf_path_free(GF_CMD_BUILD_CAST(cmd)->root_path);
-      GF_CMD_BUILD_CAST(cmd)->root_path = NULL;
-    }
-    if (GF_CMD_BUILD_CAST(cmd)->conf_path) {
-      gf_path_free(GF_CMD_BUILD_CAST(cmd)->conf_path);
-      GF_CMD_BUILD_CAST(cmd)->conf_path = NULL;
-    }
-    if (GF_CMD_BUILD_CAST(cmd)->site_path) {
-      gf_path_free(GF_CMD_BUILD_CAST(cmd)->site_path);
-      GF_CMD_BUILD_CAST(cmd)->site_path = NULL;
-    }
-    if (GF_CMD_BUILD_CAST(cmd)->src_path) {
-      gf_path_free(GF_CMD_BUILD_CAST(cmd)->src_path);
-      GF_CMD_BUILD_CAST(cmd)->src_path = NULL;
-    }
-    if (GF_CMD_BUILD_CAST(cmd)->dst_path) {
-      gf_path_free(GF_CMD_BUILD_CAST(cmd)->dst_path);
-      GF_CMD_BUILD_CAST(cmd)->dst_path = NULL;
-    }
-
     if (GF_CMD_BUILD_CAST(cmd)->site) {
       gf_site_free(GF_CMD_BUILD_CAST(cmd)->site);
       GF_CMD_BUILD_CAST(cmd)->site = NULL;
@@ -228,11 +145,11 @@ static gf_status
 build_read_site_file(gf_cmd_build* cmd) {
   gf_validate(cmd);
 
-  if (!gf_path_file_exists(cmd->site_path)) {
+  if (!gf_path_file_exists(GF_CMD_BASE_CAST(cmd)->site_path)) {
     gf_raise(GF_E_STATE, "Here is not a project directory. (%s)",
-             gf_path_get_string(cmd->site_path));
+             gf_path_get_string(GF_CMD_BASE_CAST(cmd)->site_path));
   }
-  _(gf_site_read_file(&cmd->site, cmd->site_path));
+  _(gf_site_read_file(&cmd->site, GF_CMD_BASE_CAST(cmd)->site_path));
 
   return GF_SUCCESS;
 }
@@ -309,7 +226,7 @@ build_convert_index(gf_cmd_build* cmd, gf_site_node* node) {
              gf_path_get_string(src_path));
   }
   /* Destination file path */
-  rc = gf_path_append_string(&dst_path, cmd->root_path, "pub");
+  rc = gf_path_append_string(&dst_path, GF_CMD_BASE_CAST(cmd)->root_path, "pub");
   if (rc != GF_SUCCESS) {
     gf_path_free(src_path);
     gf_throw(rc);
@@ -371,7 +288,7 @@ build_convert_files(gf_cmd_build* cmd) {
   _(gf_site_get_root(&node, cmd->site));
   if (!node) {
     gf_raise(GF_E_STATE, "Site file is empty. (%s)",
-             gf_path_get_string(cmd->site_path));
+             gf_path_get_string(GF_CMD_BASE_CAST(cmd)->site_path));
   }
   /* Site root */
   rc = build_convert_document(cmd, node);
@@ -403,6 +320,8 @@ build_process(gf_cmd_build* cmd) {
 
   /* Read the existing site file */
   _(build_read_site_file(cmd));
+  /* Read the style file */
+  _(build_read_style_file(GF_CMD_BUILD_CAST(cmd)));
   /* Convert files */
   _(build_convert_files(cmd));
 
