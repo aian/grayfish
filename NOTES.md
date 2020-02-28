@@ -34,15 +34,15 @@ SUB-COMMANDS
         <li>Global config file values</li>
         <li>Local project config values</li>
       </ol>
-      <p>Because Grayfish uses the internally defined values at last, it can process without the local config file. So grayfish don't stop processing even if the file doesn't exist (just shows warnings).</>
+      <p>Because Grayfish uses the internally defined values at last, it can process without the local config file. So Grayfish don't stop processing even if the file doesn't exist (just shows warnings).</>
     </dd>
     <dt>update</dt>
     <dd>
-      <p>The sub-command, which traverses the source directory and build up the content database file `site.xml`. The `site.xml` is a XML formatted file that is used for building your website. In addition, this file can be used for the input of the user temaplate file (written in XSLT). Users can use this file to make up a content summary in your website.</p>
+      <p>The sub-command, which traverses the source directory and build up the content database file `site.xml`. The `site.xml` is a XML formatted file that is used for building your website. In addition, this file can be used for the input of the user template file (written in XSLT). Users can use this file to make up a content summary in your website.</p>
     </dd>
     <dt>build</dt>
     <dd>
-      <p>The sub-command, which build up the website. Once you converted the source file, this sub-command does not convert as long as the files are not edited. To build your website, it is neccesary to call `update` command in order to create `site.xml` file. If `site.xml` file doesn't exists, the `update` command is called internally.</p>
+      <p>The sub-command, which build up the website. Once you converted the source file, this sub-command does not convert as long as the files are not edited. To build your website, it is necessary to call `update` command in order to create `site.xml` file. If `site.xml` file doesn't exists, the `update` command is called internally.</p>
     </dd>
     <dt>clean</dt>
     <dd>The sub-command, which cleans up entire the website directory. The entries of `site.xml` will be marked as 'NOT BUILT'. Because you must re-build the source files, it is not recommended to run this without specific ideas. </dd>
@@ -52,7 +52,7 @@ SUB-COMMANDS
     <dd>[EXPERIMENTAL] The sub-command, which brings up the server process. This server process watches over the source file directory and automatically calls appropriate sub-commands along with the changes of this directory.</dd>
   </dl>
 
-### PRERQUISITES
+### PREREQUISITES
 
   There is the prerequisites of each sub-command. If it is 
 
@@ -74,7 +74,7 @@ SUB-COMMANDS
 (*1) Required, however, if the file was not found, this sub-command internally
      calls `update' command to create it.
 
-(*2) Not required to process, however, it is substancially useless without it.
+(*2) Not required to process, however, it is substantially useless without it.
      Grayfish warns against that matter.
 
 (*3) Not required, however, source files should be there logically.
