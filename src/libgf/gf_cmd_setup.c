@@ -21,8 +21,6 @@
 
 struct gf_cmd_setup {
   gf_cmd_base base;      ///< Base class object
-  gf_path*   root_path;  ///< Project root path
-  gf_path*   conf_path;  ///< Local configuration path
 };
 
 /*!
@@ -54,9 +52,6 @@ init(gf_cmd_base* cmd) {
 
   /* Initialize the base class */
   _(gf_cmd_base_init(cmd));
-  /* Initialize the members of this class */
-  GF_CMD_SETUP_CAST(cmd)->root_path = NULL;
-  GF_CMD_SETUP_CAST(cmd)->conf_path = NULL;
 
   return GF_SUCCESS;
 }
@@ -104,61 +99,13 @@ gf_cmd_setup_free(gf_cmd_base* cmd) {
 }
 
 static gf_status
-setup_set_paths(gf_cmd_setup* cmd) {
-  gf_status rc = 0;
-  char* project_name = NULL;
-  int args_count = 0;
-  gf_path* root_path = NULL;
-  gf_path* conf_path = NULL;
-
-  gf_validate(cmd);
-  
-  args_count = gf_args_remain(cmd->base.args);
-  if (args_count <= 0) {
-    gf_raise(GF_E_OPTION, "Project name is not specified.");
-  }
-  /* Get the project name and build the project path */
-  /*
-  ** FIXME: 
-  ** For now, project path is built with the specified project name. If the
-  ** project name has special characters as a path string, it may occer
-  ** unexpected effects.
-  */
-  _(gf_args_consume(cmd->base.args, &project_name));
-  rc = gf_path_new(&root_path, project_name);
-  gf_free(project_name);
-  if (rc != GF_SUCCESS) {
-    return rc;
-  }
-  _(gf_path_canonicalize(root_path));
-  _(gf_path_absolute_path(root_path));
-
-  if (!gf_path_is_empty(cmd->root_path)) {
-    gf_path_free(cmd->root_path);
-    cmd->root_path = NULL;
-  }
-  cmd->root_path = root_path;
-
-  /* Get the config path */
-  _(gf_path_append_string(&conf_path, cmd->root_path, GF_CONFIG_DIRECTORY));
-  if (!gf_path_is_empty(cmd->conf_path)) {
-    gf_path_free(cmd->conf_path);
-    cmd->conf_path = NULL;
-  }
-  cmd->conf_path = conf_path;
-  
-  return GF_SUCCESS;
-}
-
-static gf_status
 setup_create_config_file(gf_cmd_setup* cmd) {
   gf_status rc = 0;
   gf_path* path = NULL;
   
   gf_validate(cmd);
 
-  _(gf_path_append_string(&path, cmd->conf_path, GF_CONFIG_FILE_NAME));
-  rc = gf_config_write_file(path);
+  rc = gf_config_write_file(GF_CMD_BASE_CAST(cmd)->conf_path);
   if (rc != GF_SUCCESS) {
     gf_error("Failed to create Config file '%s'.", gf_path_get_string(path));
     gf_path_free(path);
@@ -175,21 +122,19 @@ setup_create_project_directory(gf_cmd_setup* cmd) {
   const char* path = NULL;
   
   gf_validate(cmd);
-  gf_validate(!gf_path_is_empty(cmd->root_path));
-  gf_validate(!gf_path_is_empty(cmd->conf_path));
   
   /* Create a project directory */
-  path = gf_path_get_string(cmd->root_path);
-  if (!gf_path_file_exists(cmd->root_path)) {
-    _(gf_path_create_directory(cmd->root_path));
+  path = gf_path_get_string(GF_CMD_BASE_CAST(cmd)->root_path);
+  if (!gf_path_file_exists(GF_CMD_BASE_CAST(cmd)->root_path)) {
+    _(gf_path_create_directory(GF_CMD_BASE_CAST(cmd)->root_path));
     gf_info("Directory '%s' created.", path);
   } else {
     gf_warn("Directory '%s' already exists.", path);
   }
   /* Create the config directory */
-  path = gf_path_get_string(cmd->conf_path);
-  if (!gf_path_file_exists(cmd->conf_path)) {
-    _(gf_path_create_directory(cmd->conf_path));
+  path = gf_path_get_string(GF_CMD_BASE_CAST(cmd)->conf_path);
+  if (!gf_path_file_exists(GF_CMD_BASE_CAST(cmd)->conf_path)) {
+    _(gf_path_create_directory(GF_CMD_BASE_CAST(cmd)->conf_path));
     gf_info("Directory '%s' created.", path);
   } else {
     gf_warn("Directory '%s' already exists.", path);
@@ -206,12 +151,12 @@ setup_create_document_directories(gf_cmd_setup* cmd) {
   gf_path* src_path = NULL;
   
   gf_validate(cmd);
-  gf_validate(!gf_path_is_empty(cmd->root_path));
+  gf_validate(!gf_path_is_empty(GF_CMD_BASE_CAST(cmd)->root_path));
 
   /* Publish path */
   str = gf_config_get_string("site.pub-path");
   if (!gf_strnull(str)) {
-    rc = gf_path_append_string(&pub_path, cmd->root_path, str);
+    rc = gf_path_append_string(&pub_path, GF_CMD_BASE_CAST(cmd)->root_path, str);
     gf_free(str);
     if (rc != GF_SUCCESS) {
       return rc;
@@ -234,7 +179,7 @@ setup_create_document_directories(gf_cmd_setup* cmd) {
   /* Source path */
   str = gf_config_get_string("site.src-path");
   if (!gf_strnull(str)) {
-    rc = gf_path_append_string(&src_path, cmd->root_path, str);
+    rc = gf_path_append_string(&src_path, GF_CMD_BASE_CAST(cmd)->root_path, str);
     gf_free(str);
     if (rc != GF_SUCCESS) {
       return rc;
@@ -260,9 +205,6 @@ setup_create_document_directories(gf_cmd_setup* cmd) {
 static gf_status
 setup_process(gf_cmd_setup* cmd) {
   gf_validate(cmd);
-
-  /* Set paths */
-  _(setup_set_paths(cmd));
 
   /* Create a project_directory */
   _(setup_create_project_directory(cmd));
