@@ -21,6 +21,7 @@
 
 struct gf_cmd_setup {
   gf_cmd_base base;      ///< Base class object
+  gf_path*    proj_path; ///< Project path, which we are intended to create
 };
 
 /*!
@@ -52,6 +53,8 @@ init(gf_cmd_base* cmd) {
 
   /* Initialize the base class */
   _(gf_cmd_base_init(cmd));
+  /* Initialize this class */
+  GF_CMD_SETUP_CAST(cmd)->proj_path = NULL;
 
   return GF_SUCCESS;
 }
