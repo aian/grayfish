@@ -130,6 +130,8 @@ extern gf_status gf_cmd_base_help(const gf_cmd_base* cmd);
 
 extern gf_status gf_cmd_base_execute(gf_cmd_base* cmd);
 
+extern gf_bool gf_cmd_base_is_root_project_directory(const gf_cmd_base* cmd);
+
 ///@}
 
 /*!

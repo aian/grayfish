@@ -332,6 +332,46 @@ gf_cmd_base_execute(gf_cmd_base* cmd) {
   return GF_SUCCESS;
 }
 
+gf_bool
+cmd_base_is_project_directory(const gf_path* path) {
+  if (gf_path_is_empty(path)) {
+    return GF_FALSE;
+  }
+  if (gf_system_is_project_path(path)) {
+    return GF_TRUE;
+  } else {
+    gf_status rc = 0;
+    gf_path* parent = NULL;
+    const char* s = gf_path_get_string(path);
+
+    rc = gf_path_get_parent(&parent, path);
+    if (rc != GF_SUCCESS) {
+      assert(!parent);
+      gf_warn("Failed to get parent path by error. (%s)", s);
+      return GF_FALSE;
+    }
+    if (!parent) {
+      return GF_FALSE;
+    } else {
+      gf_bool ret = GF_FALSE;
+
+      ret =  cmd_base_is_project_directory(parent);
+      gf_path_free(parent);
+      return ret;
+    }
+  }
+  /* does not reaches here */
+  return GF_FALSE;
+}
+
+gf_bool
+gf_cmd_base_is_root_project_directory(const gf_cmd_base* cmd) {
+  if (!cmd) {
+    return GF_FALSE;
+  }
+  return cmd_base_is_project_directory(cmd->root_path);
+}
+
 /* -------------------------------------------------------------------------- */
 
 #ifndef CMD_FACTORY_SIZE

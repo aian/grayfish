@@ -180,6 +180,43 @@ gf_path_absolute_path(gf_path* path) {
   return GF_SUCCESS;
 }
 
+gf_status
+gf_path_get_parent(gf_path** parent, const gf_path* path) {
+  gf_status rc = 0;
+  gf_path* p = NULL;
+
+  gf_validate(parent);
+
+  if (gf_path_is_empty(path) || gf_path_is_root(path)) {
+    *parent = NULL;
+    return GF_SUCCESS;
+  }
+
+  _(gf_path_append_string(&p, path, ".."));
+
+  rc = gf_path_canonicalize(p);
+  if (rc != GF_SUCCESS) {
+    gf_path_free(p);
+    gf_throw(rc);
+  }
+  if (gf_path_is_empty(p)) {
+    gf_path_free(p);
+    *parent = NULL;
+    return GF_SUCCESS;
+  }
+  *parent = p;
+
+  return GF_SUCCESS;
+}
+
+gf_bool
+gf_path_is_root(const gf_path* path) {
+  if (gf_path_is_empty(path)) {
+    return GF_FALSE;
+  }
+  return PathIsRoot(path->buf) ? GF_TRUE : GF_FALSE;
+}
+
 gf_bool
 gf_path_is_empty(const gf_path* path) {
   return !path || gf_strnull(path->buf);

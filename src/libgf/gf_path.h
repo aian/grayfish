@@ -87,8 +87,31 @@ extern gf_status gf_path_canonicalize(gf_path* path);
 extern gf_status gf_path_absolute_path(gf_path* path);
 
 /*!
+** @brief Get parent directory path
 **
+** @note This function depends on _splitpath_s() and _makepath() that limit the
+** string length in MAX_PATH.
+*/
+
+extern gf_status gf_path_get_parent(gf_path** parent, const gf_path* path);
+
+/*!
+** @brief Test if the specified path is the root directory
 **
+** Path strings "C:" is determined as a root directory, NULL string is NOT
+** detamined as a root.
+**
+** @param [in] path The path to be tested
+** @return GF_TRUE if the path is the root directory, GF_FALSE otherwise.
+*/
+
+extern gf_bool gf_path_is_root(const gf_path* path);
+
+/*!
+** @brief Test if the specified path is empty
+**
+** @param [in] path The path to be tested
+** @return GF_TRUE if the path is empty, GF_FALSE otherwise.
 */
 
 extern gf_bool gf_path_is_empty(const gf_path* path);
