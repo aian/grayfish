@@ -228,7 +228,7 @@ setup_create_config_file(gf_cmd_setup* cmd) {
     gf_error("Failed to create Config file `%s'.", path);
     return rc;
   }
-  gf_info("Config file '%s' is created.", path);
+  gf_info("Config file '%s' has been created.", path);
 
   return GF_SUCCESS;
 }
@@ -243,7 +243,7 @@ setup_create_project_directory(gf_cmd_setup* cmd) {
   path = gf_path_get_string(cmd->proj_path);
   if (!gf_path_file_exists(cmd->proj_path)) {
     _(gf_path_create_directory(cmd->proj_path));
-    gf_info("Directory '%s' is created.", path);
+    gf_info("Directory '%s' has been created.", path);
   } else {
     gf_warn("Directory '%s' already exists.", path);
   }
@@ -251,7 +251,7 @@ setup_create_project_directory(gf_cmd_setup* cmd) {
   path = gf_path_get_string(cmd->conf_path);
   if (!gf_path_file_exists(cmd->conf_path)) {
     _(gf_path_create_directory(cmd->conf_path));
-    gf_info("Directory '%s' is created.", path);
+    gf_info("Directory '%s' has been created.", path);
   } else {
     gf_warn("Directory '%s' already exists.", path);
   }
@@ -283,7 +283,7 @@ setup_create_document_directories(gf_cmd_setup* cmd) {
         gf_path_free(pub_path);
         return rc;
       }
-      gf_info("Directory '%s' is created.", gf_path_get_string(pub_path));
+      gf_info("Directory '%s' has been created.", gf_path_get_string(pub_path));
     } else {
       gf_warn("Directory '%s' already exists.", gf_path_get_string(pub_path));
     }
@@ -306,7 +306,7 @@ setup_create_document_directories(gf_cmd_setup* cmd) {
         gf_path_free(src_path);
         return rc;
       }
-      gf_info("Directory '%s' is created.", gf_path_get_string(src_path));
+      gf_info("Directory '%s' has been created.", gf_path_get_string(src_path));
     } else {
       gf_warn("Directory '%s' already exists.", gf_path_get_string(src_path));
     }
@@ -346,8 +346,12 @@ gf_status
 gf_cmd_setup_execute(gf_cmd_base* cmd) {
   gf_validate(cmd);
 
+  gf_msg("Setting up your site ...");
+  
   _(gf_args_parse(cmd->args));
   _(setup_process(GF_CMD_SETUP_CAST(cmd)));
+
+  gf_msg("Done.");
 
   return GF_SUCCESS;
 }
