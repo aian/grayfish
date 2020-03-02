@@ -196,14 +196,17 @@ log_write(
   GetLocalTime(&tm);
   
   for (gf_size_t i = 0; i < logger_.used; i++) {
-#if defined(GF_DEBUG_)
+#if defined(GF_DETAIL_LOG_)
+# if defined(GF_DEBUG_)
+    /* detailed debug log */
     gf_stream_write(
       logger_.stream[i], "%s:%d: [%04d/%02d/%02d %02d:%02d:%02d.%03d] %s%s\n",
       file, line,
       tm.wYear, tm.wMonth, tm.wDay, tm.wHour,
       tm.wMinute, tm.wSecond, tm.wMilliseconds,
       info->prefix, msg);
-#else
+# else
+    /* detailed log */
     (void)file;
     (void)line;
     gf_stream_write(
@@ -211,6 +214,14 @@ log_write(
       tm.wYear, tm.wMonth, tm.wDay, tm.wHour,
       tm.wMinute, tm.wSecond, tm.wMilliseconds,
       info->prefix, msg);
+# endif
+#else
+    /* normal log */
+    (void)file;
+    (void)line;
+    (void)tm;
+
+    gf_stream_write(logger_.stream[i], "%s%s\n", info->prefix, msg);
 #endif
   }
   
