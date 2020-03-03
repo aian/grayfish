@@ -7,6 +7,8 @@
 ** @brief UUID operations
 */
 #include <assert.h>
+#include <ctype.h>
+#include <string.h>
 
 #ifndef INITGUID
 #define INITGUID
@@ -107,10 +109,117 @@ gf_uuid_get_string(char* str, size_t len, const gf_uuid* uuid) {
   return 0;
 }
 
+#define uuid_parse_error(str) \
+  gf_raise(GF_E_PARSE, "Invalid UUID string (%s)", str);
+
+static gf_status
+uuid_get_token(char* buf, size_t len, const char* ptr, size_t num) {
+  size_t i = 0;
+  
+  gf_validate(len > num);
+
+  for (i = 0; i < num; i++) {
+    if (isxdigit((int)ptr[i])) {
+      buf[i] = ptr[i];
+    } else {
+      uuid_parse_error(ptr);
+    }
+  }
+  buf[i] = '\0';
+
+  return GF_SUCCESS;
+}
+
 gf_status
 gf_uuid_parse(gf_uuid* uuid, const char* str) {
-  // TODO: implement me !!
-  (void)uuid;
-  (void)str;
+  char token[GF_UUID_MAX] = { 0 };
+  const char* ptr = NULL;
+  char* end = NULL;
+  size_t len = 0;
+  
+  gf_validate(uuid);
+  gf_validate(!gf_strnull(str));
+
+  /* Length check */
+  len = gf_strlen(str);
+  if (len != (GF_UUID_MAX - 1)) {
+    uuid_parse_error(str);
+  }
+
+  /* separator */
+  ptr = str;
+  if (*ptr != '{') {
+    uuid_parse_error(str);
+  }
+  ptr += 1;
+  /* data 1 */
+  _(uuid_get_token(token, GF_UUID_MAX, ptr, 8));
+  uuid->data_1 = strtoul(token, &end, 16);
+  if (*end != '\0') {
+    uuid_parse_error(str);
+  }
+  ptr += 8;
+  /* separator */
+  if (*ptr != '-') {
+    uuid_parse_error(str);
+  }
+  ptr += 1;
+  /* data 2 */
+  _(uuid_get_token(token, GF_UUID_MAX, ptr, 4));
+  uuid->data_2 = (unsigned short)strtoul(token, &end, 16);
+  if (*end != '\0') {
+    uuid_parse_error(str);
+  }
+  ptr += 4;
+  /* separator */
+  if (*ptr != '-') {
+    uuid_parse_error(str);
+  }
+  ptr += 1;
+  /* data 3 */
+  _(uuid_get_token(token, GF_UUID_MAX, ptr, 4));
+  uuid->data_3 = (unsigned short)strtoul(token, &end, 16);
+  if (*end != '\0') {
+    uuid_parse_error(str);
+  }
+  ptr += 4;
+  /* separator */
+  if (*ptr != '-') {
+    uuid_parse_error(str);
+  }
+  ptr += 1;
+  /* data 4[0-1] */
+  for (int i = 0; i < 2; i++) {
+    _(uuid_get_token(token, GF_UUID_MAX, ptr, 2));
+    uuid->data_4[i] = (unsigned char)strtoul(token, &end, 16);
+    if (*end != '\0') {
+      uuid_parse_error(str);
+    }
+    ptr += 2;
+  }
+  /* separator */
+  if (*ptr != '-') {
+    uuid_parse_error(str);
+  }
+  ptr += 1;
+  /* data 4[2-7] */
+  for (int i = 2; i < 8; i++) {
+    _(uuid_get_token(token, GF_UUID_MAX, ptr, 2));
+    uuid->data_4[i] = (unsigned char)strtoul(token, &end, 16);
+    if (*end != '\0') {
+      uuid_parse_error(str);
+    }
+    ptr += 2;
+  }
+  /* separator */
+  if (*ptr != '}') {
+    uuid_parse_error(str);
+  }
+  ptr += 1;
+  /* NUL */
+  if (*ptr != '\0') {
+    uuid_parse_error(str);
+  }
+  
   return GF_SUCCESS;
 }

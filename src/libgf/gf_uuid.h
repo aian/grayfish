@@ -64,9 +64,12 @@ extern int gf_uuid_compare(const gf_uuid* uuid_1, const gf_uuid* uuid_2);
 ** gf_uuid_get_string() is fixed size. The format of that string is as follows:
 **
 **   {fb2c64e5-5c4a-40f1-9717-2b8c19f286e0}
+**
+** This macro constant represents the length of the UUID string including NUL
+** character.
 */
 
-#define GF_UUID_MAX 38
+#define GF_UUID_MAX 39
 
 extern gf_status gf_uuid_get_string(char* str, size_t len, const gf_uuid* uuid);
 

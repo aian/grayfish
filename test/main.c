@@ -35,6 +35,7 @@ gft_prepare(void) {
   gft_string_add_tests();  // gf_string
   gft_path_add_tests();    // gf_path
   gft_shell_add_tests();   // gf_shell
+  gft_uuid_add_tests();   // gf_uuid
 }
 
 /*!
