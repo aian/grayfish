@@ -18,11 +18,44 @@
 #include <signal.h>
 
 #include <libgf/gf_datatype.h>
-#include <libgf/gf_log.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+enum gf_status {
+  GF_SUCCESS   = 0,  ///< Success
+  GF_E_COMMAND,
+  GF_E_OPTION,
+  GF_E_PARAM,
+  GF_E_CONFIG,
+  GF_E_ALLOC,
+  GF_E_OPEN,
+  GF_E_READ,
+  GF_E_WRITE,
+  GF_E_PATH,         ///< Invalid path condition
+  GF_E_API,
+  GF_E_STATE,        ///< Invalid process state
+  GF_E_EXEC,
+  GF_E_SHELL,
+  GF_E_PARSE,
+  GF_E_INTERNAL,     ///< Internal error
+};
+
+typedef enum gf_status gf_status;
+
+#ifdef __cplusplus
+}
+#endif
+
+/* -------------------------------------------------------------------------- */
+
+/*!
+** @defgroup gf_error_macro The error handling macros
+*/
+///@{
+
+#include <libgf/gf_log.h>
 
 /*!
 ** @brief Make error report.
@@ -84,8 +117,6 @@ extern void gf_safe_error(
     }                                              \
   } while(0)
 
-#ifdef __cplusplus
-}
-#endif
+///@}
 
 #endif  /* LIBGF_GF_ERROR_H */

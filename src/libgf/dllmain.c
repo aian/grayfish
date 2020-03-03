@@ -13,6 +13,7 @@
 
 #include <windows.h>
 
+#include <libgf/gf_error.h>
 #include <libgf/gf_global.h>
 
 BOOL WINAPI
