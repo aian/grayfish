@@ -19,6 +19,7 @@ extern void gft_string_add_tests(void);
 extern void gft_path_add_tests(void);
 extern void gft_shell_add_tests(void);
 extern void gft_uuid_add_tests(void);
+extern void gft_array_add_tests(void);
 
 #ifdef __cplusplus
 }
