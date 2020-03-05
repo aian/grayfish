@@ -39,7 +39,7 @@ extern gf_size_t gf_strlen(const char* str);
 /*!
 ** @brief Duplicate string with a newly allocated memory space.
 **
-** @param [out] dst The pointer to the pointer which points to the duplicated string
+** @param [out] dst The pointer which points to the duplicated string
 ** @param [in]  src The source string terminated with zero
 ** @return GF_SUCCESS on success, GF_E_* otherwise
 */
@@ -49,12 +49,56 @@ extern gf_status gf_strdup(char** dst, const char* src);
 /*!
 ** @brief Assign the duplicated string.
 **
-** @param [out] dst The pointer to the pointer which points to the duplicated string
+** @param [out] dst The pointer to the string object to be assigned
 ** @param [in]  src The source string terminated with zero
 ** @return GF_SUCCESS on success, GF_E_* otherwise
 */
 
 extern gf_status gf_strassign(char** dst, const char* src);
+
+/* -------------------------------------------------------------------------- */
+
+/*!
+** @brief Structured string object type
+**
+** This type is an opaque type.
+*/
+
+typedef struct gf_string gf_string;
+
+/*!
+** @brief Invalid character constant
+**
+** This constant represents a invalid character in the gf_string module.
+*/
+
+extern const gf_int GF_STRING_INVALID_CHAR;
+
+/*!
+** @brief Create a new structured string object
+**
+** @param [out] A pointer to the new string object
+**
+** @return GF_SUCCESS on success, GF_E* otherwise
+*/
+
+extern gf_status gf_string_new(gf_string** str);
+
+/*!
+** @brief Destroy a structured string object
+**
+** @param [in] A string object to be destroyed
+*/
+
+extern void gf_string_free(gf_string* str);
+
+extern gf_status gf_string_set(gf_string* str, const gf_char* s);
+
+extern const gf_char* gf_string_get(const gf_string* str);
+
+extern gf_size_t gf_string_size(const gf_string* str);
+
+extern gf_int gf_string_get_at(const gf_string* str, gf_size_t index);
 
 #ifdef __cplusplus
 }

@@ -16,13 +16,94 @@
 
 #include <libgf/gf_memory.h>
 #include <libgf/gf_string.h>
+#include <libgf/gf_array.h>
 #include <libgf/gf_path.h>
+#include <libgf/gf_uuid.h>
+#include <libgf/gf_date.h>
+#include <libgf/gf_hash.h>
 #include <libgf/gf_site.h>
 #include <libgf/gf_local.h>
 
+/* -------------------------------------------------------------------------- */
+
+typedef struct gf_site gf_site;
+typedef struct gf_site_entry gf_site_entry;
+typedef struct gf_site_subject gf_site_subject;
+typedef struct gf_site_keyword gf_site_keyword;
+typedef struct gf_site_file gf_site_file;
+typedef enum gf_site_status gf_site_status;
+
+/*!
+** @brief Site database
+*/
+
 struct gf_site {
   xmlDocPtr doc;
+  char*     title;
+  char*     author;
+  gf_array* entries;
+  gf_array* subjects;
+  gf_array* keywords;;
 };
+
+/*!
+** @brief Site entry
+**
+*/
+
+struct gf_site_entry {
+  gf_uuid        id;
+  char*          name;
+  char*          title;
+  gf_date*       modified;
+  gf_date*       updated;
+  gf_date*       published;
+  gf_path*       src;
+  gf_path*       dst;
+  gf_site_status status;
+  gf_array*      subjects;  ///< The array of gf_site_subject objects
+  gf_array*      keywords;  ///< The array of gf_site_keyword objects
+  gf_array*      files;     ///< The array of gf_site_file objects
+  char*          role;
+  xmlNodePtr     info;      ///<
+};
+
+/*!
+** @brief A subject of entries
+**
+*/
+
+struct gf_site_subject {
+  gf_uuid id;
+  char*   name;
+};
+
+/*!
+** @brief A keyword
+**
+*/
+
+struct gf_site_keyword {
+  gf_uuid id;
+  char*   name;
+};
+
+/*!
+** @brief A file
+**
+*/
+
+struct gf_site_file {
+  gf_uuid        id;
+  char*          name;
+  gf_hash*       hash;
+  char*          type;
+  gf_path*       path;
+  gf_date*       update;
+  gf_date*       create;
+  gf_site_status status;
+};
+
 
 static gf_status
 site_init(gf_site* site) {

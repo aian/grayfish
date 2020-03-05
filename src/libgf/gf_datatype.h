@@ -23,7 +23,7 @@ extern "C" {
 
 typedef _Bool    gf_bool;
 typedef size_t   gf_size_t;
-typedef wchar_t  gf_char;    /* For now, this code is for Winddows OS */
+typedef char     gf_char;
 typedef int      gf_int;
 typedef int8_t   gf_8s;
 typedef uint8_t  gf_8u;
