@@ -77,7 +77,7 @@ extern const gf_int GF_STRING_INVALID_CHAR;
 /*!
 ** @brief Create a new structured string object
 **
-** @param [out] A pointer to the new string object
+** @param [out] str A pointer to the new string object
 **
 ** @return GF_SUCCESS on success, GF_E* otherwise
 */
@@ -87,7 +87,7 @@ extern gf_status gf_string_new(gf_string** str);
 /*!
 ** @brief Destroy a structured string object
 **
-** @param [in] A string object to be destroyed
+** @param [in] str A string object to be destroyed
 */
 
 extern void gf_string_free(gf_string* str);
