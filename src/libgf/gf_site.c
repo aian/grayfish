@@ -26,7 +26,7 @@
 
 /* -------------------------------------------------------------------------- */
 
-typedef struct gf_site gf_site;
+//typedef struct gf_site gf_site;
 typedef struct gf_site_entry gf_site_entry;
 typedef struct gf_site_subject gf_site_subject;
 typedef struct gf_site_keyword gf_site_keyword;
@@ -38,12 +38,17 @@ typedef enum gf_site_status gf_site_status;
 */
 
 struct gf_site {
-  xmlDocPtr doc;
-  char*     title;
-  char*     author;
-  gf_array* entries;
-  gf_array* subjects;
-  gf_array* keywords;;
+  xmlDocPtr      doc;
+  gf_string*     title;
+  gf_string*     author;
+  gf_string*     email;
+  gf_path*       src;
+  gf_path*       dst;
+  gf_path*       style;
+  gf_array*      entries;
+  gf_array*      subjects;
+  gf_array*      keywords;;
+  gf_site_status status;
 };
 
 /*!
@@ -53,10 +58,9 @@ struct gf_site {
 
 struct gf_site_entry {
   gf_uuid        id;
-  char*          name;
-  char*          title;
+  gf_string*     name;
+  gf_string*     title;
   gf_date*       modified;
-  gf_date*       updated;
   gf_date*       published;
   gf_path*       src;
   gf_path*       dst;
@@ -74,8 +78,8 @@ struct gf_site_entry {
 */
 
 struct gf_site_subject {
-  gf_uuid id;
-  char*   name;
+  gf_uuid    id;
+  gf_string* name;
 };
 
 /*!
@@ -84,8 +88,8 @@ struct gf_site_subject {
 */
 
 struct gf_site_keyword {
-  gf_uuid id;
-  char*   name;
+  gf_uuid    id;
+  gf_string* name;
 };
 
 /*!
@@ -95,9 +99,9 @@ struct gf_site_keyword {
 
 struct gf_site_file {
   gf_uuid        id;
-  char*          name;
+  gf_string*     name;
   gf_hash*       hash;
-  char*          type;
+  gf_string*     type;
   gf_path*       path;
   gf_date*       update;
   gf_date*       create;
