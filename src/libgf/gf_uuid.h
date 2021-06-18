@@ -84,6 +84,30 @@ extern gf_status gf_uuid_get_string(char* str, size_t len, const gf_uuid* uuid);
 
 extern gf_status gf_uuid_parse(gf_uuid* uuid, const char* str);
 
+/* -------------------------------------------------------------------------- */
+
+typedef struct gf_uuid_array gf_uuid_array;
+
+typedef void (*gf_uuid_free_fn)(gf_uuid* uuid);
+
+extern gf_status gf_uuid_array_new(gf_uuid_array** ary);
+
+extern void gf_uuid_array_free(gf_uuid_array* ary);
+
+extern gf_status gf_uuid_array_clear(gf_uuid_array* ary);
+
+extern gf_status gf_uuid_array_set_free_fn(gf_uuid_array* ary, gf_uuid_free_fn fn);
+
+extern gf_status gf_uuid_array_add(const gf_uuid_array* ary, gf_uuid* uuid);
+
+extern gf_size_t gf_uuid_array_count(const gf_uuid_array* ary);
+
+extern gf_bool gf_uuid_array_is_valid_index(const gf_uuid_array* ary, gf_size_t index);
+
+extern gf_status gf_uuid_array_get(gf_uuid_array* ary, gf_size_t index, gf_uuid **uuid);
+  
+extern gf_status gf_uuid_array_find(gf_uuid_array* ary, const gf_uuid *key, gf_uuid **uuid);
+
 #if __cplusplus
 }
 #endif

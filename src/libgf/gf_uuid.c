@@ -17,7 +17,9 @@
 #include <objbase.h>
 #include <windows.h>
 
+#include <libgf/gf_memory.h>
 #include <libgf/gf_string.h>
+#include <libgf/gf_array.h>
 #include <libgf/gf_uuid.h>
 
 #include "gf_local.h"
@@ -221,5 +223,176 @@ gf_uuid_parse(gf_uuid* uuid, const char* str) {
     uuid_parse_error(str);
   }
   
+  return GF_SUCCESS;
+}
+
+/* -------------------------------------------------------------------------- */
+
+struct gf_uuid_array {
+  gf_array*       uuid_set;
+  gf_uuid_free_fn free;
+};
+
+static gf_status
+uuid_array_init(gf_uuid_array* ary) {
+  gf_validate(ary);
+
+  ary->uuid_set = NULL;
+  ary->free = NULL;
+
+  return GF_SUCCESS;
+}
+
+static gf_status
+uuid_array_prepare(gf_uuid_array* ary) {
+  gf_status rc = GF_SUCCESS;
+  gf_validate(ary);
+
+  rc = gf_array_new(&ary->uuid_set);
+  gf_throw(rc);
+
+  return GF_SUCCESS;
+}
+
+gf_status
+gf_uuid_array_new(gf_uuid_array** ary) {
+  gf_status rc = GF_SUCCESS;
+  gf_uuid_array* tmp = NULL;
+
+  rc = gf_malloc((gf_ptr *)&tmp, sizeof(*tmp));
+  gf_throw(rc);
+  
+  rc = uuid_array_init(tmp);
+  if (rc != GF_SUCCESS) {
+    gf_free(tmp);
+    gf_throw(rc);
+  }
+  rc = uuid_array_prepare(tmp);
+  if (rc != GF_SUCCESS) {
+    gf_uuid_array_free(tmp);
+    gf_throw(rc);
+  }
+  *ary = tmp;
+  
+  return GF_SUCCESS;
+}
+
+void
+gf_uuid_array_free(gf_uuid_array* ary) {
+  if (ary) {
+    (void)gf_uuid_array_clear(ary);
+    gf_free(ary);
+  }
+}
+
+gf_status
+gf_uuid_array_clear(gf_uuid_array* ary) {
+  gf_status rc = GF_SUCCESS;
+  gf_size_t cnt = 0;
+
+  gf_validate(ary);
+
+  cnt = gf_uuid_array_count(ary);
+  for (gf_size_t i = 0; i < cnt; i++) {
+    gf_uuid* uuid = NULL;
+    
+    rc = gf_uuid_array_get(ary, i, &uuid);
+    if (rc != GF_SUCCESS) {
+      assert(0);
+      continue;
+    }
+    if (ary->free) {
+      ary->free(uuid);
+    } else {
+      gf_free(uuid);
+    }
+  }
+  rc = gf_array_clear(ary->uuid_set);
+  gf_throw(rc);
+
+  return GF_SUCCESS;
+}
+
+gf_status
+gf_uuid_array_set_free_fn(gf_uuid_array* ary, gf_uuid_free_fn fn) {
+  gf_validate(ary);
+
+  ary->free = fn;
+
+  return GF_SUCCESS;
+}
+
+gf_status
+gf_uuid_array_add(const gf_uuid_array* ary, gf_uuid* uuid) {
+  gf_status rc = GF_SUCCESS;
+
+  gf_validate(ary);
+  gf_validate(uuid);
+
+  rc = gf_array_add(ary->uuid_set, (gf_any){ .ptr = uuid });
+  gf_throw(rc);
+
+  return GF_SUCCESS;
+}
+
+gf_size_t
+gf_uuid_array_count(const gf_uuid_array* ary) {
+  return gf_array_size(ary->uuid_set);
+}
+
+gf_bool
+gf_uuid_array_is_valid_index(const gf_uuid_array* ary, gf_size_t index) {
+  gf_bool ret = GF_FALSE;
+  gf_size_t cnt = 0;
+  
+  cnt = gf_uuid_array_count(ary);
+  if (index < cnt) {
+    ret = GF_TRUE;
+  } else {
+    ret = GF_FALSE;
+  }
+
+  return ret;
+}
+
+gf_status
+gf_uuid_array_get(gf_uuid_array* ary, gf_size_t index, gf_uuid **uuid) {
+  gf_status rc = GF_SUCCESS;
+  gf_any any = { .data = 0 };
+  
+  gf_validate(ary);
+  gf_validate(gf_uuid_array_is_valid_index(ary, index));
+  gf_validate(uuid);
+
+  rc = gf_array_get(ary->uuid_set, index, &any);
+  gf_throw(rc);
+
+  *uuid = (gf_uuid*)(any.ptr);
+  
+  return GF_SUCCESS;
+}
+
+gf_status
+gf_uuid_array_find(gf_uuid_array* ary, const gf_uuid *key, gf_uuid **uuid) {
+  gf_status rc = GF_SUCCESS;
+  gf_size_t cnt = 0;
+  gf_uuid* tmp = NULL;
+  
+  gf_validate(ary);
+  gf_validate(key);
+  gf_validate(uuid);
+
+  cnt = gf_uuid_array_count(ary);
+  for (gf_size_t i = 0; i < cnt; i++) {
+    rc = gf_uuid_array_get(ary, i, &tmp);
+    gf_throw(rc);
+    if (!gf_uuid_compare(tmp, key)) {
+      *uuid = tmp;
+      return GF_SUCCESS;
+    }
+  }
+  /* Not found */
+  *uuid = NULL;
+
   return GF_SUCCESS;
 }
