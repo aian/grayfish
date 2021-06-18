@@ -27,11 +27,10 @@
 /* -------------------------------------------------------------------------- */
 
 //typedef struct gf_site gf_site;
-typedef struct gf_site_entry gf_site_entry;
-typedef struct gf_site_subject gf_site_subject;
-typedef struct gf_site_keyword gf_site_keyword;
-typedef struct gf_site_file gf_site_file;
-typedef enum gf_site_status gf_site_status;
+typedef struct gf_entry gf_entry;
+typedef struct gf_subject gf_subject;
+typedef struct gf_keyword gf_keyword;
+typedef struct gf_file gf_file;
 
 /*!
 ** @brief Site database
@@ -39,16 +38,16 @@ typedef enum gf_site_status gf_site_status;
 
 struct gf_site {
   xmlDocPtr      doc;
+  gf_uuid        id;
   gf_string*     title;
   gf_string*     author;
   gf_string*     email;
-  gf_path*       src;
-  gf_path*       dst;
-  gf_path*       style;
-  gf_array*      entries;
-  gf_array*      subjects;
-  gf_array*      keywords;;
-  gf_site_status status;
+  gf_string*     domain;
+  gf_path*       remote_path;
+  gf_path*       style_path;
+  gf_array*      entry_set;
+  gf_array*      subject_set;
+  gf_array*      keyword_set;;
 };
 
 /*!
@@ -56,19 +55,15 @@ struct gf_site {
 **
 */
 
-struct gf_site_entry {
+struct gf_entry {
   gf_uuid        id;
   gf_string*     name;
   gf_string*     title;
   gf_date*       modified;
   gf_date*       published;
-  gf_path*       src;
-  gf_path*       dst;
-  gf_site_status status;
-  gf_array*      subjects;  ///< The array of gf_site_subject objects
-  gf_array*      keywords;  ///< The array of gf_site_keyword objects
-  gf_array*      files;     ///< The array of gf_site_file objects
-  char*          role;
+  gf_array*      subject_set;  ///< The array of gf_site_subject objects
+  gf_array*      keyword_set;  ///< The array of gf_site_keyword objects
+  gf_array*      file_set;     ///< The array of gf_site_file objects
   xmlNodePtr     info;      ///<
 };
 
@@ -77,9 +72,10 @@ struct gf_site_entry {
 **
 */
 
-struct gf_site_subject {
+struct gf_subject {
   gf_uuid    id;
   gf_string* name;
+  gf_string* note;
 };
 
 /*!
@@ -87,7 +83,7 @@ struct gf_site_subject {
 **
 */
 
-struct gf_site_keyword {
+struct gf_keyword {
   gf_uuid    id;
   gf_string* name;
 };
@@ -97,15 +93,14 @@ struct gf_site_keyword {
 **
 */
 
-struct gf_site_file {
+struct gf_file {
   gf_uuid        id;
   gf_string*     name;
   gf_hash*       hash;
-  gf_string*     type;
+  gf_string*     mime_type;
   gf_path*       path;
   gf_date*       update;
   gf_date*       create;
-  gf_site_status status;
 };
 
 
@@ -175,11 +170,6 @@ gf_site_reset(gf_site* site) {
 #define SITE_PROP_COMPILED_DATE  BAD_CAST "cd"
 #define SITE_PROP_PUBLISHED_DATE BAD_CAST "pd"
 
-#define SITE_STATUS_MODIFIED  BAD_CAST "M" ///< Modified
-#define SITE_STATUS_COMPILED  BAD_CAST "C" ///< Compiled
-#define SITE_STATUS_PUBLISHED BAD_CAST "P" ///< Published
-#define SITE_STATUS_IGNORED   BAD_CAST "I" ///< Ignored
-
 #define SITE_DATE_ZERO     BAD_CAST "0"      ///< Default date value
 
 /*!
@@ -243,7 +233,6 @@ site_add_file_node(xmlNodePtr node, const xmlChar* name) {
       return NULL;
     }
     xmlSetProp(file, SITE_PROP_NAME, name);
-    xmlSetProp(file, SITE_PROP_STATUS, SITE_STATUS_MODIFIED);
     xmlSetProp(file, SITE_PROP_MODIFIED_DATE, SITE_DATE_ZERO);
     xmlSetProp(file, SITE_PROP_COMPILED_DATE, SITE_DATE_ZERO);
     xmlSetProp(file, SITE_PROP_PUBLISHED_DATE, SITE_DATE_ZERO);
@@ -371,8 +360,6 @@ static gf_status
 site_set_file_status(
   xmlNodePtr file, WIN32_FIND_DATA* find_data, const char* path) {
   xmlChar* md = NULL;
-  xmlChar* cd = NULL;
-  xmlChar* pd = NULL;
   xmlChar fd[256] = { 0 };
 
   gf_validate(file);
@@ -381,8 +368,6 @@ site_set_file_status(
 
   /* Node times */
   md = xmlGetProp(file, SITE_PROP_MODIFIED_DATE);
-  cd = xmlGetProp(file, SITE_PROP_COMPILED_DATE);
-  pd = xmlGetProp(file, SITE_PROP_PUBLISHED_DATE);
   
   /* File time */
   if (site_is_docbook_file(find_data->cFileName)) {
@@ -398,9 +383,6 @@ site_set_file_status(
     /* Updated */
     xmlSetProp(file, SITE_PROP_MODIFIED_DATE, fd);
     md = fd;
-  }
-  if (xmlStrcmp(md, cd) > 0 || xmlStrcmp(md, pd) > 0) {
-    xmlSetProp(file, SITE_PROP_STATUS, SITE_STATUS_MODIFIED);
   }
   
   return GF_SUCCESS;
@@ -967,91 +949,6 @@ gf_site_node_is_file(const gf_site_node* node) {
 gf_bool
 gf_site_node_is_directory(const gf_site_node* node) {
   return site_node_is_type(node, SITE_NODE_DIR);
-}
-
-gf_site_status
-gf_site_node_get_status(const gf_site_node* node) {
-  gf_site_status status = GF_SITE_STATUS_UNKNOWN;
-  xmlChar* prop = NULL;
-
-  if (!node || !node->ptr) {
-    return GF_SITE_STATUS_UNKNOWN;
-  }
-  prop = xmlGetProp(node->ptr, SITE_PROP_STATUS);
-  if (!prop) {
-    return GF_SITE_STATUS_UNKNOWN;
-  }
-  if (!xmlStrcmp(prop, SITE_STATUS_MODIFIED)) {
-    status = GF_SITE_STATUS_MODIFIED;
-  } else if (!xmlStrcmp(prop, SITE_STATUS_COMPILED)) {
-    status = GF_SITE_STATUS_COMPILED;
-  } else if (!xmlStrcmp(prop, SITE_STATUS_PUBLISHED)) {
-    status = GF_SITE_STATUS_PUBLISHED;
-  } else {
-    status = GF_SITE_STATUS_UNKNOWN;
-  }
-  
-  return status;
-}
-
-gf_status
-gf_site_node_set_status(gf_site_node* node, gf_site_status status) {
-  gf_validate(node);
-  gf_validate(node->ptr);
-
-  if (!gf_site_node_is_file(node)) {
-    gf_raise(GF_E_PARAM, "The site node is not a file.");
-  }
-  switch (status) {
-  case GF_SITE_STATUS_MODIFIED:
-    xmlSetProp(node->ptr, SITE_PROP_STATUS, SITE_STATUS_MODIFIED);
-    break;
-  case GF_SITE_STATUS_COMPILED:
-    xmlSetProp(node->ptr, SITE_PROP_STATUS, SITE_STATUS_COMPILED);
-    break;
-  case GF_SITE_STATUS_PUBLISHED:
-    xmlSetProp(node->ptr, SITE_PROP_STATUS, SITE_STATUS_PUBLISHED);
-    break;
-  case GF_SITE_STATUS_UNKNOWN:
-  default:
-    gf_raise(GF_E_PARAM, "Invalid status to set.");
-    break;
-  }
-
-  return GF_SUCCESS;
-}
-
-static gf_bool
-site_is_status(const gf_site_node* node, xmlChar* status) {
-  xmlChar* prop = NULL;
-  gf_bool ret = GF_FALSE;
-  
-  if (!node || !node->ptr) {
-    return GF_FALSE;
-  }
-  prop = xmlGetProp(node->ptr, SITE_PROP_STATUS);
-  if (prop && !xmlStrcmp(prop, status)) {
-    ret = GF_TRUE;   
-  } else {
-    ret = GF_FALSE;
-  }
-
-  return ret;
-}
-
-gf_bool
-gf_site_node_is_modified(const gf_site_node* node) {
-  return site_is_status(node, SITE_STATUS_MODIFIED);
-}
-
-gf_bool
-gf_site_node_is_compiled(const gf_site_node* node) {
-  return site_is_status(node, SITE_STATUS_COMPILED);
-}
-
-gf_bool
-gf_site_node_is_published(const gf_site_node* node) {
-  return site_is_status(node, SITE_STATUS_PUBLISHED);
 }
 
 gf_status

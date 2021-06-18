@@ -81,23 +81,6 @@ extern gf_status gf_site_read_file(gf_site** site, const gf_path* path);
 
 /* -------------------------------------------------------------------------- */
 
-/*
-** @brief The status of each site files.
-**
-** 
-**
-*/
-
-enum gf_site_status {
-  GF_SITE_STATUS_UNKNOWN   = 0,     ///< Unknown status
-  GF_SITE_STATUS_MODIFIED  = 0x01,  ///< Modified but not compiled
-  GF_SITE_STATUS_COMPILED  = 0x02,  ///< Compiled but not uploaded
-  GF_SITE_STATUS_PUBLISHED = 0x03,  ///< Published to the remote server
-  GF_SITE_STATUS_IGNORED   = 0x04,  ///< Ignored
-};
-
-typedef enum gf_site_status gf_site_status;
-
 /*!
 ** @brief The pointer of the site document node.
 **
@@ -124,15 +107,6 @@ extern gf_bool gf_site_node_is_root(const gf_site_node* node);
 extern gf_bool gf_site_node_is_file(const gf_site_node* node);
 
 extern gf_bool gf_site_node_is_directory(const gf_site_node* node);
-
-extern gf_site_status gf_site_node_get_status(const gf_site_node* node);
-
-extern gf_status gf_site_node_set_status(
-  gf_site_node* node, gf_site_status status);
-
-extern gf_bool gf_site_node_is_modified(const gf_site_node* node);
-extern gf_bool gf_site_node_is_compiled(const gf_site_node* node);
-extern gf_bool gf_site_node_is_published(const gf_site_node* node);
 
 extern gf_status gf_site_node_get_full_path(
   gf_path** full_path, const gf_site_node* node);
