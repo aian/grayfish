@@ -16,7 +16,7 @@
 ** file_time::u32[1] == FILETIME::dwHighDateTime
 */
 
-union gf_date {
+struct gf_date {
   gf_any file_time;
 };
 
@@ -54,5 +54,15 @@ gf_date_free(gf_date* date) {
   if (date) {
     gf_free(date);
   }
+}
+
+gf_status
+gf_date_copy(gf_date* dst, const gf_date* src) {
+  gf_validate(dst);
+  gf_validate(src);
+
+  dst->file_time.data = src->file_time.data;
+
+  return GF_SUCCESS;
 }
 

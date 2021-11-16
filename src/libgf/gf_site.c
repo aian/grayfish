@@ -92,6 +92,63 @@ gf_author_set_mail(gf_author* author, const gf_string* mail) {
   return GF_SUCCESS;
 }
 
+gf_status
+gf_author_copy(gf_author* dst, const gf_author* src) {
+  gf_status rc = 0;
+  
+  gf_validate(dst);
+  gf_validate(src);
+
+  rc = gf_string_copy(dst->name, src->name);
+  if (rc != GF_SUCCESS) {
+    gf_throw(rc);
+  }
+  rc = gf_string_copy(dst->mail, src->mail);
+  if (rc != GF_SUCCESS) {
+    gf_throw(rc);
+  }
+  
+  return GF_SUCCESS;
+}
+
+gf_status
+gf_author_clone(gf_author** dst, const gf_author* src) {
+  gf_status rc = 0;
+  gf_author* tmp = NULL;
+  
+  gf_validate(dst);
+  gf_validate(src);
+
+  _(gf_author_new(&tmp));
+
+  rc = gf_author_copy(tmp, src);
+  if (rc != GF_SUCCESS) {
+    gf_author_free(tmp);
+    gf_throw(rc);
+  }
+  *dst = tmp;
+
+  return GF_SUCCESS;
+}
+
+gf_status
+gf_author_assign(gf_author** dst, const gf_author* src) {
+  gf_author* tmp = NULL;
+  
+  gf_validate(dst);
+  gf_validate(src);
+
+  _(gf_author_clone(&tmp, src));
+  
+  if (*dst) {
+    gf_author_free(*dst);
+    *dst = NULL;
+  }
+  *dst = tmp;
+  
+  return GF_SUCCESS;
+}
+
 /* -------------------------------------------------------------------------- */
 
 /*!
@@ -173,6 +230,7 @@ gf_object_set_author(gf_object* obj, const gf_author* author) {
   gf_validate(obj);
   gf_validate(author);
 
+  _(gf_author_assign(&obj->author, author));
   
   return GF_SUCCESS;
 }
@@ -182,6 +240,8 @@ gf_object_set_update_date(gf_object* obj, const gf_date* date) {
   gf_validate(obj);
   gf_validate(date);
 
+  _(gf_date_copy(obj->update_date, date));
+  
   return GF_SUCCESS;
 }
 
@@ -190,6 +250,8 @@ gf_object_set_create_date(gf_object* obj, const gf_date* date) {
   gf_validate(obj);
   gf_validate(date);
 
+  _(gf_date_copy(obj->create_date, date));
+  
   return GF_SUCCESS;
 }
 
@@ -975,6 +1037,45 @@ gf_site_update(gf_site* site, const gf_path* root_path) {
   if (rc != GF_SUCCESS) {
     gf_throw(rc);
   }
+
+  return GF_SUCCESS;
+}
+
+/* -------------------------------------------------------------------------- */
+
+static gf_status
+site_scan_directories(gf_site* site, gf_path* root) {
+  gf_validate(site);
+  gf_validate(root);
+  
+  return GF_SUCCESS;
+}
+
+gf_status
+gf_site_scan(gf_site** site, const gf_path* path) {
+  gf_status rc = 0;
+  gf_path* root = NULL;
+  gf_site* tmp = NULL;
+  
+  gf_validate(site);
+  gf_validate(!gf_path_is_empty(path));
+
+  /* Disposal root path */
+  _(gf_path_new(&root, gf_path_get_string(path)));
+
+  rc = gf_site_new(&tmp);
+  if (rc != GF_SUCCESS) {
+    gf_path_free(root);
+    gf_throw(rc);
+  }
+  /* Traverse */
+  rc = site_scan_directories(tmp, root);
+  gf_path_free(root);
+  if (rc != GF_SUCCESS) {
+    gf_throw(rc);
+  }
+
+  *site = tmp;
 
   return GF_SUCCESS;
 }

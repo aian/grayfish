@@ -32,6 +32,9 @@ extern gf_status gf_author_new(gf_author** author);
 extern void gf_author_free(gf_author* author);
 extern gf_status gf_author_set_name(gf_author* author, const gf_string* name);
 extern gf_status gf_author_set_mail(gf_author* author, const gf_string* mail);
+extern gf_status gf_author_copy(gf_author* dst, const gf_author* src);
+extern gf_status gf_author_clone(gf_author** dst, const gf_author* src);
+extern gf_status gf_author_assign(gf_author** dst, const gf_author* src);
 
 /* -------------------------------------------------------------------------- */
 
@@ -95,6 +98,16 @@ extern gf_status gf_site_reset(gf_site* site);
 */
 
 extern gf_status gf_site_update(gf_site* site, const gf_path* root_path);
+
+/*!
+** @brief Traverse the specifed directory tree and collect site information.
+**
+** @param [out] site The pointer to the site object
+** @param [in]  path The start point for traversing the files
+** @return GF_SUCCESS on success, GF_E_* otherwise.
+*/
+
+extern gf_status gf_site_scan(gf_site** site, const gf_path* path);
 
 /*!
 ** @brief Write the directory information to the specified file.

@@ -18,11 +18,11 @@
 extern "C" {
 #endif
 
-typedef union gf_date gf_date;
+typedef struct gf_date gf_date;
 
 extern gf_status gf_date_new(gf_date** date);
 extern void gf_date_free(gf_date* date);
-
+extern gf_status gf_date_copy(gf_date* dst, const gf_date* src);
 
 #ifdef __cplusplus
 }
