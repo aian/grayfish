@@ -148,3 +148,53 @@ gf_string_get_at(const gf_string* str, gf_size_t index) {
   }
   return str->data[index];
 }
+
+extern gf_status
+gf_string_copy(gf_string* dst, const gf_string* src) {
+  gf_validate(dst);
+  gf_validate(src);
+
+  _(gf_string_set(dst, src->data));
+  
+  return GF_SUCCESS;
+}
+
+gf_status
+gf_string_clone(gf_string** dst, const gf_string* src) {
+  gf_status rc = 0;
+  gf_string* tmp = NULL;
+  
+  gf_validate(dst);
+  gf_validate(src);
+
+  _(gf_string_new(&tmp));
+  
+  rc = gf_string_copy(tmp, src);
+  if (rc != GF_SUCCESS) {
+    gf_string_free(tmp);
+    return rc;
+  }
+
+  *dst = tmp;
+  
+  return GF_SUCCESS;
+}
+
+gf_status
+gf_string_assign(gf_string** dst, const gf_string* src) {
+  gf_string* tmp = NULL;
+  
+  gf_validate(dst);
+  gf_validate(src);
+
+  _(gf_string_clone(&tmp, src));
+  
+  if (*dst) {
+    gf_string_free(*dst);
+    *dst = NULL;
+  }
+
+  *dst = tmp;
+  
+  return GF_SUCCESS;
+}

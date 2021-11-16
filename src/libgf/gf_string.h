@@ -100,6 +100,12 @@ extern gf_size_t gf_string_size(const gf_string* str);
 
 extern gf_int gf_string_get_at(const gf_string* str, gf_size_t index);
 
+extern gf_status gf_string_copy(gf_string* dst, const gf_string* src);
+
+extern gf_status gf_string_clone(gf_string** dst, const gf_string* src);
+
+extern gf_status gf_string_assign(gf_string** dst, const gf_string* src);
+
 #ifdef __cplusplus
 }
 #endif
