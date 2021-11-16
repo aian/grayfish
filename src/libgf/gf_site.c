@@ -15,22 +15,200 @@
 #include <libxml/tree.h>
 
 #include <libgf/gf_memory.h>
-#include <libgf/gf_string.h>
 #include <libgf/gf_array.h>
 #include <libgf/gf_path.h>
 #include <libgf/gf_uuid.h>
-#include <libgf/gf_date.h>
 #include <libgf/gf_hash.h>
 #include <libgf/gf_site.h>
 #include <libgf/gf_local.h>
 
 /* -------------------------------------------------------------------------- */
 
-//typedef struct gf_site gf_site;
+struct gf_author {
+  gf_string* name;
+  gf_string* mail;
+};
+
+static gf_status
+author_init(gf_author* author) {
+  gf_validate(author);
+
+  author->name = NULL;
+  author->mail = NULL;
+
+  return GF_SUCCESS;
+}
+
+gf_status
+gf_author_new(gf_author** author) {
+  gf_status rc = 0;
+  gf_author* tmp = NULL;
+
+  gf_validate(author);
+  _(gf_malloc((gf_ptr*)tmp, sizeof(*tmp)));
+
+  rc = author_init(tmp);
+  if (rc != GF_SUCCESS) {
+    gf_free(tmp);
+    gf_throw(rc);
+  }
+  *author = tmp;
+  
+  return GF_SUCCESS;
+}
+
+void
+gf_author_free(gf_author* author) {
+  if (author) {
+    if (author->name) {
+      gf_string_free(author->name);
+      author->name = NULL;
+    }
+    if (author->mail) {
+      gf_string_free(author->mail);
+      author->mail = NULL;
+    }
+    gf_free(author);
+  }
+}
+
+gf_status
+gf_author_set_name(gf_author* author, const gf_string* name) {
+  gf_validate(author);
+  gf_validate(name);
+
+  _(gf_string_assign(&author->name, name));
+
+  return GF_SUCCESS;
+}
+
+gf_status
+gf_author_set_mail(gf_author* author, const gf_string* mail) {
+  gf_validate(author);
+  gf_validate(mail);
+
+  _(gf_string_assign(&author->mail, mail));
+  
+  return GF_SUCCESS;
+}
+
+/* -------------------------------------------------------------------------- */
+
+/*!
+** @brief Site object
+**
+** This is the base type of evry site objects.
+*/
+
+struct gf_object {
+  gf_uuid        id;
+  gf_object_type type;
+  gf_string*     title;
+  gf_author*     author;
+  gf_date*       update_date;
+  gf_date*       create_date;
+};
+
+gf_status
+gf_object_init(gf_object* obj) {
+  gf_validate(obj);
+
+  _(gf_uuid_init(&obj->id));
+  obj->type = GF_OBJECT_TYPE_UNKNOWN;
+  obj->title = NULL;
+  obj->author = NULL;
+  obj->update_date = NULL;
+  obj->create_date = NULL;
+  
+  return GF_SUCCESS;
+}
+
+gf_status
+gf_object_clear(gf_object* obj) {
+  gf_validate(obj);
+
+  _(gf_uuid_init(&obj->id));
+
+  obj->type = GF_OBJECT_TYPE_UNKNOWN;
+
+  if (obj->title) {
+    gf_string_free(obj->title);
+    obj->title = NULL;
+  }
+  if (obj->author) {
+    gf_author_free(obj->author);
+    obj->author = NULL;
+  }
+  if (obj->update_date) {
+    gf_date_free(obj->update_date);
+    obj->update_date = NULL;
+  }
+  if (obj->create_date) {
+    gf_date_free(obj->create_date);
+    obj->create_date = NULL;
+  }
+
+  return GF_SUCCESS;
+}
+
+gf_status
+gf_object_set_type(gf_object* obj, gf_object_type type) {
+  gf_validate(obj);
+  obj->type = type;
+  return GF_SUCCESS;
+}
+
+gf_status
+gf_object_set_title(gf_object* obj, const gf_string* title) {
+  gf_validate(obj);
+  gf_validate(title);
+
+  _(gf_string_assign(&obj->title, title));
+  
+  return GF_SUCCESS;
+}
+
+gf_status
+gf_object_set_author(gf_object* obj, const gf_author* author) {
+  gf_validate(obj);
+  gf_validate(author);
+
+  
+  return GF_SUCCESS;
+}
+
+gf_status
+gf_object_set_update_date(gf_object* obj, const gf_date* date) {
+  gf_validate(obj);
+  gf_validate(date);
+
+  return GF_SUCCESS;
+}
+
+gf_status
+gf_object_set_create_date(gf_object* obj, const gf_date* date) {
+  gf_validate(obj);
+  gf_validate(date);
+
+  return GF_SUCCESS;
+}
+
+
+/* -------------------------------------------------------------------------- */
+
+typedef struct gf_site gf_site;
+typedef struct gf_section gf_section;
 typedef struct gf_entry gf_entry;
+typedef struct gf_file gf_file;
+
 typedef struct gf_subject gf_subject;
 typedef struct gf_keyword gf_keyword;
-typedef struct gf_file gf_file;
+typedef struct gf_author gf_author;
+
+/*!
+** @brief Object type enumeration
+*/
+
 
 /*!
 ** @brief Site database
@@ -46,8 +224,16 @@ struct gf_site {
   gf_path*       remote_path;
   gf_path*       style_path;
   gf_array*      entry_set;
-  gf_array*      subject_set;
-  gf_array*      keyword_set;;
+};
+
+/*!
+** @brief Site section
+**
+*/
+
+struct gf_section {
+  gf_object base_;  ///< the base class
+
 };
 
 /*!
@@ -103,6 +289,7 @@ struct gf_file {
   gf_date*       create;
 };
 
+/* -------------------------------------------------------------------------- */
 
 static gf_status
 site_init(gf_site* site) {
@@ -122,7 +309,7 @@ gf_site_new(gf_site** site) {
   rc = site_init(tmp);
   if (rc != GF_SUCCESS ) {
     gf_free(tmp);
-    return rc;
+    gf_throw(rc);
   }
   *site = tmp;
   
@@ -443,12 +630,12 @@ site_make_search_path(gf_path** search_path, const gf_path* path) {
 
   rc = gf_path_new(&tmp, gf_path_get_string(path));
   if (rc != GF_SUCCESS) {
-    return rc;
+    gf_throw(rc);
   }
   rc = gf_path_new(&wc, "*.*");
   if (rc != GF_SUCCESS) {
     gf_path_free(tmp);
-    return rc;
+    gf_throw(rc);
   }
   rc = gf_path_append(tmp, wc);
   gf_path_free(wc);
@@ -498,7 +685,7 @@ site_traverse_directories(const gf_path* path, xmlNodePtr node) {
     rc = gf_path_append_string(&child_path, path, file_name);
     if (rc != GF_SUCCESS) {
       FindClose(hr);
-      return rc;
+      gf_throw(rc);
     }
     
     if (find_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
@@ -524,14 +711,14 @@ site_traverse_directories(const gf_path* path, xmlNodePtr node) {
       gf_path_free(child_path);
       if (rc != GF_SUCCESS) {
         FindClose(hr);
-        return rc;
+        gf_throw(rc);
       }
     } else if (find_data.dwFileAttributes & file_attr) {
       /* On normal file case */
       rc = site_set_file_node(node, &find_data, gf_path_get_string(child_path));
       if (rc != GF_SUCCESS) {
         FindClose(hr);
-        return rc;
+        gf_throw(rc);
       }
     } else {
       /* The other case */
@@ -692,7 +879,7 @@ site_traverse_nodes(const gf_path* path, xmlNodePtr node) {
       rc = site_traverse_nodes(child_path, cur);
       gf_path_free(child_path);
       if (rc != GF_SUCCESS) {
-        return rc;
+        gf_throw(rc);
       }
     }
   } else if (site_is_node_file(node)) {
@@ -781,12 +968,12 @@ gf_site_update(gf_site* site, const gf_path* root_path) {
   rc = site_traverse_directories(root, root_node);
   if (rc != GF_SUCCESS) {
     gf_path_free(root);
-    return rc;
+    gf_throw(rc);
   }
   rc = site_traverse_nodes(root, root_node);
   gf_path_free(root);
   if (rc != GF_SUCCESS) {
-    return rc;
+    gf_throw(rc);
   }
 
   return GF_SUCCESS;
