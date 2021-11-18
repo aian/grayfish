@@ -101,6 +101,7 @@ endif()
 #> 
 #> find_package(LibXml2 REQUIRED)
 #> find_package(LibXslt REQUIRED)
+#> find_package(OpenSSL REQUIRED)
 #> find_package(PkgConfig REQUIRED)
 #> pkg_check_modules(MONGOOSE REQUIRED mongoose)
 #> 
@@ -161,6 +162,7 @@ endif()
 #> include_directories(
 #>   ${LIBXML2_INCLUDE_DIR}
 #>   ${LIBXSLT_INCLUDE_DIR} 
+#>   ${OPENSSL_INCLUDE_DIR} 
 #>   ${MONGOOSE_INCLUDE_DIR} 
 #>   ${CMAKE_SOURCE_DIR}/src)
 #> 
@@ -171,6 +173,7 @@ endif()
 #>     ${LIBXML2_LIBRARIES}
 #>     ${LIBXSLT_LIBRARIES}
 #>     ${LIBXSLT_EXSLT_LIBRARY}
+#>     ${OPENSSL_LIBRARIES} 
 #>     ${MONGOOSE_LIBRARIES} 
 #>     shlwapi
 #>     advapi32

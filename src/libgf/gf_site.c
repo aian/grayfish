@@ -18,7 +18,6 @@
 #include <libgf/gf_array.h>
 #include <libgf/gf_path.h>
 #include <libgf/gf_uuid.h>
-#include <libgf/gf_hash.h>
 #include <libgf/gf_site.h>
 #include <libgf/gf_local.h>
 
@@ -344,7 +343,6 @@ struct gf_keyword {
 struct gf_file {
   gf_uuid        id;
   gf_string*     name;
-  gf_hash*       hash;
   gf_string*     mime_type;
   gf_path*       path;
   gf_date*       update;

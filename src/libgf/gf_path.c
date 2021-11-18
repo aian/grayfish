@@ -8,9 +8,13 @@
 */
 #include <assert.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include <windows.h>
+
+#include <libgen.h>
+
 #include <shlwapi.h>
 
 #include <libgf/gf_swap.h>
@@ -159,23 +163,41 @@ gf_path_canonicalize(gf_path* path) {
 gf_status
 gf_path_absolute_path(gf_path* path) {
   gf_status rc = 0;
-  DWORD size = 0;
   char* buf = NULL;
 
-  size = GetFullPathName(path->buf, 0, NULL, NULL);
-  if (size <= 0) {
-    gf_raise(GF_E_API, "Failed to build an absolute path.");
+  gf_validate(path);
+
+  // NOTE: _fullpath is a windows specific API. On UN*X, you should use
+  // realpath(3) instead.
+  buf = _fullpath(NULL, path->buf, 0);
+  if (!buf) {
+    gf_raise(GF_E_API, "Failed to get full path name '%s'", path->buf);
   }
-  _(gf_malloc((gf_ptr*)&buf, size));
-
-  GetFullPathName(path->buf, size, buf, NULL);
-
   rc = gf_strassign(&path->buf, buf);
   if (rc != GF_SUCCESS) {
     gf_free(buf);
     return rc;
   }
   path->len = gf_strlen(path->buf);
+
+  return GF_SUCCESS;
+}
+
+gf_status
+gf_path_file_name(gf_path* path) {
+  char* file_name = NULL;
+  char* buf = NULL;
+  
+  gf_validate(!gf_path_is_empty(path));
+
+  file_name = basename(path->buf);
+  _(gf_strdup(&buf, file_name));
+
+  if (path->buf) {
+    gf_free(path->buf);
+  }
+  path->buf = buf;
+  path->len = gf_strlen(buf);
 
   return GF_SUCCESS;
 }

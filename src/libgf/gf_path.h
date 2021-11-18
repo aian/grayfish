@@ -86,6 +86,9 @@ extern gf_status gf_path_canonicalize(gf_path* path);
 
 extern gf_status gf_path_absolute_path(gf_path* path);
 
+
+extern gf_status gf_path_file_name(gf_path* path);
+
 /*!
 ** @brief Get parent directory path
 **
