@@ -58,6 +58,9 @@ file_info_init(gf_file_info* info) {
   info->create_time = 0;
   info->children = NULL;
 
+  info->user_data.data = 0;
+  info->user_flag = 0;
+  
   info->hash_size = GF_HASH_BUFSIZE_SHA512;
   _(gf_bzero(info->hash, info->hash_size));
   
