@@ -21,18 +21,21 @@
 struct gf_file_info {
   gf_path*  file_name;                    ///< file name
   gf_path*  full_path;                    ///< full path name
-  gf_32u    device;                       ///< stat64::st_dev 
+  gf_8u     hash[GF_HASH_BUFSIZE_SHA512]; ///< SHA-512 hash
+  gf_any    user_data;                    ///< user defined data
+  gf_32u    user_flag;                    ///< user defined flag
+  gf_16u    hash_size;                    ///< hash buffer size (in byte)
   gf_16u    inode;                        ///< stat64::st_ino
   gf_16u    mode;                         ///< stat64::st_mode
   gf_16s    link_count;                   ///< stat64::st_nlink
   gf_16s    uid;                          ///< stat64::st_uid
   gf_16s    gid;                          ///< stat64::st_gid
+  gf_32u    device;                       ///< stat64::st_dev 
   gf_32u    rdevice;                      ///< stat64::st_rdev
   gf_64u    file_size;                    ///< stat64::st_size
   gf_64u    access_time;                  ///< stat64::st_atime
   gf_64u    modify_time;                  ///< stat64::st_mtime
   gf_64u    create_time;                  ///< stat64::st_ctime
-  gf_8u     hash[GF_HASH_BUFSIZE_SHA512]; ///< SHA-512 hash
   gf_array* children;
 };
 
@@ -42,20 +45,22 @@ file_info_init(gf_file_info* info) {
 
   info->file_name = NULL;
   info->full_path = NULL;
-  info->device = 0;
   info->inode = 0;
   info->mode = 0;
   info->link_count= 0;
   info->uid = 0;
   info->gid = 0;
+  info->device = 0;
   info->rdevice = 0;
   info->file_size = 0;
   info->access_time = 0;
   info->modify_time = 0;
   info->create_time = 0;
-  info->hash[64] = 0;
   info->children = NULL;
 
+  info->hash_size = GF_HASH_BUFSIZE_SHA512;
+  _(gf_bzero(info->hash, info->hash_size));
+  
   return GF_SUCCESS;
 }
 
@@ -112,12 +117,12 @@ file_info_set_stat(gf_file_info* info) {
   if (ret != 0) {
     gf_raise(GF_E_API, "Could not get a file information.");
   }
-  info->device      = st.st_dev;
   info->inode       = st.st_ino;
   info->mode        = st.st_mode;
   info->link_count  = st.st_nlink;
   info->uid         = st.st_uid;
   info->gid         = st.st_gid;
+  info->device      = st.st_dev;
   info->rdevice     = st.st_rdev;
   info->file_size   = st.st_size;
   info->access_time = st.st_atime;
