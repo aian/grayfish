@@ -26,18 +26,6 @@ extern "C" {
 
 /* -------------------------------------------------------------------------- */
 
-typedef struct gf_author gf_author;
-
-extern gf_status gf_author_new(gf_author** author);
-extern void gf_author_free(gf_author* author);
-extern gf_status gf_author_set_name(gf_author* author, const gf_string* name);
-extern gf_status gf_author_set_mail(gf_author* author, const gf_string* mail);
-extern gf_status gf_author_copy(gf_author* dst, const gf_author* src);
-extern gf_status gf_author_clone(gf_author** dst, const gf_author* src);
-extern gf_status gf_author_assign(gf_author** dst, const gf_author* src);
-
-/* -------------------------------------------------------------------------- */
-
 enum gf_object_type {
   GF_OBJECT_TYPE_UNKNOWN = 0,
   GF_OBJECT_TYPE_SITE    = 1,
@@ -55,7 +43,7 @@ extern gf_status gf_object_init(gf_object* obj);
 extern gf_status gf_object_clear(gf_object* obj);
 extern gf_status gf_object_set_type(gf_object* obj, gf_object_type type);
 extern gf_status gf_object_set_title(gf_object* obj, const gf_string* title);
-extern gf_status gf_object_set_author(gf_object* obj, const gf_author* author);
+extern gf_status gf_object_set_author(gf_object* obj, const gf_string* author);
 extern gf_status gf_object_set_update_date(gf_object* obj, const gf_date* date);
 extern gf_status gf_object_set_create_date(gf_object* obj, const gf_date* date);
 

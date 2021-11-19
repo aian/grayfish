@@ -18,134 +18,8 @@
 #include <libgf/gf_array.h>
 #include <libgf/gf_path.h>
 #include <libgf/gf_site.h>
-#include <libgf/gf_local.h>
 
-/* -------------------------------------------------------------------------- */
-
-struct gf_author {
-  gf_string* name;
-  gf_string* mail;
-};
-
-static gf_status
-author_init(gf_author* author) {
-  gf_validate(author);
-
-  author->name = NULL;
-  author->mail = NULL;
-
-  return GF_SUCCESS;
-}
-
-gf_status
-gf_author_new(gf_author** author) {
-  gf_status rc = 0;
-  gf_author* tmp = NULL;
-
-  gf_validate(author);
-  _(gf_malloc((gf_ptr*)tmp, sizeof(*tmp)));
-
-  rc = author_init(tmp);
-  if (rc != GF_SUCCESS) {
-    gf_free(tmp);
-    gf_throw(rc);
-  }
-  *author = tmp;
-  
-  return GF_SUCCESS;
-}
-
-void
-gf_author_free(gf_author* author) {
-  if (author) {
-    if (author->name) {
-      gf_string_free(author->name);
-      author->name = NULL;
-    }
-    if (author->mail) {
-      gf_string_free(author->mail);
-      author->mail = NULL;
-    }
-    gf_free(author);
-  }
-}
-
-gf_status
-gf_author_set_name(gf_author* author, const gf_string* name) {
-  gf_validate(author);
-  gf_validate(name);
-
-  _(gf_string_assign(&author->name, name));
-
-  return GF_SUCCESS;
-}
-
-gf_status
-gf_author_set_mail(gf_author* author, const gf_string* mail) {
-  gf_validate(author);
-  gf_validate(mail);
-
-  _(gf_string_assign(&author->mail, mail));
-  
-  return GF_SUCCESS;
-}
-
-gf_status
-gf_author_copy(gf_author* dst, const gf_author* src) {
-  gf_status rc = 0;
-  
-  gf_validate(dst);
-  gf_validate(src);
-
-  rc = gf_string_copy(dst->name, src->name);
-  if (rc != GF_SUCCESS) {
-    gf_throw(rc);
-  }
-  rc = gf_string_copy(dst->mail, src->mail);
-  if (rc != GF_SUCCESS) {
-    gf_throw(rc);
-  }
-  
-  return GF_SUCCESS;
-}
-
-gf_status
-gf_author_clone(gf_author** dst, const gf_author* src) {
-  gf_status rc = 0;
-  gf_author* tmp = NULL;
-  
-  gf_validate(dst);
-  gf_validate(src);
-
-  _(gf_author_new(&tmp));
-
-  rc = gf_author_copy(tmp, src);
-  if (rc != GF_SUCCESS) {
-    gf_author_free(tmp);
-    gf_throw(rc);
-  }
-  *dst = tmp;
-
-  return GF_SUCCESS;
-}
-
-gf_status
-gf_author_assign(gf_author** dst, const gf_author* src) {
-  gf_author* tmp = NULL;
-  
-  gf_validate(dst);
-  gf_validate(src);
-
-  _(gf_author_clone(&tmp, src));
-  
-  if (*dst) {
-    gf_author_free(*dst);
-    *dst = NULL;
-  }
-  *dst = tmp;
-  
-  return GF_SUCCESS;
-}
+#include "gf_local.h"
 
 /* -------------------------------------------------------------------------- */
 
@@ -158,7 +32,7 @@ gf_author_assign(gf_author** dst, const gf_author* src) {
 struct gf_object {
   gf_object_type type;
   gf_string*     title;
-  gf_author*     author;
+  gf_string*     author;
   gf_date*       update_date;
   gf_date*       create_date;
 };
@@ -187,7 +61,7 @@ gf_object_clear(gf_object* obj) {
     obj->title = NULL;
   }
   if (obj->author) {
-    gf_author_free(obj->author);
+    gf_string_free(obj->author);
     obj->author = NULL;
   }
   if (obj->update_date) {
@@ -220,11 +94,11 @@ gf_object_set_title(gf_object* obj, const gf_string* title) {
 }
 
 gf_status
-gf_object_set_author(gf_object* obj, const gf_author* author) {
+gf_object_set_author(gf_object* obj, const gf_string* author) {
   gf_validate(obj);
   gf_validate(author);
 
-  _(gf_author_assign(&obj->author, author));
+  _(gf_string_assign(&obj->author, author));
   
   return GF_SUCCESS;
 }
@@ -252,44 +126,19 @@ gf_object_set_create_date(gf_object* obj, const gf_date* date) {
 
 /* -------------------------------------------------------------------------- */
 
-typedef struct gf_site gf_site;
-typedef struct gf_section gf_section;
-typedef struct gf_entry gf_entry;
-typedef struct gf_file gf_file;
-
-typedef struct gf_subject gf_subject;
-typedef struct gf_keyword gf_keyword;
-typedef struct gf_author gf_author;
-
-/*!
-** @brief Object type enumeration
-*/
-
-
 /*!
 ** @brief Site database
 */
 
 struct gf_site {
+  gf_object      base;
   xmlDocPtr      doc;
-  gf_string*     title;
-  gf_string*     author;
-  gf_string*     email;
   gf_string*     domain;
-  gf_path*       remote_path;
   gf_path*       style_path;
   gf_array*      entry_set;
 };
 
-/*!
-** @brief Site section
-**
-*/
-
-struct gf_section {
-  gf_object base_;  ///< the base class
-
-};
+typedef struct gf_site gf_site;
 
 /*!
 ** @brief Site entry
@@ -297,46 +146,23 @@ struct gf_section {
 */
 
 struct gf_entry {
-  gf_string*     name;
-  gf_string*     title;
-  gf_date*       modified;
-  gf_date*       published;
-  gf_array*      subject_set;  ///< The array of gf_site_subject objects
-  gf_array*      keyword_set;  ///< The array of gf_site_keyword objects
+  gf_object      base;
+  gf_array*      subject_set;  ///< The array of gf_category objects
+  gf_array*      keyword_set;  ///< The array of gf_category objects
   gf_array*      file_set;     ///< The array of gf_site_file objects
-  xmlNodePtr     info;      ///<
+  xmlNodePtr     info;         ///<
 };
+
+typedef struct gf_entry gf_entry;
 
 /*!
 ** @brief A subject of entries
 **
 */
 
-struct gf_subject {
+struct gf_category {
+  gf_string* id;
   gf_string* name;
-  gf_string* note;
-};
-
-/*!
-** @brief A keyword
-**
-*/
-
-struct gf_keyword {
-  gf_string* name;
-};
-
-/*!
-** @brief A file
-**
-*/
-
-struct gf_file {
-  gf_string*     name;
-  gf_string*     mime_type;
-  gf_path*       path;
-  gf_date*       update;
-  gf_date*       create;
 };
 
 /* -------------------------------------------------------------------------- */
