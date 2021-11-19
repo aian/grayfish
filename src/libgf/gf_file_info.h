@@ -25,6 +25,7 @@ typedef struct gf_file_info gf_file_info;
 extern gf_status gf_file_info_new(gf_file_info** info, const gf_path* path);
 extern void gf_file_info_free(gf_file_info* info);
 
+extern gf_bool gf_file_info_is_file(const gf_file_info* info);
 extern gf_bool gf_file_info_is_directory(const gf_file_info* info);
 
 extern gf_size_t gf_file_info_count_children(const gf_file_info* info);

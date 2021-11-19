@@ -6,6 +6,8 @@
 ** @file libgf/gf_file_info.h
 ** @brief Operating file information.
 */
+#define _XOPEN_SOURCE 700
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <dirent.h>
@@ -213,6 +215,11 @@ gf_file_info_free(gf_file_info* info) {
     (void)file_info_init(info);
     gf_free(info);
   }
+}
+
+gf_bool
+gf_file_info_is_file(const gf_file_info* info) {
+  return info && S_ISREG(info->mode) ? GF_TRUE : GF_FALSE;
 }
 
 gf_bool
