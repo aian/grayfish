@@ -17,7 +17,6 @@
 #include <libgf/gf_memory.h>
 #include <libgf/gf_array.h>
 #include <libgf/gf_path.h>
-#include <libgf/gf_uuid.h>
 #include <libgf/gf_site.h>
 #include <libgf/gf_local.h>
 
@@ -157,7 +156,6 @@ gf_author_assign(gf_author** dst, const gf_author* src) {
 */
 
 struct gf_object {
-  gf_uuid        id;
   gf_object_type type;
   gf_string*     title;
   gf_author*     author;
@@ -169,7 +167,6 @@ gf_status
 gf_object_init(gf_object* obj) {
   gf_validate(obj);
 
-  _(gf_uuid_init(&obj->id));
   obj->type = GF_OBJECT_TYPE_UNKNOWN;
   obj->title = NULL;
   obj->author = NULL;
@@ -182,8 +179,6 @@ gf_object_init(gf_object* obj) {
 gf_status
 gf_object_clear(gf_object* obj) {
   gf_validate(obj);
-
-  _(gf_uuid_init(&obj->id));
 
   obj->type = GF_OBJECT_TYPE_UNKNOWN;
 
@@ -277,7 +272,6 @@ typedef struct gf_author gf_author;
 
 struct gf_site {
   xmlDocPtr      doc;
-  gf_uuid        id;
   gf_string*     title;
   gf_string*     author;
   gf_string*     email;
@@ -303,7 +297,6 @@ struct gf_section {
 */
 
 struct gf_entry {
-  gf_uuid        id;
   gf_string*     name;
   gf_string*     title;
   gf_date*       modified;
@@ -320,7 +313,6 @@ struct gf_entry {
 */
 
 struct gf_subject {
-  gf_uuid    id;
   gf_string* name;
   gf_string* note;
 };
@@ -331,7 +323,6 @@ struct gf_subject {
 */
 
 struct gf_keyword {
-  gf_uuid    id;
   gf_string* name;
 };
 
@@ -341,7 +332,6 @@ struct gf_keyword {
 */
 
 struct gf_file {
-  gf_uuid        id;
   gf_string*     name;
   gf_string*     mime_type;
   gf_path*       path;
