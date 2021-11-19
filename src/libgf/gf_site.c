@@ -17,6 +17,7 @@
 #include <libgf/gf_memory.h>
 #include <libgf/gf_array.h>
 #include <libgf/gf_path.h>
+#include <libgf/gf_file_info.h>
 #include <libgf/gf_site.h>
 
 #include "gf_local.h"
@@ -36,6 +37,7 @@ struct gf_object {
   gf_string*      author;
   gf_date*        update_date;
   gf_date*        create_date;
+  gf_file_info*   file_info;  ///< The info file. (site.gf, meta.gf ...)
 };
 
 gf_status
@@ -48,6 +50,7 @@ gf_object_init(gf_object* obj) {
   obj->author = NULL;
   obj->update_date = NULL;
   obj->create_date = NULL;
+  obj->file_info = NULL;
   
   return GF_SUCCESS;
 }
@@ -130,12 +133,10 @@ gf_object_set_create_date(gf_object* obj, const gf_date* date) {
 */
 
 struct gf_site {
-  gf_object base;
-//  xmlDocPtr doc;
-  gf_array* entry_set;
+  gf_object     base;       ///< Base class
+  gf_file_info* root;       ///< The root of a site tree. (directory)
+  gf_array*     entry_set;  ///< Entries to process
 };
-
-typedef struct gf_site gf_site;
 
 /*!
 ** @brief Site entry
@@ -146,7 +147,6 @@ struct gf_entry {
   gf_object base;
   gf_array* subject_set;  ///< The array of gf_category objects
   gf_array* keyword_set;  ///< The array of gf_category objects
-  gf_array* file_set;     ///< The array of gf_site_file objects
 };
 
 typedef struct gf_entry gf_entry;
@@ -157,8 +157,8 @@ typedef struct gf_entry gf_entry;
 */
 
 struct gf_category {
-  gf_string* id;
-  gf_string* name;
+  gf_string* id;    ///< String usable for a URL or an identifier etc.
+  gf_string* name;  ///< Printable name
 };
 
 /* -------------------------------------------------------------------------- */
