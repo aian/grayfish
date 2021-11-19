@@ -107,14 +107,77 @@ gf_object_set_update_date(gf_object* obj, gf_datetime date) {
 /* -------------------------------------------------------------------------- */
 
 /*!
-** @brief Site database
+** @brief A subject of entries
+**
 */
 
-struct gf_site {
-  gf_object     base;       ///< Base class
-  gf_file_info* root;       ///< The root of a site tree. (directory)
-  gf_array*     entry_set;  ///< Entries to process
+struct gf_category {
+  gf_string* id;    ///< String usable for a URL or an identifier etc.
+  gf_string* name;  ///< Printable name
 };
+
+static gf_status
+category_init(gf_category* cat) {
+  gf_validate(cat);
+
+  cat->id = NULL;
+  cat->name = NULL;
+
+  return GF_SUCCESS;
+}
+
+static gf_status
+category_prepare(gf_category* cat) {
+  gf_validate(cat);
+
+  _(gf_string_new(&cat->id));
+  _(gf_string_new(&cat->name));
+  
+  return GF_SUCCESS;
+}
+
+gf_status
+gf_category_new(gf_category** cat) {
+  gf_status rc = 0;
+  gf_category* tmp = NULL;
+  
+  gf_validate(cat);
+  
+  _(gf_malloc((gf_ptr*)&tmp, sizeof(*tmp)));
+  rc = category_init(tmp);
+  if (rc != GF_SUCCESS) {
+    gf_free(tmp);
+    gf_throw(rc);
+  }
+  rc = category_prepare(tmp);
+  if (rc != GF_SUCCESS) {
+    gf_category_free(tmp);
+    gf_throw(rc);
+  }
+  
+  return GF_SUCCESS;
+}
+
+void
+gf_category_free(gf_category* cat) {
+  if (cat) {
+    if (cat->id) {
+      gf_string_free(cat->id);
+    }
+    if (cat->name) {
+      gf_string_free(cat->name);
+    }
+    category_init(cat);
+    gf_free(cat);
+  }
+}
+
+static void
+category_free(gf_any* any) {
+  gf_category_free((gf_category*)any->ptr);
+}
+
+/* -------------------------------------------------------------------------- */
 
 /*!
 ** @brief Site entry
@@ -127,24 +190,100 @@ struct gf_entry {
   gf_array* keyword_set;  ///< The array of gf_category objects
 };
 
-typedef struct gf_entry gf_entry;
+static gf_status
+entry_init(gf_entry* entry) {
+  gf_validate(entry);
 
-/*!
-** @brief A subject of entries
-**
-*/
+  _(gf_object_init(&entry->base));
+  entry->subject_set = NULL;
+  entry->keyword_set = NULL;
+  
+  return GF_SUCCESS;
+}
 
-struct gf_category {
-  gf_string* id;    ///< String usable for a URL or an identifier etc.
-  gf_string* name;  ///< Printable name
-};
+static gf_status
+entry_prepare(gf_entry* entry) {
+  gf_validate(entry);
+
+  _(gf_array_new(&entry->subject_set));
+  _(gf_array_set_free_fn(entry->subject_set, category_free));
+  _(gf_array_new(&entry->keyword_set));
+  _(gf_array_set_free_fn(entry->keyword_set, category_free));
+
+  return GF_SUCCESS;
+}
+
+gf_status
+gf_entry_new(gf_entry** entry) {
+  gf_status rc = 0;
+  gf_entry* tmp = NULL;
+  
+  gf_validate(entry);
+
+  _(gf_malloc((gf_ptr*)&tmp, sizeof(*tmp)));
+  rc = entry_init(tmp);
+  if (rc != GF_SUCCESS) {
+    gf_free(tmp);
+    gf_throw(rc);
+  }
+  rc = entry_prepare(tmp);
+  if (rc != GF_SUCCESS) {
+    gf_entry_free(tmp);
+    gf_throw(rc);
+  }
+
+  *entry = tmp;
+  
+  return GF_SUCCESS;
+}
+
+void
+gf_entry_free(gf_entry* entry) {
+  if (entry) {
+    gf_object_clear(&entry->base);
+    if (entry->subject_set) {
+      gf_array_free(entry->subject_set);
+    }
+    if (entry->keyword_set) {
+      gf_array_free(entry->keyword_set);
+    }
+    entry_init(entry);
+    gf_free(entry);
+  }
+}
+
+static void
+entry_free(gf_any* any) {
+  gf_entry_free((gf_entry*)any->ptr);
+}
 
 /* -------------------------------------------------------------------------- */
+
+/*!
+** @brief Site database
+*/
+
+struct gf_site {
+  gf_object     base;       ///< Base class
+  gf_file_info* root;       ///< The root of a site tree. (directory)
+  gf_array*     entry_set;  ///< Entries to process
+};
 
 static gf_status
 site_init(gf_site* site) {
   gf_validate(site);
 
+  _(gf_object_init(&site->base));
+  site->root = NULL;
+  site->entry_set = NULL;
+  
+  return GF_SUCCESS;
+}
+
+static gf_status
+site_prepare(gf_site* site) {
+  _(gf_array_new(&site->entry_set));
+  _(gf_array_set_free_fn(site->entry_set, entry_free));
   return GF_SUCCESS;
 }
 
@@ -159,6 +298,12 @@ gf_site_new(gf_site** site) {
     gf_free(tmp);
     gf_throw(rc);
   }
+  rc = site_prepare(tmp);
+  if (rc != GF_SUCCESS ) {
+    gf_site_free(tmp);
+    gf_throw(rc);
+  }
+  
   *site = tmp;
   
   return GF_SUCCESS;
@@ -176,15 +321,25 @@ gf_status
 gf_site_reset(gf_site* site) {
   gf_validate(site);
 
+  if (site->root) {
+    gf_file_info_free(site->root);
+    site->root = NULL;
+  }
+  
   return GF_SUCCESS;
 }
 
-/* -------------------------------------------------------------------------- */
-
 static gf_status
 site_scan_directories(gf_site* site, gf_path* root) {
+  gf_file_info* file_info = NULL;
+  
   gf_validate(site);
   gf_validate(root);
+
+  /* Scan files */
+  _(gf_file_info_new(&file_info, root));
+  site->root = file_info;
+  
   
   return GF_SUCCESS;
 }
@@ -210,6 +365,7 @@ gf_site_scan(gf_site** site, const gf_path* path) {
   rc = site_scan_directories(tmp, root);
   gf_path_free(root);
   if (rc != GF_SUCCESS) {
+    gf_site_free(tmp);
     gf_throw(rc);
   }
 

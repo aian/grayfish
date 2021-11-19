@@ -54,6 +54,20 @@ extern gf_status gf_object_set_update_date(gf_object* obj, gf_datetime date);
 
 /* -------------------------------------------------------------------------- */
 
+typedef struct gf_category gf_category;
+
+extern gf_status gf_category_new(gf_category** cat);
+extern void gf_category_free(gf_category* cat);
+
+/* -------------------------------------------------------------------------- */
+
+typedef struct gf_entry gf_entry;
+
+extern gf_status gf_entry_new(gf_entry** entry);
+extern void gf_entry_free(gf_entry* entry);
+
+/* -------------------------------------------------------------------------- */
+
 typedef struct gf_site gf_site;
 
 /*!
