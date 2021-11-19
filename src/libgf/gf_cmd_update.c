@@ -118,7 +118,7 @@ update_scan_directory(gf_cmd_update* cmd) {
   gf_validate(cmd);
   gf_validate(!gf_path_is_empty(GF_CMD_BASE_CAST(cmd)->src_path));
 
-  _(gf_site_update(cmd->site, GF_CMD_BASE_CAST(cmd)->src_path));
+  _(gf_site_scan(&cmd->site, GF_CMD_BASE_CAST(cmd)->src_path));
   
   return GF_SUCCESS;
 }

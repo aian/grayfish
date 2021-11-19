@@ -20,7 +20,7 @@
 
 struct gf_cmd_list {
   gf_cmd_base base;
-  gf_site*   site;
+  gf_site*    site;
 };
 
 
@@ -124,68 +124,8 @@ gf_cmd_list_free(gf_cmd_base* cmd) {
 /* -------------------------------------------------------------------------- */
 
 static gf_status
-list_read_site_file(gf_cmd_list* cmd) {
-  if (!gf_path_file_exists(GF_CMD_BASE_CAST(cmd)->site_path)) {
-    gf_raise(GF_E_STATE, "Here is not a project directory. (%s)",
-             gf_path_get_string(GF_CMD_BASE_CAST(cmd)->site_path));
-  }
-  _(gf_site_read_file(&cmd->site, GF_CMD_BASE_CAST(cmd)->site_path));
-
-  return GF_SUCCESS;
-}
-
-static void
-list_print_entry(gf_site_node* node, const char* name) {
-  (void)node;
-  gf_msg("%-32s", name);
-}
-
-static gf_status
-list_print_node(gf_site_node* node, int depth) {
-  if (gf_site_node_is_root(node)) {
-    /* List header */
-  } else {
-    /* Print this node  */
-    if (gf_site_node_is_directory(node)) {
-      char* name = NULL;
-      _(gf_site_node_get_file_name(&name, node));
-      /*
-      ** The file name beginning with '_' will be ignored.
-      */
-      if (name && name[0] != '_') {
-        list_print_entry(node, name);
-      }
-    }
-  }
-  /* Process children */
-  if (gf_site_node_is_root(node)) {
-    gf_site_node* n = gf_site_node_child(node);
-    while (!gf_site_node_is_null(n)) {
-      _(list_print_node(n, depth + 1));
-      gf_site_node_next(n);
-    }
-  }
-  
-  return GF_SUCCESS;
-}
-
-static gf_status
 list_process(gf_cmd_list* cmd) {
-  gf_status rc = 0;
-  gf_site_node* node = NULL;
-
   gf_validate(cmd);
-
-  /* Read the existing site file */
-  _(list_read_site_file(cmd));
-
-  _(gf_site_get_root(&node, cmd->site));
-  /* Print */
-  rc = list_print_node(node, 0);
-  gf_site_node_free(node);
-  if (rc != GF_SUCCESS) {
-    gf_throw(rc);
-  }
   
   return GF_SUCCESS;
 }
