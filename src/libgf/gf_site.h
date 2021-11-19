@@ -18,7 +18,7 @@
 #include <libgf/gf_path.h>
 
 #include <libgf/gf_string.h>
-#include <libgf/gf_date.h>
+#include <libgf/gf_datetime.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -50,8 +50,7 @@ extern gf_status gf_object_clear(gf_object* obj);
 extern gf_status gf_object_set_type(gf_object* obj, gf_object_type type);
 extern gf_status gf_object_set_title(gf_object* obj, const gf_string* title);
 extern gf_status gf_object_set_author(gf_object* obj, const gf_string* author);
-extern gf_status gf_object_set_update_date(gf_object* obj, const gf_date* date);
-extern gf_status gf_object_set_create_date(gf_object* obj, const gf_date* date);
+extern gf_status gf_object_set_update_date(gf_object* obj, gf_datetime date);
 
 /* -------------------------------------------------------------------------- */
 

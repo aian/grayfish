@@ -3,11 +3,11 @@
  * 'LICENSE.md' in this package.
  */
 /*!
-** @file libgf/gf_date.h
+** @file libgf/gf_datetime.h
 ** @brief Datetime management
 */
-#ifndef LIBGF_GF_DATE_H
-#define LIBGF_GF_DATE_H
+#ifndef LIBGF_GF_DATETIME_H
+#define LIBGF_GF_DATETIME_H
 
 #include <libgf/config.h>
 
@@ -18,14 +18,10 @@
 extern "C" {
 #endif
 
-typedef struct gf_date gf_date;
-
-extern gf_status gf_date_new(gf_date** date);
-extern void gf_date_free(gf_date* date);
-extern gf_status gf_date_copy(gf_date* dst, const gf_date* src);
+typedef gf_64u gf_datetime;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif  /* LIBGF_GF_DATE_H */
+#endif  /* LIBGF_GF_DATETIME_H */

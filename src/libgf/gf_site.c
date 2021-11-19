@@ -10,8 +10,6 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#include <windows.h>
-
 #include <libxml/tree.h>
 
 #include <libgf/gf_memory.h>
@@ -35,8 +33,7 @@ struct gf_object {
   gf_object_state state;
   gf_string*      title;
   gf_string*      author;
-  gf_date*        update_date;
-  gf_date*        create_date;
+  gf_datetime     update_date;
   gf_file_info*   file_info;  ///< The info file. (site.gf, meta.gf ...)
 };
 
@@ -48,8 +45,7 @@ gf_object_init(gf_object* obj) {
   obj->state = GF_OBJECT_STATE_UNKNOWN;
   obj->title = NULL;
   obj->author = NULL;
-  obj->update_date = NULL;
-  obj->create_date = NULL;
+  obj->update_date = 0;
   obj->file_info = NULL;
   
   return GF_SUCCESS;
@@ -66,12 +62,6 @@ gf_object_clear(gf_object* obj) {
   }
   if (obj->author) {
     gf_string_free(obj->author);
-  }
-  if (obj->update_date) {
-    gf_date_free(obj->update_date);
-  }
-  if (obj->create_date) {
-    gf_date_free(obj->create_date);
   }
   _(gf_object_init(obj));
 
@@ -106,25 +96,13 @@ gf_object_set_author(gf_object* obj, const gf_string* author) {
 }
 
 gf_status
-gf_object_set_update_date(gf_object* obj, const gf_date* date) {
+gf_object_set_update_date(gf_object* obj, gf_datetime date) {
   gf_validate(obj);
-  gf_validate(date);
 
-  _(gf_date_copy(obj->update_date, date));
+  obj->update_date = date;
   
   return GF_SUCCESS;
 }
-
-gf_status
-gf_object_set_create_date(gf_object* obj, const gf_date* date) {
-  gf_validate(obj);
-  gf_validate(date);
-
-  _(gf_date_copy(obj->create_date, date));
-  
-  return GF_SUCCESS;
-}
-
 
 /* -------------------------------------------------------------------------- */
 
