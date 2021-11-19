@@ -7,6 +7,7 @@
 ** @brief Memory management.
 */
 #include <stdlib.h>
+#include <string.h>
 
 #define GF_USE_SAFE_ERROR_ 1
 
@@ -49,4 +50,18 @@ gf_free(gf_ptr ptr) {
   if (ptr) {
     free(ptr);
   }
+}
+
+gf_status
+gf_memset(gf_ptr buf, gf_int ch, gf_size_t n) {
+  gf_validate(buf);
+
+  memset(buf, ch, n);
+
+  return GF_SUCCESS;
+}
+
+gf_status
+gf_bzero(gf_ptr buf, gf_size_t n) {
+  return gf_memset(buf, 0, n);
 }
