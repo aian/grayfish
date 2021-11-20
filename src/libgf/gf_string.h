@@ -106,6 +106,8 @@ extern gf_status gf_string_clone(gf_string** dst, const gf_string* src);
 
 extern gf_status gf_string_assign(gf_string** dst, const gf_string* src);
 
+extern gf_bool gf_string_is_empty(const gf_string* str);
+
 #ifdef __cplusplus
 }
 #endif

@@ -58,6 +58,8 @@ typedef struct gf_category gf_category;
 
 extern gf_status gf_category_new(gf_category** cat);
 extern void gf_category_free(gf_category* cat);
+extern gf_status gf_category_set_id(gf_category* cat, const gf_string* id);
+extern gf_status gf_category_set_name(gf_category* cat, const gf_string* name);
 
 /* -------------------------------------------------------------------------- */
 

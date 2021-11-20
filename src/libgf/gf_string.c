@@ -198,3 +198,8 @@ gf_string_assign(gf_string** dst, const gf_string* src) {
   
   return GF_SUCCESS;
 }
+
+gf_bool
+gf_string_is_empty(const gf_string* str) {
+  return str && str->data && str->data[0] ? GF_TRUE: GF_FALSE;
+}

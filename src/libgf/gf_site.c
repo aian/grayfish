@@ -177,6 +177,26 @@ category_free(gf_any* any) {
   gf_category_free((gf_category*)any->ptr);
 }
 
+gf_status
+gf_category_set_id(gf_category* cat, const gf_string* id) {
+  gf_validate(cat);
+  gf_validate(!gf_string_is_empty(id));
+
+  _(gf_string_copy(cat->id, id));
+  
+  return GF_SUCCESS;
+}
+
+gf_status
+gf_category_set_name(gf_category* cat, const gf_string* name) {
+  gf_validate(cat);
+  gf_validate(!gf_string_is_empty(name));
+
+  _(gf_string_copy(cat->name, name));
+
+  return GF_SUCCESS;
+}
+
 /* -------------------------------------------------------------------------- */
 
 /*!
@@ -185,9 +205,12 @@ category_free(gf_any* any) {
 */
 
 struct gf_entry {
-  gf_object base;
-  gf_array* subject_set;  ///< The array of gf_category objects
-  gf_array* keyword_set;  ///< The array of gf_category objects
+  gf_object  base;
+  gf_string* method;
+  gf_site*   site;
+  gf_path*   output_path;
+  gf_array*  subject_set;  ///< The array of gf_category objects
+  gf_array*  keyword_set;  ///< The array of gf_category objects
 };
 
 static gf_status
@@ -195,6 +218,9 @@ entry_init(gf_entry* entry) {
   gf_validate(entry);
 
   _(gf_object_init(&entry->base));
+  entry->method = NULL;
+  entry->site = NULL;
+  entry->output_path = NULL;
   entry->subject_set = NULL;
   entry->keyword_set = NULL;
   
@@ -205,6 +231,8 @@ static gf_status
 entry_prepare(gf_entry* entry) {
   gf_validate(entry);
 
+  _(gf_string_new(&entry->method));
+  _(gf_path_new(&entry->output_path, ""));
   _(gf_array_new(&entry->subject_set));
   _(gf_array_set_free_fn(entry->subject_set, category_free));
   _(gf_array_new(&entry->keyword_set));
@@ -241,6 +269,12 @@ void
 gf_entry_free(gf_entry* entry) {
   if (entry) {
     gf_object_clear(&entry->base);
+    if (entry->method) {
+      gf_string_free(entry->method);
+    }
+    if (entry->output_path) {
+      gf_path_free(entry->output_path);
+    }
     if (entry->subject_set) {
       gf_array_free(entry->subject_set);
     }
@@ -339,6 +373,12 @@ site_scan_directories(gf_site* site, gf_path* root) {
   /* Scan files */
   _(gf_file_info_new(&file_info, root));
   site->root = file_info;
+  /* TODO: build the gf_site members */
+  /*
+  ** 1) find a directive file (site.gf, meta.gf, proc.gf or index.dbk)
+  ** 2) if found create a new entry and goto 3), else do nothing.
+  ** 3) read directive file and register the information.
+  */
   
   
   return GF_SUCCESS;
