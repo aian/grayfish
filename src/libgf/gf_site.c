@@ -23,90 +23,6 @@
 /* -------------------------------------------------------------------------- */
 
 /*!
-** @brief Site object
-**
-** This is the base type of evry site objects.
-*/
-
-struct gf_object {
-  gf_object_type  type;
-  gf_object_state state;
-  gf_string*      title;
-  gf_string*      author;
-  gf_datetime     update_date;
-  gf_file_info*   file_info;  ///< The info file. (site.gf, meta.gf ...)
-};
-
-gf_status
-gf_object_init(gf_object* obj) {
-  gf_validate(obj);
-
-  obj->type = GF_OBJECT_TYPE_UNKNOWN;
-  obj->state = GF_OBJECT_STATE_UNKNOWN;
-  obj->title = NULL;
-  obj->author = NULL;
-  obj->update_date = 0;
-  obj->file_info = NULL;
-  
-  return GF_SUCCESS;
-}
-
-gf_status
-gf_object_clear(gf_object* obj) {
-  gf_validate(obj);
-
-  obj->type = GF_OBJECT_TYPE_UNKNOWN;
-
-  if (obj->title) {
-    gf_string_free(obj->title);
-  }
-  if (obj->author) {
-    gf_string_free(obj->author);
-  }
-  _(gf_object_init(obj));
-
-  return GF_SUCCESS;
-}
-
-gf_status
-gf_object_set_type(gf_object* obj, gf_object_type type) {
-  gf_validate(obj);
-  obj->type = type;
-  return GF_SUCCESS;
-}
-
-gf_status
-gf_object_set_title(gf_object* obj, const gf_string* title) {
-  gf_validate(obj);
-  gf_validate(title);
-
-  _(gf_string_assign(&obj->title, title));
-  
-  return GF_SUCCESS;
-}
-
-gf_status
-gf_object_set_author(gf_object* obj, const gf_string* author) {
-  gf_validate(obj);
-  gf_validate(author);
-
-  _(gf_string_assign(&obj->author, author));
-  
-  return GF_SUCCESS;
-}
-
-gf_status
-gf_object_set_update_date(gf_object* obj, gf_datetime date) {
-  gf_validate(obj);
-
-  obj->update_date = date;
-  
-  return GF_SUCCESS;
-}
-
-/* -------------------------------------------------------------------------- */
-
-/*!
 ** @brief A subject of entries
 **
 */
@@ -167,14 +83,16 @@ gf_category_free(gf_category* cat) {
     if (cat->name) {
       gf_string_free(cat->name);
     }
-    category_init(cat);
+    (void)category_init(cat);
     gf_free(cat);
   }
 }
 
 static void
 category_free(gf_any* any) {
-  gf_category_free((gf_category*)any->ptr);
+  if (any) {
+    gf_category_free((gf_category*)any->ptr);
+  }
 }
 
 gf_status
@@ -205,21 +123,33 @@ gf_category_set_name(gf_category* cat, const gf_string* name) {
 */
 
 struct gf_entry {
-  gf_object  base;
-  gf_string* method;
-  gf_site*   site;
-  gf_path*   output_path;
-  gf_array*  subject_set;  ///< The array of gf_category objects
-  gf_array*  keyword_set;  ///< The array of gf_category objects
+  gf_entry_type  type;
+  gf_entry_state state;
+  gf_string*     title;
+  gf_string*     author;
+  gf_datetime    date;
+  gf_array*      description; ///< A description composed with paragraph strings
+  gf_file_info*  file_info;   ///< The info file. (site.gf, meta.gf ...)
+  gf_string*     method;
+  gf_site*       site;
+  gf_path*       output_path;
+  gf_array*      subject_set; ///< The array of gf_category objects
+  gf_array*      keyword_set; ///< The array of gf_category objects
 };
 
 static gf_status
 entry_init(gf_entry* entry) {
   gf_validate(entry);
 
-  _(gf_object_init(&entry->base));
-  entry->method = NULL;
-  entry->site = NULL;
+  entry->type        = GF_ENTRY_TYPE_UNKNOWN;
+  entry->state       = GF_ENTRY_STATE_UNKNOWN;
+  entry->title       = NULL;
+  entry->author      = NULL;
+  entry->date        = 0;
+  entry->description = NULL;
+  entry->file_info   = NULL;
+  entry->method      = NULL;
+  entry->site        = NULL;
   entry->output_path = NULL;
   entry->subject_set = NULL;
   entry->keyword_set = NULL;
@@ -231,6 +161,8 @@ static gf_status
 entry_prepare(gf_entry* entry) {
   gf_validate(entry);
 
+  _(gf_array_new(&entry->description));
+  _(gf_array_set_free_fn(entry->description, gf_string_free_any));
   _(gf_string_new(&entry->method));
   _(gf_path_new(&entry->output_path, ""));
   _(gf_array_new(&entry->subject_set));
@@ -268,7 +200,12 @@ gf_entry_new(gf_entry** entry) {
 void
 gf_entry_free(gf_entry* entry) {
   if (entry) {
-    gf_object_clear(&entry->base);
+    if (entry->title) {
+      gf_string_free(entry->title);
+    }
+    if (entry->author) {
+      gf_string_free(entry->author);
+    }
     if (entry->method) {
       gf_string_free(entry->method);
     }
@@ -288,7 +225,45 @@ gf_entry_free(gf_entry* entry) {
 
 static void
 entry_free(gf_any* any) {
-  gf_entry_free((gf_entry*)any->ptr);
+  if (any) {
+    gf_entry_free((gf_entry*)any->ptr);
+  }
+}
+
+gf_status
+gf_entry_set_type(gf_entry* obj, gf_entry_type type) {
+  gf_validate(obj);
+  obj->type = type;
+  return GF_SUCCESS;
+}
+
+gf_status
+gf_entry_set_title(gf_entry* obj, const gf_string* title) {
+  gf_validate(obj);
+  gf_validate(title);
+
+  _(gf_string_assign(&obj->title, title));
+  
+  return GF_SUCCESS;
+}
+
+gf_status
+gf_entry_set_author(gf_entry* obj, const gf_string* author) {
+  gf_validate(obj);
+  gf_validate(author);
+
+  _(gf_string_assign(&obj->author, author));
+  
+  return GF_SUCCESS;
+}
+
+gf_status
+gf_entry_set_date(gf_entry* obj, gf_datetime date) {
+  gf_validate(obj);
+
+  obj->date = date;
+  
+  return GF_SUCCESS;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -298,7 +273,6 @@ entry_free(gf_any* any) {
 */
 
 struct gf_site {
-  gf_object     base;       ///< Base class
   gf_file_info* root;       ///< The root of a site tree. (directory)
   gf_array*     entry_set;  ///< Entries to process
 };
@@ -307,7 +281,6 @@ static gf_status
 site_init(gf_site* site) {
   gf_validate(site);
 
-  _(gf_object_init(&site->base));
   site->root = NULL;
   site->entry_set = NULL;
   
@@ -379,8 +352,7 @@ site_scan_directories(gf_site* site, gf_path* root) {
   ** 2) if found create a new entry and goto 3), else do nothing.
   ** 3) read directive file and register the information.
   */
-  
-  
+
   return GF_SUCCESS;
 }
 

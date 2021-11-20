@@ -92,6 +92,8 @@ extern gf_status gf_string_new(gf_string** str);
 
 extern void gf_string_free(gf_string* str);
 
+extern void gf_string_free_any(gf_any* any);
+
 extern gf_status gf_string_set(gf_string* str, const gf_char* s);
 
 extern const gf_char* gf_string_get(const gf_string* str);

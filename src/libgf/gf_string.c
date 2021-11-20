@@ -116,6 +116,13 @@ gf_string_free(gf_string* str) {
   }
 }
 
+void
+gf_string_free_any(gf_any* any) {
+  if (any) {
+    gf_string_free((gf_string*)any->ptr);
+  }
+}
+
 gf_status
 gf_string_set(gf_string* str, const gf_char* s) {
   gf_size_t len = 0;

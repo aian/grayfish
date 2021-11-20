@@ -26,31 +26,22 @@ extern "C" {
 
 /* -------------------------------------------------------------------------- */
 
-enum gf_object_type {
-  GF_OBJECT_TYPE_UNKNOWN = 0,  ///< Unknown object type
-  GF_OBJECT_TYPE_SITE    = 1,  ///< The site root object (site.gf)
-  GF_OBJECT_TYPE_SECTION = 2,  ///< The section object (meta.gf)
-  GF_OBJECT_TYPE_ENTRY   = 3,  ///< The entry object (index.dbk)
-  GF_OBJECT_TYPE_PROC    = 4,  ///< The custom proecess object (proc.gf)
-  GF_OBJECT_TYPE_FILE    = 5,  ///< Ordinary files
+enum gf_entry_type {
+  GF_ENTRY_TYPE_UNKNOWN = 0,  ///< Unknown object type
+  GF_ENTRY_TYPE_SITE    = 1,  ///< The site root object (site.gf)
+  GF_ENTRY_TYPE_SECTION = 2,  ///< The section object (meta.gf)
+  GF_ENTRY_TYPE_ENTRY   = 3,  ///< The entry object (index.dbk)
+  GF_ENTRY_TYPE_PROC    = 4,  ///< The custom proecess object (proc.gf)
+  GF_ENTRY_TYPE_FILE    = 5,  ///< Ordinary files
 };
-typedef enum gf_object_type gf_object_type;
+typedef enum gf_entry_type gf_entry_type;
 
-enum gf_object_state {
-  GF_OBJECT_STATE_UNKNOWN   = 0,
-  GF_OBJECT_STATE_DRAFT     = 1,
-  GF_OBJECT_STATE_PUBLISHED = 2,
+enum gf_entry_state {
+  GF_ENTRY_STATE_UNKNOWN   = 0,
+  GF_ENTRY_STATE_DRAFT     = 1,
+  GF_ENTRY_STATE_PUBLISHED = 2,
 };
-typedef enum gf_object_state gf_object_state;
-
-typedef struct gf_object gf_object;
-
-extern gf_status gf_object_init(gf_object* obj);
-extern gf_status gf_object_clear(gf_object* obj);
-extern gf_status gf_object_set_type(gf_object* obj, gf_object_type type);
-extern gf_status gf_object_set_title(gf_object* obj, const gf_string* title);
-extern gf_status gf_object_set_author(gf_object* obj, const gf_string* author);
-extern gf_status gf_object_set_update_date(gf_object* obj, gf_datetime date);
+typedef enum gf_entry_state gf_entry_state;
 
 /* -------------------------------------------------------------------------- */
 
