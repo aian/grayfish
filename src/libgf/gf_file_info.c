@@ -269,6 +269,18 @@ gf_file_info_get_child(
 }
 
 gf_status
+gf_file_info_get_file_name(
+  const gf_file_info* info, const gf_char** file_name) {
+  gf_validate(info);
+  gf_validate(file_name);
+
+  *file_name = gf_path_get_string(info->file_name);
+
+  return GF_SUCCESS;
+}
+
+
+gf_status
 file_info_scan(gf_file_info** info, const gf_path* path) {
   gf_status rc = 0;
 

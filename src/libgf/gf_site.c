@@ -9,6 +9,7 @@
 #include <assert.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <string.h>
 
 #include <libxml/tree.h>
 
@@ -336,46 +337,137 @@ gf_site_reset(gf_site* site) {
   return GF_SUCCESS;
 }
 
+static gf_bool
+site_does_file_name_equal(
+  const gf_file_info* file_info, const gf_char* file_name) {
+  gf_status rc = 0;
+  const gf_char* name = NULL;
+  gf_bool ret = GF_FALSE;
+
+  if (!file_info || !file_name) {
+    assert(0);
+    return GF_FALSE;
+  }
+
+  rc = gf_file_info_get_file_name(file_info, &name);
+  if (rc != GF_SUCCESS) {
+    return GF_FALSE;
+  }
+  // TODO: strcmp must be wrapped by gf_strcmp
+  if (!strcmp(name, file_name)) {
+    ret = GF_TRUE;
+  } else {
+    ret = GF_FALSE;
+  }
+
+  return ret;
+}
+
+static gf_bool
+site_does_directory_have_file(
+  const gf_file_info* file_info, const gf_char* file_name) {
+  gf_status rc = 0;
+  gf_size_t cnt = 0;
+  gf_bool ret = GF_FALSE;
+
+  if (!file_info) {
+    assert(0);
+    return GF_FALSE;
+  }
+  ret = GF_FALSE;
+  cnt = gf_file_info_count_children(file_info);
+  for (gf_size_t i = 0; i < cnt; i++) {
+    gf_file_info* child_info = 0;
+
+    rc = gf_file_info_get_child(file_info, i, &child_info);
+    if (rc != GF_SUCCESS) {
+      assert(0);
+      return GF_FALSE;
+    }
+    if (site_does_file_name_equal(child_info, file_name)) {
+      ret = GF_TRUE;
+      break;
+    }
+  }
+
+  return ret;
+}
+
+static gf_bool
+site_does_directory_have_meta_file(const gf_file_info* file_info) {
+  static const gf_char name[] = "meta.gf";
+  return site_does_directory_have_file(file_info, name);
+}
+
+static gf_bool
+site_does_directory_have_document_file(const gf_file_info* file_info) {
+  static const gf_char name[] = "index.dbk";
+  return site_does_directory_have_file(file_info, name);
+}
+
+static gf_bool
+site_is_asset_directory(const gf_file_info* file_info) {
+  static const gf_char name[] = "_";
+  return site_does_file_name_equal(file_info, name);
+}
+
 static gf_status
-site_scan_directories(gf_site* site, gf_path* root) {
-  gf_file_info* file_info = NULL;
+site_scan_directories(gf_site* site, gf_file_info* file_info) {
+  gf_size_t cnt = 0;
   
   gf_validate(site);
-  gf_validate(root);
+  gf_validate(file_info);
 
-  /* Scan files */
-  _(gf_file_info_new(&file_info, root));
-  site->root = file_info;
-  /* TODO: build the gf_site members */
-  /*
-  ** 1) find a directive file (site.gf, meta.gf, proc.gf or index.dbk)
-  ** 2) if found create a new entry and goto 3), else do nothing.
-  ** 3) read directive file and register the information.
-  */
+  /* non-directory files are not our target */
+  if (!gf_file_info_is_directory(file_info)) {
+    return GF_SUCCESS;
+  }
+  /* asset directory is not our target */
+  if (site_is_asset_directory(file_info)) {
+    return GF_SUCCESS;
+  }
 
+  if (site_does_directory_have_document_file(file_info)) {
+    // TODO: imeprement me!
+  } else if (site_does_directory_have_meta_file(file_info)) {
+    // TODO: imeprement me!
+  } else {
+    /* This directory is not our target */
+    return GF_SUCCESS;
+  }
+
+  /* process children  */
+  cnt = gf_file_info_count_children(file_info);
+  for (gf_size_t i = 0; i < cnt; i++) {
+    gf_file_info* child_info = 0;
+
+    _(gf_file_info_get_child(file_info, i, &child_info));
+    _(site_scan_directories(site, child_info));
+  }
+  
   return GF_SUCCESS;
 }
 
 gf_status
 gf_site_scan(gf_site** site, const gf_path* path) {
   gf_status rc = 0;
-  gf_path* root = NULL;
   gf_site* tmp = NULL;
+  gf_file_info* file_info = NULL;
   
   gf_validate(site);
   gf_validate(!gf_path_is_empty(path));
 
-  /* Disposal root path */
-  _(gf_path_new(&root, gf_path_get_string(path)));
-
   rc = gf_site_new(&tmp);
   if (rc != GF_SUCCESS) {
-    gf_path_free(root);
     gf_throw(rc);
   }
+
+  /* Scan files */
+  _(gf_file_info_scan(&file_info, path));
+  tmp->root = file_info;
+
   /* Traverse */
-  rc = site_scan_directories(tmp, root);
-  gf_path_free(root);
+  rc = site_scan_directories(tmp, tmp->root);
   if (rc != GF_SUCCESS) {
     gf_site_free(tmp);
     gf_throw(rc);
