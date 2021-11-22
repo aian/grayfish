@@ -322,6 +322,67 @@ entry_read_xml_file(xmlDocPtr* doc, gf_entry* entry) {
 /* -------------------------------------------------------------------------- */
 
 static gf_status
+entry_set_title(gf_entry* entry, xmlNodePtr node) {
+  gf_validate(entry);
+  gf_validate(node);
+  for (xmlNodePtr cur = node->children; cur; cur = cur->next) {
+    if (cur->type == XML_TEXT_NODE) {
+      _(gf_string_append(entry->title, (char*)cur->content));
+    } else {
+      _(entry_set_title(entry, cur));
+    }
+  }
+  return GF_SUCCESS;
+}
+
+static gf_status
+entry_set_author(gf_entry* entry, xmlNodePtr node) {
+  gf_validate(entry);
+  gf_validate(node);
+  for (xmlNodePtr cur = node->children; cur; cur = cur->next) {
+    if (cur->type == XML_TEXT_NODE) {
+      // NOTE: By now, we don't care about the order of first and last name.
+      // We concate the string components of an author in appearance order.
+      if (gf_string_is_empty(entry->author) > 0) {
+        _(gf_string_append(entry->author, " "));
+      }
+      _(gf_string_append(entry->author, (char*)cur->content));
+    } else {
+      _(entry_set_author(entry, cur));
+    }
+  }
+  return GF_SUCCESS;
+}
+
+static gf_status
+entry_set_date(gf_entry* entry, xmlNodePtr node) {
+  gf_validate(entry);
+  gf_validate(node);
+  return GF_SUCCESS;
+}
+
+static gf_status
+entry_set_description(gf_entry* entry, xmlNodePtr node) {
+  gf_validate(entry);
+  gf_validate(node);
+  return GF_SUCCESS;
+}
+
+static gf_status
+entry_set_subject_set(gf_entry* entry, xmlNodePtr node) {
+  gf_validate(entry);
+  gf_validate(node);
+  return GF_SUCCESS;
+}
+
+static gf_status
+entry_set_keyword_set(gf_entry* entry, xmlNodePtr node) {
+  gf_validate(entry);
+  gf_validate(node);
+  return GF_SUCCESS;
+}
+
+static gf_status
 entry_set_document_info(gf_entry* entry) {
   gf_status rc = 0;
   xmlDocPtr doc = NULL;
@@ -344,7 +405,10 @@ entry_set_document_info(gf_entry* entry) {
     xmlFreeDoc(doc);
     gf_raise(GF_E_DATA, "Invalid XML document.");
   }
-  
+  /* gf_entry::type */
+  entry->type = GF_ENTRY_TYPE_DOCUMENT;
+  /* gf_entry::state */
+  entry->state = GF_ENTRY_STATE_PUBLISHED; // By now, draft mode is unavailable.
   /* gf_entry::method */
   prop = xmlGetProp(cur, BAD_CAST"role");
   if (prop) {
@@ -367,11 +431,28 @@ entry_set_document_info(gf_entry* entry) {
     gf_raise(GF_E_DATA, "Invalid XML document.");
   }
   for (cur = cur->children; cur; cur = cur->next) {
-    // TODO: Implement me!
+    if (!xmlStrcmp(cur->name, BAD_CAST"title")) {
+      rc = entry_set_title(entry, cur);
+    } else if (!xmlStrcmp(cur->name, BAD_CAST"author")) {
+      rc = entry_set_author(entry, cur);
+    } else if (!xmlStrcmp(cur->name, BAD_CAST"pubdate")) {
+      rc = entry_set_date(entry, cur);
+    } else if (!xmlStrcmp(cur->name, BAD_CAST"description")) {
+      rc = entry_set_description(entry, cur);
+    } else if (!xmlStrcmp(cur->name, BAD_CAST"subjectset")) {
+      rc = entry_set_subject_set(entry, cur);
+    } else if (!xmlStrcmp(cur->name, BAD_CAST"keywordset")) {
+      rc = entry_set_keyword_set(entry, cur);
+    } else {
+      /* do nothing */
+    }
+    if (rc != GF_SUCCESS) {
+      xmlFreeDoc(doc);
+      gf_throw(rc);
+    }
   }
   
   xmlFreeDoc(doc);
-
   
   return GF_SUCCESS;
 }

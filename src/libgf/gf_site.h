@@ -27,12 +27,12 @@ extern "C" {
 /* -------------------------------------------------------------------------- */
 
 enum gf_entry_type {
-  GF_ENTRY_TYPE_UNKNOWN = 0,  ///< Unknown object type
-  GF_ENTRY_TYPE_SITE    = 1,  ///< The site root object (site.gf)
-  GF_ENTRY_TYPE_SECTION = 2,  ///< The section object (meta.gf)
-  GF_ENTRY_TYPE_ENTRY   = 3,  ///< The entry object (index.dbk)
-  GF_ENTRY_TYPE_PROC    = 4,  ///< The custom proecess object (proc.gf)
-  GF_ENTRY_TYPE_FILE    = 5,  ///< Ordinary files
+  GF_ENTRY_TYPE_UNKNOWN  = 0,  ///< Unknown object type
+  GF_ENTRY_TYPE_SITE     = 1,  ///< The site root object (site.gf)
+  GF_ENTRY_TYPE_SECTION  = 2,  ///< The section object (meta.gf)
+  GF_ENTRY_TYPE_DOCUMENT = 3,  ///< The entry object (index.dbk)
+  GF_ENTRY_TYPE_PROC     = 4,  ///< The custom proecess object (proc.gf)
+  GF_ENTRY_TYPE_FILE     = 5,  ///< Ordinary files
 };
 typedef enum gf_entry_type gf_entry_type;
 

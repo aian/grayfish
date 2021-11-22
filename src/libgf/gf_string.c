@@ -210,3 +210,29 @@ gf_bool
 gf_string_is_empty(const gf_string* str) {
   return str && str->data && str->data[0] ? GF_TRUE: GF_FALSE;
 }
+
+gf_status
+gf_string_append(gf_string* str, const gf_char* s) {
+  gf_size_t len[2] = { 0 };
+
+  gf_validate(str);
+
+  if (!gf_strnull(s)) {
+    gf_size_t total_len = 0;
+    
+    len[0] = str->used;    // string length + nul
+    len[1] = gf_strlen(s); // string length
+
+    total_len = len[0] + len[1];
+    if (str->size <= total_len) {
+      _(gf_realloc((gf_ptr)str->data, total_len));
+      str->size = total_len;
+    }
+    // TODO: memcpy must be wrapped by a gf_memcpy().
+    memcpy(&str->data[str->used - 1], s, len[1]);
+    str->data[total_len - 1] = '\0';
+    str->used = total_len;
+  }
+  
+  return GF_SUCCESS;
+}
