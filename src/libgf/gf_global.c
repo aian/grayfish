@@ -62,6 +62,7 @@ gf_global_init(void) {
   /* Logger initialization */
   gf_log_init();
   /* Setup for LibXML2 */
+  LIBXML_TEST_VERSION;
   xmlSubstituteEntitiesDefault(1);
   xmlLoadExtDtdDefaultValue = 1;
   xmlKeepBlanksDefault(0);

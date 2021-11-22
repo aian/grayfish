@@ -37,6 +37,7 @@ enum gf_status {
   GF_E_API,
   GF_E_STATE,        ///< Invalid process state
   GF_E_EXEC,
+  GF_E_DATA,
   GF_E_SHELL,
   GF_E_PARSE,
   GF_E_INTERNAL,     ///< Internal error

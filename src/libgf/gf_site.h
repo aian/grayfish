@@ -16,9 +16,9 @@
 #include <libgf/gf_datatype.h>
 #include <libgf/gf_error.h>
 #include <libgf/gf_path.h>
-
 #include <libgf/gf_string.h>
 #include <libgf/gf_datetime.h>
+#include <libgf/gf_file_info.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -58,6 +58,7 @@ typedef struct gf_entry gf_entry;
 
 extern gf_status gf_entry_new(gf_entry** entry);
 extern void gf_entry_free(gf_entry* entry);
+extern gf_status gf_entry_set_file_info(gf_entry* entry, gf_file_info* file_info);
 
 /* -------------------------------------------------------------------------- */
 

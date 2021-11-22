@@ -37,6 +37,8 @@ extern gf_status gf_file_info_get_child(
 
 extern gf_status gf_file_info_get_file_name(
   const gf_file_info* info, const gf_char** file_name);
+extern gf_status gf_file_info_get_full_path(
+  const gf_file_info* info, const gf_char** full_path);
 
 extern gf_status gf_file_info_scan(gf_file_info** info, const gf_path* path);
 

@@ -279,6 +279,16 @@ gf_file_info_get_file_name(
   return GF_SUCCESS;
 }
 
+gf_status
+gf_file_info_get_full_path(
+  const gf_file_info* info, const gf_char** full_path) {
+  gf_validate(info);
+  gf_validate(full_path);
+
+  *full_path = gf_path_get_string(info->full_path);
+
+  return GF_SUCCESS;
+}
 
 gf_status
 file_info_scan(gf_file_info** info, const gf_path* path) {
