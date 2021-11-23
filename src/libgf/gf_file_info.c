@@ -13,7 +13,6 @@
 #include <dirent.h>
 
 #include <libgf/gf_memory.h>
-#include <libgf/gf_path.h>
 #include <libgf/gf_hash.h>
 #include <libgf/gf_array.h>
 #include <libgf/gf_file_info.h>

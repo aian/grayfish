@@ -32,10 +32,11 @@ gft_init(void) {
 
 void
 gft_prepare(void) {
-  gft_string_add_tests();  // gf_string
-  gft_path_add_tests();    // gf_path
-  gft_shell_add_tests();   // gf_shell
-  gft_array_add_tests();   // gf_array
+  gft_string_add_tests();      // gf_string
+  gft_path_add_tests();        // gf_path
+  gft_shell_add_tests();       // gf_shell
+  gft_array_add_tests();       // gf_array
+  gft_file_info_add_tests();   // gf_file_info
 }
 
 /*!

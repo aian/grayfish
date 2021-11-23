@@ -16,6 +16,8 @@
 #include <libgf/gf_datatype.h>
 #include <libgf/gf_error.h>
 
+#include <libgf/gf_path.h>
+
 #ifdef __cplusplus
 extern {
 #endif
