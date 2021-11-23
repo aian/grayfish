@@ -356,29 +356,184 @@ entry_set_author(gf_entry* entry, xmlNodePtr node) {
 
 static gf_status
 entry_set_date(gf_entry* entry, xmlNodePtr node) {
+  xmlNodePtr child = NULL;
+  
   gf_validate(entry);
   gf_validate(node);
+
+  child = node->children;
+  if (child->type != XML_TEXT_NODE) {
+    gf_raise(GF_E_DATA, "Invalid XML data.");
+  }
+  _(gf_date_parse((const char*)child->content, &entry->date));
+  
   return GF_SUCCESS;
 }
 
 static gf_status
 entry_set_description(gf_entry* entry, xmlNodePtr node) {
+  gf_status rc = 0;
+  
   gf_validate(entry);
   gf_validate(node);
+
+  for (xmlNodePtr cur = node->children; cur; cur = cur->next) {
+    if (cur->type == XML_TEXT_NODE) {
+      gf_string* s = NULL;
+      
+      _(gf_string_new(&s));
+      rc = gf_string_set(s, (char*)cur->content);
+      if (rc != GF_SUCCESS) {
+        gf_string_free(s);
+        gf_throw(rc);
+      }
+      rc = gf_array_add(entry->description, (gf_any){ .ptr = s });
+      if (rc != GF_SUCCESS) {
+        gf_string_free(s);
+        gf_throw(rc);
+      }
+    } else {
+      _(entry_set_description(entry, cur));
+    }
+  }
+
   return GF_SUCCESS;
 }
 
 static gf_status
 entry_set_subject_set(gf_entry* entry, xmlNodePtr node) {
+  gf_status rc = 0;
+  xmlNodePtr subject_node = NULL;
+  
   gf_validate(entry);
   gf_validate(node);
+
+  // NOTE: We process the first child of the subject_set node.
+  subject_node = node->children;
+  if (subject_node->type != XML_ELEMENT_NODE) {
+    gf_raise(GF_E_DATA, "Invalid XML data.");
+  }
+  if (!!xmlStrcmp(subject_node->name, BAD_CAST"subject")) {
+    gf_raise(GF_E_DATA, "Invalid XML data.");
+  }
+  for (xmlNodePtr cur = subject_node->children; cur; cur = cur->next) {
+    if (cur->type == XML_ELEMENT_NODE) {
+      if (!xmlStrcmp(cur->name, BAD_CAST"subjectterm")) {
+        gf_string* s = NULL;
+        gf_category* cat = NULL;
+        xmlChar* id = NULL;
+
+        id = xmlGetProp(cur, BAD_CAST"id");
+        if (!id) {
+          gf_raise(GF_E_DATA, "Invalid XML data.");
+        }
+        if (cur->children->type != XML_TEXT_NODE) {
+          gf_raise(GF_E_DATA, "Invalid XML data.");
+        }
+        _(gf_category_new(&cat));
+
+        rc = gf_string_new(&s);
+        if (rc != GF_SUCCESS) {
+          gf_category_free(cat);
+          gf_throw(rc);
+        }
+        rc = gf_string_set(s, (const char*)id);
+        if (rc != GF_SUCCESS) {
+          gf_string_free(s);
+          gf_category_free(cat);
+          gf_throw(rc);
+        }
+        rc = gf_category_set_id(cat, s);
+        if (rc != GF_SUCCESS) {
+          gf_string_free(s);
+          gf_category_free(cat);
+          gf_throw(rc);
+        }
+        rc = gf_string_set(s, (const char*)cur->children->content);
+        if (rc != GF_SUCCESS) {
+          gf_string_free(s);
+          gf_category_free(cat);
+          gf_throw(rc);
+        }
+        rc = gf_category_set_name(cat, s);
+        gf_string_free(s);
+        if (rc != GF_SUCCESS) {
+          gf_category_free(cat);
+          gf_throw(rc);
+        }
+        rc = gf_array_add(entry->keyword_set, (gf_any){ .ptr = cat });
+        if (rc != GF_SUCCESS) {
+          gf_category_free(cat);
+          gf_throw(rc);
+        }
+      }
+    }
+  }
+  
   return GF_SUCCESS;
 }
 
 static gf_status
 entry_set_keyword_set(gf_entry* entry, xmlNodePtr node) {
+  gf_status rc = 0;
+  
   gf_validate(entry);
   gf_validate(node);
+
+  for (xmlNodePtr cur = node->children; cur; cur = cur->next) {
+    if (cur->type == XML_ELEMENT_NODE) {
+      if (!xmlStrcmp(cur->name, BAD_CAST"keyword")) {
+        gf_string* s = NULL;
+        gf_category* cat = NULL;
+        xmlChar* id = NULL;
+
+        id = xmlGetProp(cur, BAD_CAST"id");
+        if (!id) {
+          gf_raise(GF_E_DATA, "Invalid XML data.");
+        }
+        if (cur->children->type != XML_TEXT_NODE) {
+          gf_raise(GF_E_DATA, "Invalid XML data.");
+        }
+        _(gf_category_new(&cat));
+
+        rc = gf_string_new(&s);
+        if (rc != GF_SUCCESS) {
+          gf_category_free(cat);
+          gf_throw(rc);
+        }
+        rc = gf_string_set(s, (const char*)id);
+        if (rc != GF_SUCCESS) {
+          gf_string_free(s);
+          gf_category_free(cat);
+          gf_throw(rc);
+        }
+        rc = gf_category_set_id(cat, s);
+        if (rc != GF_SUCCESS) {
+          gf_string_free(s);
+          gf_category_free(cat);
+          gf_throw(rc);
+        }
+        rc = gf_string_set(s, (const char*)cur->children->content);
+        if (rc != GF_SUCCESS) {
+          gf_string_free(s);
+          gf_category_free(cat);
+          gf_throw(rc);
+        }
+        rc = gf_category_set_name(cat, s);
+        gf_string_free(s);
+        if (rc != GF_SUCCESS) {
+          gf_category_free(cat);
+          gf_throw(rc);
+        }
+        rc = gf_array_add(entry->keyword_set, (gf_any){ .ptr = cat });
+        if (rc != GF_SUCCESS) {
+          gf_category_free(cat);
+          gf_throw(rc);
+        }
+      }
+    }
+  }
+  
   return GF_SUCCESS;
 }
 
@@ -461,12 +616,52 @@ entry_set_document_info(gf_entry* entry) {
 
 static gf_status
 entry_set_meta_info(gf_entry* entry) {
+  gf_status rc = 0;
   xmlDocPtr doc = NULL;
+  xmlNodePtr root = NULL;
+  xmlNodePtr cur = NULL;
   
   gf_validate(entry);
 
   _(entry_read_xml_file(&doc, entry));
+  assert(doc);
 
+  root = xmlDocGetRootElement(doc);
+  if (!root) {
+    xmlFreeDoc(doc);
+    gf_raise(GF_E_DATA, "Invalid XML document.");
+  }
+  /* meta element*/
+  cur = root->children;
+  if (!cur) {
+    xmlFreeDoc(doc);
+    gf_raise(GF_E_DATA, "Invalid XML document.");
+  }
+  /* gf_entry::type */
+  entry->type = GF_ENTRY_TYPE_SECTION;
+  /* gf_entry::method */
+  rc = gf_string_set(entry->method, "index");
+  if (rc != GF_SUCCESS) {
+    xmlFreeDoc(doc);
+    gf_throw(rc);
+  }
+  /* children of meta element */
+  for (cur = cur->children; cur; cur = cur->next) {
+    if (!xmlStrcmp(cur->name, BAD_CAST"title")) {
+      rc = entry_set_title(entry, cur);
+    } else if (!xmlStrcmp(cur->name, BAD_CAST"author")) {
+      rc = entry_set_author(entry, cur);
+    } else if (!xmlStrcmp(cur->name, BAD_CAST"description")) {
+      rc = entry_set_description(entry, cur);
+    } else {
+      /* do nothing */
+    }
+    if (rc != GF_SUCCESS) {
+      xmlFreeDoc(doc);
+      gf_throw(rc);
+    }
+  }
+  
   return GF_SUCCESS;
 }
 
