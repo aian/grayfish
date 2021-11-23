@@ -14,11 +14,16 @@
 #include <libgf/gf_datatype.h>
 #include <libgf/gf_error.h>
 
+#include <libgf/gf_string.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 typedef gf_64u gf_datetime;
+
+extern gf_status gf_date_parse(const gf_char* str, gf_datetime* datetime);
+extern gf_status gf_date_make_string(gf_string* str, gf_datetime datetime);
 
 #ifdef __cplusplus
 }
