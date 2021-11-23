@@ -22,7 +22,27 @@ extern "C" {
 
 typedef gf_64u gf_datetime;
 
+/*!
+** @brief Parse a datetime string as a extended ISO 8061 format.
+**
+** An acceptable format string is "YYYY-mm-DD HH:MM:SS" only. This format is
+** strictly checked. Any exceptions are NOT accepted.
+**
+** @param [in]  str A datetime string to be parsed
+** @param [out] datetime A result datetime value
+**
+** @return GF_SUCCESS if success, GF_E_* otherwise.
+*/
 extern gf_status gf_date_parse(const gf_char* str, gf_datetime* datetime);
+
+/*!
+** @brief Convert a datetime value into a string.
+**
+** @param [out] str A result datetime string
+** @param [in]  datetime A datetime value to be converted
+**
+** @return GF_SUCCESS if success, GF_E_* otherwise.
+*/
 extern gf_status gf_date_make_string(gf_string* str, gf_datetime datetime);
 
 #ifdef __cplusplus
