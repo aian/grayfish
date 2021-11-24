@@ -231,18 +231,30 @@ endif()
 #> 
 #> set(GF_TEST_ROOT_PATH ${CMAKE_BINARY_DIR}/test)
 #> 
-#> file(GLOB GF_SOURCE ${CMAKE_SOURCE_DIR}/test/*.c)
-#> file(GLOB GF_HEADER ${CMAKE_SOURCE_DIR}/test/*.h)
+#> file(GLOB GF_SOURCE ${CMAKE_SOURCE_DIR}/test/src/*.c)
+#> file(GLOB GF_HEADER ${CMAKE_SOURCE_DIR}/test/src/*.h)
 #> set(CMAKE_C_FLAGS ${GF_CMAKE_C_FLAGS})
 #> include_directories(
 #>   ${CMAKE_BINARY_DIR}/src
 #>   ${CMAKE_SOURCE_DIR}/src
-#>   ${CMAKE_BINARY_DIR}/test
-#>   ${CMAKE_SOURCE_DIR}/test)
+#>   ${CMAKE_BINARY_DIR}/test/src
+#>   ${CMAKE_SOURCE_DIR}/test/src)
 #>
-#> set(GF_TEST_CONFIG_H_IN ${CMAKE_SOURCE_DIR}/test/config.h.in)
-#> set(GF_TEST_CONFIG_H    ${CMAKE_BINARY_DIR}/test/config.h)
+#> set(GF_TEST_CONFIG_H_IN ${CMAKE_SOURCE_DIR}/test/src/config.h.in)
+#> set(GF_TEST_CONFIG_H    ${CMAKE_BINARY_DIR}/test/src/config.h)
 #> configure_file(${GF_TEST_CONFIG_H_IN} ${GF_TEST_CONFIG_H})
+#>
+#> #
+#> # data directory
+#> #
+#>
+#> file(REMOVE_RECURSE ${CMAKE_BINARY_DIR}/test/data)
+#> file(
+#>   COPY
+#>     ${CMAKE_SOURCE_DIR}/test/data
+#>   DESTINATION
+#>     ${CMAKE_BINARY_DIR}/test
+#> )
 #>
 #> add_executable(${GF_TEST_MODULE_NAME} WIN32 ${GF_SOURCE})
 #> target_link_libraries(
