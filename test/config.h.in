@@ -1,0 +1,16 @@
+/*-
+ * This file is part of Grayfish project. For license details, see the file
+ * 'LICENSE.md' in this package.
+ */
+/*!
+** @file test/config.h
+** @brief Module configuration file
+*/
+#ifndef GFT_CONFIG_H
+#define GFT_CONFIG_H
+
+#pragma once
+
+#define GFT_TEST_ROOT_PATH "@GF_TEST_ROOT_PATH@"
+
+#endif  /* GFT_CONFIG_H */

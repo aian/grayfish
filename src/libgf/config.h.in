@@ -3,7 +3,7 @@
  * 'LICENSE.md' in this package.
  */
 /*!
-** @file config.h
+** @file libgf/config.h
 ** @brief Module configuration file
 */
 #ifndef GF_CONFIG_H

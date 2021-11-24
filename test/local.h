@@ -15,6 +15,8 @@
 extern "C" {
 #endif
 
+#include "config.h"
+
 extern void gft_string_add_tests(void);
 extern void gft_path_add_tests(void);
 extern void gft_shell_add_tests(void);
