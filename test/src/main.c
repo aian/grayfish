@@ -9,7 +9,7 @@
 #include <stdlib.h>
 
 #include <CUnit/Cunit.h>
-#include <CUnit/Console.h>
+#include <CUnit/Basic.h>
 
 #include "local.h"
 
@@ -45,7 +45,8 @@ gft_prepare(void) {
 
 void
 gft_run(void) {
-  CU_console_run_tests();
+  CU_basic_set_mode(CU_BRM_SILENT);
+  CU_basic_run_tests();
 }
 
 /*!

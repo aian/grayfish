@@ -24,7 +24,25 @@ extern {
 
 typedef struct gf_file_info gf_file_info;
 
+/*!
+** @brief Create a new gf_file_info object.
+**
+** This function creates a new gf_file_info object. This function get
+** information of single file or directory . If you want to get that of a whole
+** directory tree, use gf_file_info_scan() instead.
+**
+** @param [out] info The pointer to the pointer of a new gf_file_info object.
+** @param [in]  path A path of the file from which you want to get information.
+**
+** @return GF_SUCCESS on success, GF_E_* otherwise.
+*/
 extern gf_status gf_file_info_new(gf_file_info** info, const gf_path* path);
+
+/*!
+** @brief Discards the gf_file_info object.
+**
+** @param [in, out] info 
+*/
 extern void gf_file_info_free(gf_file_info* info);
 
 extern gf_bool gf_file_info_is_file(const gf_file_info* info);

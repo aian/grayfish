@@ -16,14 +16,19 @@
 
 static void
 new_free_normal(void) {
-  /*
   gf_status rc = 0;
+  gf_path* path = NULL;
   gf_file_info* info = NULL;
 
-  rc = gf_file_info_new(&info);
+  rc = gf_path_new(&path, GFT_TEST_DATA_PATH);
+  CU_ASSERT_EQUAL_FATAL(rc, GF_SUCCESS);
+
+  
+  rc = gf_file_info_new(&info, path);
+  gf_path_free(path);
   CU_ASSERT_EQUAL(rc, GF_SUCCESS);
+
   gf_file_info_free(info);
-  */
 }
 
 /* -------------------------------------------------------------------------- */

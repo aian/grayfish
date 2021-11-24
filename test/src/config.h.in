@@ -12,5 +12,6 @@
 #pragma once
 
 #define GFT_TEST_ROOT_PATH "@GF_TEST_ROOT_PATH@"
+#define GFT_TEST_DATA_PATH GFT_TEST_ROOT_PATH "/data"
 
 #endif  /* GFT_CONFIG_H */

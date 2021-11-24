@@ -32,7 +32,7 @@ gf_hash_file(gf_8u* hash, gf_size_t size, gf_path* path) {
   static const size_t s_bufsize = GF_HASH_BUFSIZE_FILE;
   
   gf_validate(hash);
-  gf_validate(size < GF_HASH_BUFSIZE_SHA512);
+  gf_validate(size >= GF_HASH_BUFSIZE_SHA512);
   gf_validate(!gf_path_is_empty(path));
   
   ret = SHA512_Init(&ctxt);

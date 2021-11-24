@@ -191,10 +191,15 @@ gf_file_info_new(gf_file_info** info, const gf_path* path) {
     gf_file_info_free(tmp);
     gf_throw(rc);
   }
-  rc = file_info_set_hash(tmp);
-  if (rc != GF_SUCCESS) {
-    gf_file_info_free(tmp);
-    gf_throw(rc);
+  if (gf_file_info_is_file(tmp)) {
+    rc = file_info_set_hash(tmp);
+    if (rc != GF_SUCCESS) {
+      gf_file_info_free(tmp);
+      gf_throw(rc);
+    }
+  } else {
+    // TODO: memset must be wrapped by gf_memset
+    memset(tmp->hash, 0, tmp->hash_size);
   }
   rc = file_info_prepare_children(tmp);
   if (rc != GF_SUCCESS) {
