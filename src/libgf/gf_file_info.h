@@ -45,6 +45,8 @@ extern gf_status gf_file_info_new(gf_file_info** info, const gf_path* path);
 */
 extern void gf_file_info_free(gf_file_info* info);
 
+extern void gf_file_info_free_any(gf_any* any);
+
 extern gf_bool gf_file_info_is_file(const gf_file_info* info);
 extern gf_bool gf_file_info_is_directory(const gf_file_info* info);
 

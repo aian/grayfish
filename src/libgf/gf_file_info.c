@@ -229,6 +229,13 @@ gf_file_info_free(gf_file_info* info) {
   }
 }
 
+void
+gf_file_info_free_any(gf_any* any) {
+  if (any) {
+    gf_file_info_free((gf_file_info*)(any->ptr));
+  }
+}
+
 gf_bool
 gf_file_info_is_file(const gf_file_info* info) {
   return info && S_ISREG(info->mode) ? GF_TRUE : GF_FALSE;

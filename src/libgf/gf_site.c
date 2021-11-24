@@ -134,8 +134,9 @@ struct gf_entry {
   gf_string*     method;
   gf_site*       site;
   gf_path*       output_path;
-  gf_array*      subject_set; ///< The array of gf_category objects
-  gf_array*      keyword_set; ///< The array of gf_category objects
+  gf_array*      subject_set; ///< Array of gf_category objects
+  gf_array*      keyword_set; ///< Array of gf_category objects
+  gf_array*      file_set;    ///< Array of gf_file_info objects
 };
 
 static gf_status
@@ -154,6 +155,7 @@ entry_init(gf_entry* entry) {
   entry->output_path = NULL;
   entry->subject_set = NULL;
   entry->keyword_set = NULL;
+  entry->file_set    = NULL;
   
   return GF_SUCCESS;
 }
@@ -170,6 +172,7 @@ entry_prepare(gf_entry* entry) {
   _(gf_array_set_free_fn(entry->subject_set, category_free));
   _(gf_array_new(&entry->keyword_set));
   _(gf_array_set_free_fn(entry->keyword_set, category_free));
+  _(gf_array_new(&entry->file_set)); // this array doesn't free element objects
 
   return GF_SUCCESS;
 }
@@ -956,10 +959,47 @@ gf_site_scan(gf_site** site, const gf_path* path) {
 **
 */
 
+static gf_status
+site_write_xml_file(xmlDocPtr doc, const char* path) {
+  FILE* fp = NULL;
+  int ret = 0;
+  
+  gf_validate(doc);
+  gf_validate(!gf_strnull(path));
+
+  fp = fopen(path, "w");
+  if (!fp) {
+    gf_raise(GF_E_OPEN, "Failed to open file.");
+  }
+  ret = xmlDocFormatDump(fp, doc, 1);
+  xmlFreeDoc(doc);
+  if (ret < 0) {
+    gf_raise(GF_E_OPEN, "Failed to open file.");
+  }
+  
+  return GF_SUCCESS;
+}
+
+
 gf_status
 gf_site_write_file(const gf_site* site, const gf_path* path) {
+  xmlDocPtr doc = NULL;
+  xmlNodePtr root = NULL;
+
   gf_validate(site);
   gf_validate(!gf_path_is_empty(path));
+
+  doc = xmlNewDoc(BAD_CAST"1.0");
+  if (!doc) {
+    gf_raise(GF_E_API, "Failed to create XML document on write.");
+  }
+  /* Root element */
+  root = xmlNewNode(NULL, BAD_CAST"site");
+
+  xmlDocSetRootElement(doc, root);
+
+  site_write_xml_file(doc, gf_path_get_string(path));
+  xmlFreeDoc(doc);
 
   return GF_SUCCESS;
 }
