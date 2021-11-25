@@ -119,21 +119,28 @@ gf_category_set_name(gf_category* cat, const gf_string* name) {
 /* -------------------------------------------------------------------------- */
 
 /*!
-** @brief Site entry
+** @brief Site entry object.
 **
+** An entry is a resource of the website, which is determined to be processed by
+** the Grayfish convertion processor. Not the all source files in the website
+** are regarded as entry objects. Only the following files are processed as
+** site entries.
+**
+**   - First, the directory including meta.gf file is treated as a section entry
+**   - Second, the index.dbk is regarded as a main document entry.
 */
 
 struct gf_entry {
-  gf_entry_type  type;
-  gf_entry_state state;
-  gf_string*     title;
-  gf_string*     author;
-  gf_datetime    date;
+  gf_entry_type  type;        ///< Type of a entry
+  gf_entry_state state;       ///< State of a entry
+  gf_string*     title;       ///< Entry title retrieved from an entry file
+  gf_string*     author;      ///< Name of an author read from an entry file
+  gf_datetime    date;        ///< Published date read from an entry file
   gf_array*      description; ///< A description composed with paragraph strings
-  gf_file_info*  file_info;   ///< The info file. (site.gf, meta.gf ...)
-  gf_string*     method;
-  gf_site*       site;
-  gf_path*       output_path;
+  gf_file_info*  file_info;   ///< The info file. (meta.gf, index.dbk ...)
+  gf_string*     method;      ///< The process type linked to the XSLT file name
+  gf_site*       site;        ///< The site object which includes this object
+  gf_path*       output_path; ///< The output path 
   gf_array*      subject_set; ///< Array of gf_category objects
   gf_array*      keyword_set; ///< Array of gf_category objects
   gf_array*      file_set;    ///< Array of gf_file_info objects
@@ -271,11 +278,11 @@ gf_entry_set_date(gf_entry* obj, gf_datetime date) {
 }
 
 gf_status
-gf_entry_set_file_info(gf_entry* entry, gf_file_info* file_info) {
+gf_entry_set_file_info(gf_entry* entry, gf_file_info* info) {
   gf_validate(entry);
-  gf_validate(file_info);
+  gf_validate(info);
 
-  entry->file_info = file_info;
+  entry->file_info = info;
   
   return GF_SUCCESS;
 }
@@ -671,13 +678,29 @@ entry_set_meta_info(gf_entry* entry) {
 /* -------------------------------------------------------------------------- */
 
 /*!
-** @brief Site database
+** @defgroup SiteStruct The website information and operations.
+*/
+/* @{ */
+
+/*!
+** @brief The website structure.
+**
+** This structure represents whole your website information. By this, you can
+** update or build the website.
 */
 
 struct gf_site {
   gf_file_info* root;       ///< The root of a site tree. (directory)
   gf_array*     entry_set;  ///< Entries to process
 };
+
+/*!
+** @brief Initialize a gf_site object.
+**
+** @param 
+**
+** @return GF_SUCCESS on success, GF_E_* otherwise. 
+*/
 
 static gf_status
 site_init(gf_site* site) {
@@ -951,13 +974,13 @@ gf_site_scan(gf_site** site, const gf_path* path) {
   return GF_SUCCESS;
 }
 
-/* -------------------------------------------------------------------------- */
+/* @} */
 
-/*
-** File IO of the site structure.
-**
-**
+/* -------------------------------------------------------------------------- */
+/*!
+** @defgroup WriteSite Writing gf_site object to an XML file.
 */
+/* @{ */
 
 static gf_status
 site_write_xml_file(xmlDocPtr doc, const char* path) {
@@ -1449,6 +1472,10 @@ gf_site_write_file(const gf_site* site, const gf_path* path) {
 
   return GF_SUCCESS;
 }
+
+/* @} */
+
+/* -------------------------------------------------------------------------- */
 
 gf_status
 gf_site_read_file(gf_site** site, const gf_path* path) {
