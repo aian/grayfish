@@ -329,7 +329,7 @@ entry_set_title(gf_entry* entry, xmlNodePtr node) {
   gf_validate(entry);
   gf_validate(node);
   for (xmlNodePtr cur = node->children; cur; cur = cur->next) {
-    if (cur->type == XML_TEXT_NODE) {
+    if (xmlNodeIsText(cur)) {
       _(gf_string_append(entry->title, (char*)cur->content));
     } else {
       _(entry_set_title(entry, cur));
@@ -343,7 +343,7 @@ entry_set_author(gf_entry* entry, xmlNodePtr node) {
   gf_validate(entry);
   gf_validate(node);
   for (xmlNodePtr cur = node->children; cur; cur = cur->next) {
-    if (cur->type == XML_TEXT_NODE) {
+    if (xmlNodeIsText(cur)) {
       // NOTE: By now, we don't care about the order of first and last name.
       // We concate the string components of an author in appearance order.
       if (gf_string_is_empty(entry->author) > 0) {
@@ -365,7 +365,7 @@ entry_set_date(gf_entry* entry, xmlNodePtr node) {
   gf_validate(node);
 
   child = node->children;
-  if (child->type != XML_TEXT_NODE) {
+  if (xmlNodeIsText(child)) {
     gf_raise(GF_E_DATA, "Invalid XML data.");
   }
   _(gf_date_parse((const char*)child->content, &entry->date));
@@ -381,7 +381,7 @@ entry_set_description(gf_entry* entry, xmlNodePtr node) {
   gf_validate(node);
 
   for (xmlNodePtr cur = node->children; cur; cur = cur->next) {
-    if (cur->type == XML_TEXT_NODE) {
+    if (xmlNodeIsText(cur)) {
       gf_string* s = NULL;
       
       _(gf_string_new(&s));
@@ -430,7 +430,7 @@ entry_set_subject_set(gf_entry* entry, xmlNodePtr node) {
         if (!id) {
           gf_raise(GF_E_DATA, "Invalid XML data.");
         }
-        if (cur->children->type != XML_TEXT_NODE) {
+        if (xmlNodeIsText(cur->children)) {
           gf_raise(GF_E_DATA, "Invalid XML data.");
         }
         _(gf_category_new(&cat));
@@ -494,7 +494,7 @@ entry_set_keyword_set(gf_entry* entry, xmlNodePtr node) {
         if (!id) {
           gf_raise(GF_E_DATA, "Invalid XML data.");
         }
-        if (cur->children->type != XML_TEXT_NODE) {
+        if (xmlNodeIsText(cur->children)) {
           gf_raise(GF_E_DATA, "Invalid XML data.");
         }
         _(gf_category_new(&cat));
@@ -981,30 +981,89 @@ site_write_xml_file(xmlDocPtr doc, const char* path) {
 }
 
 static gf_status
-site_add_xml_int32u(xmlNodePtr node, xmlChar* name, gf_32u value) {
+site_add_xml_int16u(xmlNodePtr node, xmlChar* name, gf_16u value) {
+  xmlNodePtr cur = NULL;
+  char buf[256] = { 0 };
+  
   gf_validate(node);
   gf_validate(name);
 
-  (void)value;
+  snprintf(buf, 256, "%04x", value);
+  
+  cur = xmlNewTextChild(node, NULL, name, BAD_CAST buf);
+  if (!cur) {
+    gf_raise(GF_E_API, "Failed to create an XML node.");
+  }
+
+  return GF_SUCCESS;
+}
+
+static gf_status
+site_add_xml_int16s(xmlNodePtr node, xmlChar* name, gf_16s value) {
+  xmlNodePtr cur = NULL;
+  char buf[256] = { 0 };
+  
+  gf_validate(node);
+  gf_validate(name);
+
+  snprintf(buf, 256, "%d", value);
+  
+  cur = xmlNewTextChild(node, NULL, name, BAD_CAST buf);
+  if (!cur) {
+    gf_raise(GF_E_API, "Failed to create an XML node.");
+  }
+
+  return GF_SUCCESS;
+}
+
+static gf_status
+site_add_xml_int32u(xmlNodePtr node, xmlChar* name, gf_32u value) {
+  xmlNodePtr cur = NULL;
+  char buf[256] = { 0 };
+  
+  gf_validate(node);
+  gf_validate(name);
+
+  snprintf(buf, 256, "%08x", value);
+  
+  cur = xmlNewTextChild(node, NULL, name, BAD_CAST buf);
+  if (!cur) {
+    gf_raise(GF_E_API, "Failed to create an XML node.");
+  }
 
   return GF_SUCCESS;
 }
 
 static gf_status
 site_add_xml_int64u(xmlNodePtr node, xmlChar* name, gf_64u value) {
+  xmlNodePtr cur = NULL;
+  char buf[256] = { 0 };
+  
   gf_validate(node);
   gf_validate(name);
 
-  (void)value;
+  snprintf(buf, 256, "%016llx", value);
+  
+  cur = xmlNewTextChild(node, NULL, name, BAD_CAST buf);
+  if (!cur) {
+    gf_raise(GF_E_API, "Failed to create an XML node.");
+  }
 
   return GF_SUCCESS;
 }
 
 static gf_status
 site_add_xml_string(xmlNodePtr node, xmlChar* name, const gf_string* value) {
+  xmlNodePtr cur = NULL;
+
   gf_validate(node);
   gf_validate(name);
   gf_validate(value);
+
+  cur = xmlNewTextChild(node, NULL, name, BAD_CAST gf_string_get(value));
+  if (!cur) {
+    gf_raise(GF_E_API, "Failed to create an XML node.");
+  }
 
   return GF_SUCCESS;
 }
@@ -1042,13 +1101,150 @@ site_add_xml_description(
 
 static gf_status
 site_add_xml_path(xmlNodePtr node, xmlChar* name, const gf_path* value) {
+  xmlNodePtr cur = NULL;
+
   gf_validate(node);
   gf_validate(name);
   gf_validate(value);
 
+  cur = xmlNewTextChild(node, NULL, name, BAD_CAST gf_path_get_string(value));
+  if (!cur) {
+    gf_raise(GF_E_API, "Failed to create an XML node.");
+  }
+
   return GF_SUCCESS;
 }
 
+static gf_status
+site_add_xml_file_info_string(
+  xmlNodePtr node, const gf_file_info* info, xmlChar* name,
+  gf_status (*fn)(const gf_file_info*, const gf_char**)) {
+
+  xmlNodePtr cur = NULL;
+  const gf_char* str = NULL;
+  
+  gf_validate(info);
+  gf_validate(name);
+  gf_validate(fn);
+
+  _(fn(info, &str));
+  
+  cur = xmlNewTextChild(node, NULL, name, BAD_CAST str);
+  if (!cur) {
+    gf_raise(GF_E_API, "Failed to create an XML node.");
+  }
+
+  return GF_SUCCESS;
+}
+
+static gf_status
+site_add_xml_file_info_hash(
+  xmlNodePtr node, const gf_file_info* info, xmlChar* name,
+  gf_status (*fn)(const gf_file_info*, gf_size_t, gf_8u*)) {
+
+  xmlNodePtr txt = NULL;
+  xmlNodePtr cur = NULL;
+  gf_16u hash_size = 0;
+  gf_8u buf[256] = { 0 };
+  
+  gf_validate(info);
+  gf_validate(name);
+  gf_validate(fn);
+
+  _(fn(info, 256, buf));
+
+  _(gf_file_info_get_hash_size(info, &hash_size));
+  
+  cur = xmlNewNode(NULL, name);
+  if (!cur) {
+    gf_raise(GF_E_API, "Failed to create an XML node.");
+  }
+  cur = xmlAddChild(node, cur);
+  if (!cur) {
+    gf_raise(GF_E_API, "Failed to create an XML node.");
+  }
+  txt = xmlNewTextLen(BAD_CAST buf, hash_size);
+  if (!txt) {
+    gf_raise(GF_E_API, "Failed to create an XML node.");
+  }
+  txt = xmlAddChild(cur, txt);
+  if (!txt) {
+    gf_raise(GF_E_API, "Failed to create an XML node.");
+  }
+
+  return GF_SUCCESS;
+}
+
+static gf_status
+site_add_xml_file_info_int16u(
+  xmlNodePtr node, const gf_file_info* info, xmlChar* name,
+  gf_status (*fn)(const gf_file_info*, gf_16u*)) {
+  gf_16u n = 0;
+  
+  gf_validate(info);
+  gf_validate(name);
+  gf_validate(fn);
+
+  _(fn(info, &n));
+  _(site_add_xml_int16u(node, name, n));
+
+  return GF_SUCCESS;
+}
+
+static gf_status
+site_add_xml_file_info_int16s(
+  xmlNodePtr node, const gf_file_info* info, xmlChar* name,
+  gf_status (*fn)(const gf_file_info*, gf_16s*)) {
+  gf_16s n = 0;
+  
+  gf_validate(info);
+  gf_validate(name);
+  gf_validate(fn);
+
+  _(fn(info, &n));
+  _(site_add_xml_int16s(node, name, n));
+
+  return GF_SUCCESS;
+}
+
+static gf_status
+site_add_xml_file_info_int32u(
+  xmlNodePtr node, const gf_file_info* info, xmlChar* name,
+  gf_status (*fn)(const gf_file_info*, gf_32u*)) {
+  gf_32u n = 0;
+  
+  gf_validate(info);
+  gf_validate(name);
+  gf_validate(fn);
+
+  _(fn(info, &n));
+  _(site_add_xml_int32u(node, name, n));
+
+  return GF_SUCCESS;
+}
+
+static gf_status
+site_add_xml_file_info_int64u(
+  xmlNodePtr node, const gf_file_info* info, xmlChar* name,
+  gf_status (*fn)(const gf_file_info*, gf_64u*)) {
+  gf_64u n = 0;
+  
+  gf_validate(info);
+  gf_validate(name);
+  gf_validate(fn);
+
+  _(fn(info, &n));
+  _(site_add_xml_int64u(node, name, n));
+
+  return GF_SUCCESS;
+}
+
+/*!
+**
+** We do not write values of user_data and user_flag.
+**
+**
+*/
 
 static gf_status
 site_add_xml_file_info(
@@ -1057,15 +1253,85 @@ site_add_xml_file_info(
   gf_validate(name);
   gf_validate(value);
 
+  _(site_add_xml_file_info_string(
+      node, value, BAD_CAST"file-name", gf_file_info_get_file_name));
+  _(site_add_xml_file_info_string(
+      node, value, BAD_CAST"full-path", gf_file_info_get_full_path));
+  _(site_add_xml_file_info_hash(
+      node, value, BAD_CAST"hash", gf_file_info_get_hash));
+  _(site_add_xml_file_info_int16u(
+      node, value, BAD_CAST"hash-size", gf_file_info_get_hash_size));
+  _(site_add_xml_file_info_int16u(
+      node, value, BAD_CAST"inode", gf_file_info_get_inode));
+  _(site_add_xml_file_info_int16u(
+      node, value, BAD_CAST"mode", gf_file_info_get_mode));
+  _(site_add_xml_file_info_int16s(
+      node, value, BAD_CAST"link-count", gf_file_info_get_link_count));
+  _(site_add_xml_file_info_int16s(
+      node, value, BAD_CAST"uid", gf_file_info_get_uid));
+  _(site_add_xml_file_info_int16s(
+      node, value, BAD_CAST"gid", gf_file_info_get_gid));
+  _(site_add_xml_file_info_int32u(
+      node, value, BAD_CAST"device", gf_file_info_get_device));
+  _(site_add_xml_file_info_int32u(
+      node, value, BAD_CAST"rdevice", gf_file_info_get_rdevice));
+  _(site_add_xml_file_info_int64u(
+      node, value, BAD_CAST"file-size", gf_file_info_get_file_size));
+  _(site_add_xml_file_info_int64u(
+      node, value, BAD_CAST"access-time", gf_file_info_get_access_time));
+  _(site_add_xml_file_info_int64u(
+      node, value, BAD_CAST"modify-time", gf_file_info_get_modify_time));
+  _(site_add_xml_file_info_int64u(
+      node, value, BAD_CAST"create-time", gf_file_info_get_create_time));
+
+  return GF_SUCCESS;
+}
+
+static gf_status
+site_add_xml_category(
+  xmlNodePtr node, xmlChar* name, const gf_category* value) {
+  xmlNodePtr cur = NULL;
+
+  gf_validate(node);
+  gf_validate(name);
+  gf_validate(value);
+
+  // NOTE: We directly refer to the member gf_category::name. It may be
+  // preferable to access via getter functions.
+  cur = xmlNewTextChild(node, NULL, name, BAD_CAST gf_string_get(value->name));
+  if (!cur) {
+    gf_raise(GF_E_API, "Failed to create an XML node.");
+  }
+  xmlSetProp(cur, BAD_CAST"xml:id", BAD_CAST gf_string_get(value->id));
+
   return GF_SUCCESS;
 }
 
 static gf_status
 site_add_xml_category_set(
-  xmlNodePtr node, xmlChar* name, const gf_array* value) {
+  xmlNodePtr node, xmlChar* name, xmlChar* child_name, const gf_array* value) {
+  xmlNodePtr cur = NULL;
+  gf_size_t cnt = 0;
+  
   gf_validate(node);
   gf_validate(name);
   gf_validate(value);
+
+  cur = xmlNewNode(NULL, name);
+  if (!cur) {
+    gf_raise(GF_E_API, "Failed to create an XML node.");
+  }
+  cur = xmlAddChild(node, cur);
+  if (!cur) {
+    gf_raise(GF_E_API, "Failed to add an XML node.");
+  }
+  cnt = gf_array_size(value);
+  for (gf_size_t i = 0; i < cnt; i++) {
+    gf_any any = { 0 };
+
+    _(gf_array_get(value, i, &any));
+    _(site_add_xml_category(cur, child_name, (gf_category*)any.ptr));
+  }
 
   return GF_SUCCESS;
 }
@@ -1073,10 +1339,25 @@ site_add_xml_category_set(
 static gf_status
 site_add_xml_file_info_set(
   xmlNodePtr node, xmlChar* name, const gf_array* value) {
+  xmlNodePtr cur = NULL;
+  gf_size_t cnt = 0;
+  
   gf_validate(node);
   gf_validate(name);
   gf_validate(value);
 
+  cur = xmlNewNode(NULL, BAD_CAST "file-set");
+  if (!cur) {
+    gf_raise(GF_E_API, "Failed to add an XML node.");
+  }
+  cnt = gf_array_size(value);
+  for (gf_size_t i = 0; i < cnt; i++) {
+    gf_any any = { 0 };
+
+    _(gf_array_get(value, i, &any));
+    _(site_add_xml_file_info(cur, BAD_CAST"file", (gf_file_info*)(any.ptr)));
+  }
+  
   return GF_SUCCESS;
 }
 
@@ -1098,8 +1379,10 @@ site_make_entry_node(xmlNodePtr* node, gf_entry* entry) {
   _(site_add_xml_file_info(tmp, BAD_CAST"file-info", entry->file_info));
   _(site_add_xml_string(tmp, BAD_CAST"method", entry->method));
   _(site_add_xml_path(tmp, BAD_CAST"output-path", entry->output_path));
-  _(site_add_xml_category_set(tmp, BAD_CAST"subject-set", entry->subject_set));
-  _(site_add_xml_category_set(tmp, BAD_CAST"keyword-set", entry->keyword_set));
+  _(site_add_xml_category_set(
+      tmp, BAD_CAST"subject-set", BAD_CAST"subject", entry->subject_set));
+  _(site_add_xml_category_set(
+      tmp, BAD_CAST"keyword-set", BAD_CAST"subject", entry->keyword_set));
   _(site_add_xml_file_info_set(tmp, BAD_CAST"file-set", entry->file_set));
 
   *node = tmp;
