@@ -62,6 +62,19 @@ gf_memset(gf_ptr buf, gf_int ch, gf_size_t n) {
 }
 
 gf_status
+gf_memcpy(gf_ptr dst, gf_const_ptr src, gf_size_t n) {
+  gf_validate(dst);
+  gf_validate(src);
+  
+  if (n > 0) {
+    memcpy(dst, src, n);
+  }
+
+  return GF_SUCCESS;
+}
+
+
+gf_status
 gf_bzero(gf_ptr buf, gf_size_t n) {
   return gf_memset(buf, 0, n);
 }

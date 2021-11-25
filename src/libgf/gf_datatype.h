@@ -21,19 +21,20 @@
 extern "C" {
 #endif
 
-typedef _Bool    gf_bool;
-typedef size_t   gf_size_t;
-typedef char     gf_char;
-typedef int      gf_int;
-typedef int8_t   gf_8s;
-typedef uint8_t  gf_8u;
-typedef int16_t  gf_16s;
-typedef uint16_t gf_16u;
-typedef int32_t  gf_32s;
-typedef uint32_t gf_32u;
-typedef int64_t  gf_64s;
-typedef uint64_t gf_64u;
-typedef void*    gf_ptr;
+typedef _Bool       gf_bool;
+typedef size_t      gf_size_t;
+typedef char        gf_char;
+typedef int         gf_int;
+typedef int8_t      gf_8s;
+typedef uint8_t     gf_8u;
+typedef int16_t     gf_16s;
+typedef uint16_t    gf_16u;
+typedef int32_t     gf_32s;
+typedef uint32_t    gf_32u;
+typedef int64_t     gf_64s;
+typedef uint64_t    gf_64u;
+typedef void*       gf_ptr;
+typedef const void* gf_const_ptr;
 
 extern const gf_bool GF_TRUE;
 extern const gf_bool GF_FALSE;

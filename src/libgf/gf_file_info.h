@@ -38,6 +38,8 @@ typedef struct gf_file_info gf_file_info;
 */
 extern gf_status gf_file_info_new(gf_file_info** info, const gf_path* path);
 
+extern gf_status gf_file_info_scan(gf_file_info** info, const gf_path* path);
+
 /*!
 ** @brief Discards the gf_file_info object.
 **
@@ -54,16 +56,62 @@ extern gf_size_t gf_file_info_count_children(const gf_file_info* info);
 
 extern gf_status gf_file_info_add_child(
   gf_file_info* info, gf_file_info* child);
+
 extern gf_status gf_file_info_get_child(
   const gf_file_info* info, gf_size_t index, gf_file_info** child);
 
+/* -------------------------------------------------------------------------- */
+
 extern gf_status gf_file_info_get_file_name(
   const gf_file_info* info, const gf_char** file_name);
+
 extern gf_status gf_file_info_get_full_path(
   const gf_file_info* info, const gf_char** full_path);
 
-extern gf_status gf_file_info_scan(gf_file_info** info, const gf_path* path);
+extern gf_status gf_file_info_get_hash(
+  const gf_file_info* info, gf_size_t size, gf_8u* hash);
 
+extern gf_status gf_file_info_get_user_data(
+  const gf_file_info* info, gf_any* user_data);
+
+extern gf_status gf_file_info_get_user_flag(
+  const gf_file_info* info, gf_32u* user_flag);
+
+extern gf_status gf_file_info_get_hash_size(
+  const gf_file_info* info, gf_16u* hash_size);
+
+extern gf_status gf_file_info_get_inode(
+  const gf_file_info* info, gf_16u* inode);
+
+extern gf_status gf_file_info_get_mode(
+  const gf_file_info* info, gf_16u* mode);
+
+extern gf_status gf_file_info_get_link_count(
+  const gf_file_info* info, gf_16s* link_count);
+
+extern gf_status gf_file_info_get_uid(
+  const gf_file_info* info, gf_16s* uid);
+
+extern gf_status gf_file_info_get_gid(
+  const gf_file_info* info, gf_16s* gid);
+
+extern gf_status gf_file_info_get_device(
+  const gf_file_info* info, gf_32u* device);
+
+extern gf_status gf_file_info_get_rdevice(
+  const gf_file_info* info, gf_32u* rdevice);
+
+extern gf_status gf_file_info_get_file_size(
+  const gf_file_info* info, gf_64u* file_size);
+
+extern gf_status gf_file_info_get_access_time(
+  const gf_file_info* info, gf_64u* access_time);
+
+extern gf_status gf_file_info_get_modify_time(
+  const gf_file_info* info, gf_64u* modify_time);
+
+extern gf_status gf_file_info_get_create_time(
+  const gf_file_info* info, gf_64u* create_time);
 
 #ifdef __cplusplus
 }

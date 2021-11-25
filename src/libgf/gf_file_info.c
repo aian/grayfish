@@ -212,6 +212,67 @@ gf_file_info_new(gf_file_info** info, const gf_path* path) {
   return GF_SUCCESS;
 }
 
+static gf_status
+file_info_scan(gf_file_info** info, const gf_path* path) {
+  gf_status rc = 0;
+
+  rc = gf_file_info_new(info, path);
+  if (rc != GF_SUCCESS) {
+    gf_throw(rc);
+  }
+  if (gf_file_info_is_directory(*info)) {
+    DIR* dp = NULL;
+    struct dirent* ep;
+
+    dp = opendir(gf_path_get_string((*info)->full_path));
+    if (!dp) {
+      gf_raise(GF_E_API, "Couldn't open the directory.");
+    }
+    while ((ep = readdir(dp)) != NULL) {
+      gf_file_info* child = NULL;
+      gf_path* child_path = NULL;
+
+      if (!strcmp(ep->d_name, ".") || !strcmp(ep->d_name, "..")) {
+        continue;
+      }
+      rc = gf_path_append_string(&child_path, path, ep->d_name);
+      if (rc != GF_SUCCESS) {
+        (void)closedir(dp);
+        gf_throw(rc);
+      }
+      rc = file_info_scan(&child, child_path);
+      gf_path_free(child_path);
+      if (rc != GF_SUCCESS) {
+        (void)closedir(dp);
+        gf_throw(rc);
+      }
+      rc = gf_file_info_add_child(*info, child);
+      if (rc != GF_SUCCESS) {
+        (void)closedir(dp);
+        gf_throw(rc);
+      }
+    }
+    (void)closedir(dp);
+  }
+  
+  return GF_SUCCESS;
+}
+
+gf_status
+gf_file_info_scan(gf_file_info** info, const gf_path* path) {
+  gf_status rc = 0;
+  
+  gf_validate(info);
+  gf_validate(path);
+
+  rc = file_info_scan(info, path);
+  if (rc != GF_SUCCESS) {
+    gf_throw(rc);
+  }
+
+  return GF_SUCCESS;
+}
+
 void
 gf_file_info_free(gf_file_info* info) {
   if (info) {
@@ -302,63 +363,152 @@ gf_file_info_get_full_path(
 }
 
 gf_status
-file_info_scan(gf_file_info** info, const gf_path* path) {
-  gf_status rc = 0;
+gf_file_info_get_hash(const gf_file_info* info, gf_size_t size, gf_8u* hash) {
+  gf_validate(info);
+  gf_validate(size >= info->hash_size);
+  gf_validate(hash);
 
-  rc = gf_file_info_new(info, path);
-  if (rc != GF_SUCCESS) {
-    gf_throw(rc);
-  }
-  if (gf_file_info_is_directory(*info)) {
-    DIR* dp = NULL;
-    struct dirent* ep;
+  _(gf_memcpy(hash, info->hash, info->hash_size));
 
-    dp = opendir(gf_path_get_string((*info)->full_path));
-    if (!dp) {
-      gf_raise(GF_E_API, "Couldn't open the directory.");
-    }
-    while ((ep = readdir(dp)) != NULL) {
-      gf_file_info* child = NULL;
-      gf_path* child_path = NULL;
+  return GF_SUCCESS;
+}
 
-      if (!strcmp(ep->d_name, ".") || !strcmp(ep->d_name, "..")) {
-        continue;
-      }
-      rc = gf_path_append_string(&child_path, path, ep->d_name);
-      if (rc != GF_SUCCESS) {
-        (void)closedir(dp);
-        gf_throw(rc);
-      }
-      rc = file_info_scan(&child, child_path);
-      gf_path_free(child_path);
-      if (rc != GF_SUCCESS) {
-        (void)closedir(dp);
-        gf_throw(rc);
-      }
-      rc = gf_file_info_add_child(*info, child);
-      if (rc != GF_SUCCESS) {
-        (void)closedir(dp);
-        gf_throw(rc);
-      }
-    }
-    (void)closedir(dp);
-  }
+gf_status
+gf_file_info_get_user_data(const gf_file_info* info, gf_any* user_data) {
+  gf_validate(info);
+  gf_validate(user_data);
+
+  *user_data = info->user_data;
   
   return GF_SUCCESS;
 }
 
 gf_status
-gf_file_info_scan(gf_file_info** info, const gf_path* path) {
-  gf_status rc = 0;
-  
+gf_file_info_get_user_flag(const gf_file_info* info, gf_32u* user_flag) {
   gf_validate(info);
-  gf_validate(path);
+  gf_validate(user_flag);
 
-  rc = file_info_scan(info, path);
-  if (rc != GF_SUCCESS) {
-    gf_throw(rc);
-  }
+  *user_flag = info->user_flag;
+  
+  return GF_SUCCESS;
+}
+
+gf_status
+gf_file_info_get_hash_size(const gf_file_info* info, gf_16u* hash_size) {
+  gf_validate(info);
+  gf_validate(hash_size);
+
+  *hash_size = info->hash_size;
 
   return GF_SUCCESS;
 }
 
+gf_status
+gf_file_info_get_inode(const gf_file_info* info, gf_16u* inode) {
+  gf_validate(info);
+  gf_validate(inode);
+
+  *inode = info->inode;
+
+  return GF_SUCCESS;
+}
+
+gf_status
+gf_file_info_get_mode(const gf_file_info* info, gf_16u* mode) {
+  gf_validate(info);
+  gf_validate(mode);
+
+  *mode = info->mode;
+
+  return GF_SUCCESS;
+}
+
+gf_status
+gf_file_info_get_link_count(const gf_file_info* info, gf_16s* link_count) {
+  gf_validate(info);
+  gf_validate(link_count);
+
+  *link_count = info->link_count;
+  
+  return GF_SUCCESS;
+}
+
+gf_status
+gf_file_info_get_uid(const gf_file_info* info, gf_16s* uid) {
+  gf_validate(info);
+  gf_validate(uid);
+
+  *uid = info->uid;
+  
+  return GF_SUCCESS;
+}
+
+gf_status
+gf_file_info_get_gid(const gf_file_info* info, gf_16s* gid) {
+  gf_validate(info);
+  gf_validate(gid);
+
+  *gid = info->gid;
+  
+  return GF_SUCCESS;
+}
+
+gf_status
+gf_file_info_get_device(const gf_file_info* info, gf_32u* device) {
+  gf_validate(info);
+  gf_validate(device);
+
+  *device = info->device;
+
+  return GF_SUCCESS;
+}
+
+gf_status
+gf_file_info_get_rdevice(const gf_file_info* info, gf_32u* rdevice) {
+  gf_validate(info);
+  gf_validate(rdevice);
+
+  *rdevice = info->rdevice;
+
+  return GF_SUCCESS;
+}
+
+gf_status
+gf_file_info_get_file_size(const gf_file_info* info, gf_64u* file_size) {
+  gf_validate(info);
+  gf_validate(file_size);
+
+  *file_size = info->file_size;
+  
+  return GF_SUCCESS;
+}
+
+gf_status
+gf_file_info_get_access_time(const gf_file_info* info, gf_64u* access_time) {
+  gf_validate(info);
+  gf_validate(access_time);
+
+  *access_time = info->access_time;
+  
+  return GF_SUCCESS;
+}
+
+gf_status
+gf_file_info_get_modify_time(const gf_file_info* info, gf_64u* modify_time) {
+  gf_validate(info);
+  gf_validate(modify_time);
+
+  *modify_time = info->modify_time;
+
+  return GF_SUCCESS;
+}
+
+gf_status
+gf_file_info_get_create_time(const gf_file_info* info, gf_64u* create_time) {
+  gf_validate(info);
+  gf_validate(create_time);
+
+  *create_time = info->create_time;
+
+  return GF_SUCCESS;
+}

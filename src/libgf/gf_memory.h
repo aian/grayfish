@@ -26,6 +26,8 @@ extern void gf_free(gf_ptr ptr);
 
 extern gf_status gf_memset(gf_ptr buf, gf_int ch, gf_size_t n);
 
+extern gf_status gf_memcpy(gf_ptr dst, gf_const_ptr src, gf_size_t n);
+
 extern gf_status gf_bzero(gf_ptr buf, gf_size_t n);
 
 #ifdef __cplusplus
