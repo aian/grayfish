@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<meta xmlns="http://qune.jp/ns/grayfish/meta">
+<meta xmlns="http://qune.jp/ns/grayfish/meta" xml:lang="en">
   <title>Sample Website for Grayfish</title>
   <author>aian</author>
   <description>
