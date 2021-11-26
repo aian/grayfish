@@ -1,0 +1,39 @@
+##
+## The meta file schema for Grayfish.
+##
+
+namespace gf = "http://qune.jp/ns/grayfish/meta"
+namespace xsd = "http://www.w3.org/2001/XMLSchema"
+
+start = meta
+
+meta = 
+  element gf:meta {
+    attribute xml:lang { text },
+    mixed {
+      title &
+      author? &
+      description? &
+      image?
+    }
+  }
+
+title =
+  element gf:title { text }
+
+author =
+  element gf:author { text }
+
+description =
+  element gf:description {
+    element gf:p { text }+
+  }
+
+image =
+  element gf:image {
+    attribute src { text },
+    attribute alt { text },
+    attribute width { xsd:integer },
+    attribute height { xsd:integer },
+    empty
+  }
