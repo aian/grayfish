@@ -12,18 +12,39 @@
 
 #include "local.h"
 
+#define GFT_TEST_SITE_ROOT GFT_TEST_DATA_PATH "/gf_site"
+
 /* -------------------------------------------------------------------------- */
 
 static void
 new_free_normal(void) {
-  /*
   gf_status rc = 0;
   gf_site* site = NULL;
-
+  
   rc = gf_site_new(&site);
   CU_ASSERT_EQUAL(rc, GF_SUCCESS);
+  
   gf_site_free(site);
-  */
+}
+
+
+
+static void
+scan_website(void) {
+  gf_status rc = 0;
+  gf_site* site = NULL;
+  gf_path* path = NULL;
+
+  static const char SITE_PATH[] = GFT_TEST_SITE_ROOT "/sample";
+  
+  rc = gf_path_new(&path, SITE_PATH);
+  CU_ASSERT_EQUAL_FATAL(rc, GF_SUCCESS);
+  
+  rc = gf_site_scan(&site, path);
+  CU_ASSERT_EQUAL(rc, GF_SUCCESS);
+  
+  gf_path_free(path);
+  gf_site_free(site);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -40,4 +61,5 @@ gft_site_add_tests(void) {
 
   /* new/free */
   CU_add_test(s, "New/free in noraml case",   new_free_normal);
+  CU_add_test(s, "Scan a website",            scan_website);
 }

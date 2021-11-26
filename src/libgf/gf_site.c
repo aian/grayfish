@@ -552,7 +552,6 @@ entry_set_document_info(gf_entry* entry) {
   gf_status rc = 0;
   xmlDocPtr doc = NULL;
   xmlNodePtr root = NULL;
-  xmlNodePtr cur = NULL;
   xmlChar* prop = NULL;
 
   gf_validate(entry);
@@ -565,17 +564,12 @@ entry_set_document_info(gf_entry* entry) {
     xmlFreeDoc(doc);
     gf_raise(GF_E_DATA, "Invalid XML document.");
   }
-  cur = root->children;
-  if (!cur) {
-    xmlFreeDoc(doc);
-    gf_raise(GF_E_DATA, "Invalid XML document.");
-  }
   /* gf_entry::type */
   entry->type = GF_ENTRY_TYPE_DOCUMENT;
   /* gf_entry::state */
   entry->state = GF_ENTRY_STATE_PUBLISHED; // By now, draft mode is unavailable.
   /* gf_entry::method */
-  prop = xmlGetProp(cur, BAD_CAST"role");
+  prop = xmlGetProp(root, BAD_CAST"role");
   if (prop) {
     rc = gf_string_set(entry->method, (const char*)prop);
     if (rc != GF_SUCCESS) {
@@ -583,19 +577,19 @@ entry_set_document_info(gf_entry* entry) {
       gf_throw(rc);
     }
   } else {
-    rc = gf_string_set(entry->method, (const char*)cur->name);
+    rc = gf_string_set(entry->method, (const char*)root->name);
     if (rc != GF_SUCCESS) {
       xmlFreeDoc(doc);
       gf_throw(rc);
     }
   }
   /* "info" elements */
-  cur = cur->children;
-  if (!cur || !!xmlStrcmp(cur->name, BAD_CAST"info")) {
+  root = root->children;
+  if (!root || !!xmlStrcmp(root->name, BAD_CAST"info")) {
     xmlFreeDoc(doc);
     gf_raise(GF_E_DATA, "Invalid XML document.");
   }
-  for (cur = cur->children; cur; cur = cur->next) {
+  for (xmlNodePtr cur = root->children; cur; cur = cur->next) {
     if (!xmlStrcmp(cur->name, BAD_CAST"title")) {
       rc = entry_set_title(entry, cur);
     } else if (!xmlStrcmp(cur->name, BAD_CAST"author")) {
@@ -629,21 +623,15 @@ entry_set_meta_info(gf_entry* entry) {
   gf_status rc = 0;
   xmlDocPtr doc = NULL;
   xmlNodePtr root = NULL;
-  xmlNodePtr cur = NULL;
   
   gf_validate(entry);
 
   _(entry_read_xml_file(&doc, entry));
   assert(doc);
 
+  /* "meta" element */
   root = xmlDocGetRootElement(doc);
   if (!root) {
-    xmlFreeDoc(doc);
-    gf_raise(GF_E_DATA, "Invalid XML document.");
-  }
-  /* meta element*/
-  cur = root->children;
-  if (!cur) {
     xmlFreeDoc(doc);
     gf_raise(GF_E_DATA, "Invalid XML document.");
   }
@@ -656,7 +644,7 @@ entry_set_meta_info(gf_entry* entry) {
     gf_throw(rc);
   }
   /* children of meta element */
-  for (cur = cur->children; cur; cur = cur->next) {
+  for (xmlNodePtr cur = root->children; cur; cur = cur->next) {
     if (!xmlStrcmp(cur->name, BAD_CAST"title")) {
       rc = entry_set_title(entry, cur);
     } else if (!xmlStrcmp(cur->name, BAD_CAST"author")) {

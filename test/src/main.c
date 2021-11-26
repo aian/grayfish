@@ -37,6 +37,7 @@ gft_prepare(void) {
   gft_shell_add_tests();       // gf_shell
   gft_array_add_tests();       // gf_array
   gft_file_info_add_tests();   // gf_file_info
+  gft_site_add_tests();        // gf_site
 }
 
 /*!
