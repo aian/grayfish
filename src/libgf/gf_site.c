@@ -309,9 +309,13 @@ static gf_status
 entry_read_xml_file(xmlDocPtr* doc, gf_entry* entry) {
   const gf_char* path = NULL;
   xmlDocPtr tmp = NULL;
-  
+
+#ifdef GF_DEBUG_
+  static const int option = 0;
+#else
   static const int option =
     XML_PARSE_NOERROR | XML_PARSE_NOWARNING | XML_PARSE_XINCLUDE;
+#endif
   
   gf_validate(doc);
   gf_validate(entry);
@@ -983,7 +987,7 @@ site_write_xml_file(xmlDocPtr doc, const char* path) {
     gf_raise(GF_E_OPEN, "Failed to open file.");
   }
   ret = xmlDocFormatDump(fp, doc, 1);
-  xmlFreeDoc(doc);
+  fclose(fp);
   if (ret < 0) {
     gf_raise(GF_E_OPEN, "Failed to open file.");
   }

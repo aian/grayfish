@@ -1,3 +1,4 @@
+
 /*-
  * This file is part of Grayfish project. For license details, see the file
  * 'LICENSE.md' in this package.
@@ -31,18 +32,26 @@ static void
 scan_website(void) {
   gf_status rc = 0;
   gf_site* site = NULL;
-  gf_path* path = NULL;
+  gf_path* site_path = NULL;
+  gf_path* site_file = NULL;
 
   static const char SITE_PATH[] = GFT_TEST_SITE_ROOT "/sample";
+  static const char SITE_FILE[] = GFT_TEST_SITE_ROOT "/sample/site.xml";
   
-  rc = gf_path_new(&path, SITE_PATH);
+  rc = gf_path_new(&site_path, SITE_PATH);
   CU_ASSERT_EQUAL_FATAL(rc, GF_SUCCESS);
   
-  rc = gf_site_scan(&site, path);
+  rc = gf_site_scan(&site, site_path);
+  gf_path_free(site_path);
   CU_ASSERT_EQUAL(rc, GF_SUCCESS);
-  
-  gf_path_free(path);
+
+  rc = gf_path_new(&site_file, SITE_FILE);
+  CU_ASSERT_EQUAL_FATAL(rc, GF_SUCCESS);
+
+  rc = gf_site_write_file(site, site_file);
   gf_site_free(site);
+  gf_path_free(site_file);
+  CU_ASSERT_EQUAL(rc, GF_SUCCESS);
 }
 
 /* -------------------------------------------------------------------------- */
