@@ -6,7 +6,6 @@
 ** @file libgf/gf_file_info.h
 ** @brief Operating file information.
 */
-#define _XOPEN_SOURCE 700
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -222,7 +221,7 @@ file_info_scan(gf_file_info** info, const gf_path* path) {
   }
   if (gf_file_info_is_directory(*info)) {
     DIR* dp = NULL;
-    struct dirent* ep;
+    struct dirent* ep = NULL;
 
     dp = opendir(gf_path_get_string((*info)->full_path));
     if (!dp) {

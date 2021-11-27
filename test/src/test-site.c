@@ -27,8 +27,6 @@ new_free_normal(void) {
   gf_site_free(site);
 }
 
-
-
 static void
 scan_website(void) {
   gf_status rc = 0;
