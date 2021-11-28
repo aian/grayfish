@@ -85,6 +85,24 @@ string_init(gf_string* str) {
   return GF_SUCCESS;
 }
 
+static gf_status
+string_prepare(gf_string* str) {
+  gf_ptr tmp = NULL;
+  
+  gf_validate(str);
+
+  assert(str->used == 0);
+  assert(str->size == 0);
+  assert(!str->data);
+
+  _(gf_malloc((gf_ptr*)&tmp, 1));
+  str->data = tmp;
+  str->used = 1;
+  str->size = 1;
+
+  return GF_SUCCESS;
+}
+
 gf_status
 gf_string_new(gf_string** str) {
   gf_status rc = 0;
@@ -97,6 +115,11 @@ gf_string_new(gf_string** str) {
   rc = string_init(tmp);
   if (rc != GF_SUCCESS) {
     gf_free(tmp);
+    gf_throw(rc);
+  }
+  rc = string_prepare(tmp);
+  if (rc != GF_SUCCESS) {
+    gf_string_free(tmp);
     gf_throw(rc);
   }
 
@@ -225,7 +248,7 @@ gf_string_append(gf_string* str, const gf_char* s) {
 
     total_len = len[0] + len[1];
     if (str->size <= total_len) {
-      _(gf_realloc((gf_ptr)str->data, total_len));
+      _(gf_realloc((gf_ptr*)&str->data, total_len));
       str->size = total_len;
     }
     // TODO: memcpy must be wrapped by a gf_memcpy().

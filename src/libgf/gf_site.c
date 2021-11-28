@@ -171,6 +171,8 @@ static gf_status
 entry_prepare(gf_entry* entry) {
   gf_validate(entry);
 
+  _(gf_string_new(&entry->title));
+  _(gf_string_new(&entry->author));
   _(gf_array_new(&entry->description));
   _(gf_array_set_free_fn(entry->description, gf_string_free_any));
   _(gf_string_new(&entry->method));
@@ -376,7 +378,7 @@ entry_set_date(gf_entry* entry, xmlNodePtr node) {
   gf_validate(node);
 
   child = node->children;
-  if (xmlNodeIsText(child)) {
+  if (!xmlNodeIsText(child)) {
     gf_raise(GF_E_DATA, "Invalid XML data.");
   }
   _(gf_date_parse((const char*)child->content, &entry->date));
@@ -855,7 +857,7 @@ site_collect_document_info(gf_entry* entry, gf_file_info* file_info) {
   cnt = gf_file_info_count_children(file_info);
   for (gf_size_t i = 0; i < cnt; i++) {
     _(gf_file_info_get_child(file_info, i, &child_info));
-    if (site_is_document_file(file_info)) {
+    if (site_is_document_file(child_info)) {
       _(gf_entry_set_file_info(entry, child_info));
       _(entry_set_document_info(entry));
     }
@@ -875,7 +877,7 @@ site_collect_meta_info(gf_entry* entry, gf_file_info* file_info) {
   cnt = gf_file_info_count_children(file_info);
   for (gf_size_t i = 0; i < cnt; i++) {
     _(gf_file_info_get_child(file_info, i, &child_info));
-    if (site_is_meta_file(file_info)) {
+    if (site_is_meta_file(child_info)) {
       _(gf_entry_set_file_info(entry, child_info));
       _(entry_set_meta_info(entry));
     }
@@ -910,11 +912,21 @@ site_scan_directories(gf_site* site, gf_file_info* file_info) {
       gf_entry_free(entry);
       gf_throw(rc);
     }
+    rc = gf_array_add(site->entry_set, (gf_any){ .ptr = entry });
+    if (rc != GF_SUCCESS) {
+      gf_entry_free(entry);
+      gf_throw(rc);
+    }
   } else if (site_does_directory_have_meta_file(file_info)) {
     gf_entry* entry = NULL;
 
     _(gf_entry_new(&entry));
     rc = site_collect_meta_info(entry, file_info);
+    if (rc != GF_SUCCESS) {
+      gf_entry_free(entry);
+      gf_throw(rc);
+    }
+    rc = gf_array_add(site->entry_set, (gf_any){ .ptr = entry });
     if (rc != GF_SUCCESS) {
       gf_entry_free(entry);
       gf_throw(rc);
@@ -1273,7 +1285,7 @@ site_add_xml_file_info(
   _(site_add_xml_file_info_string(
       node, value, BAD_CAST"full-path", gf_file_info_get_full_path));
   _(site_add_xml_file_info_hash(
-      node, value, BAD_CAST"hash", gf_file_info_get_hash));
+      node, value, BAD_CAST"hash", gf_file_info_get_hash_string));
   _(site_add_xml_file_info_int16u(
       node, value, BAD_CAST"hash-size", gf_file_info_get_hash_size));
   _(site_add_xml_file_info_int16u(

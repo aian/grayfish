@@ -373,6 +373,20 @@ gf_file_info_get_hash(const gf_file_info* info, gf_size_t size, gf_8u* hash) {
 }
 
 gf_status
+gf_file_info_get_hash_string(
+  const gf_file_info* info, gf_size_t size, gf_8u* str) {
+  gf_validate(info);
+  gf_validate(size >= ((gf_size_t)(info->hash_size) * 2 + 1));
+  gf_validate(str);
+
+  for (gf_size_t i = 0; i < ((gf_size_t)(info->hash_size)); i++) {
+    snprintf((gf_char*)&(str[i * 2]), 3, "%02x", info->hash[i]);
+  }
+
+  return GF_SUCCESS;
+}
+
+gf_status
 gf_file_info_get_user_data(const gf_file_info* info, gf_any* user_data) {
   gf_validate(info);
   gf_validate(user_data);

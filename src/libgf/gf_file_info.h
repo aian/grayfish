@@ -71,6 +71,9 @@ extern gf_status gf_file_info_get_full_path(
 extern gf_status gf_file_info_get_hash(
   const gf_file_info* info, gf_size_t size, gf_8u* hash);
 
+extern gf_status gf_file_info_get_hash_string(
+  const gf_file_info* info, gf_size_t size, gf_8u* str);
+
 extern gf_status gf_file_info_get_user_data(
   const gf_file_info* info, gf_any* user_data);
 
