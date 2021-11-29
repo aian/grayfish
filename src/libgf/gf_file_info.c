@@ -86,25 +86,40 @@ file_info_set_path(gf_file_info* info, const gf_path* path) {
     gf_path_free(full_path);
     gf_throw(rc);
   }
-  info->full_path = full_path;
+  rc = gf_path_copy(info->full_path, full_path);
+  if (rc != GF_SUCCESS) {
+    gf_path_free(full_path);
+    gf_throw(rc);
+  }
   /*
   ** check if the path exist
   */
   if (!gf_path_file_exists(full_path)) {
+    gf_path_free(full_path);
     gf_raise(
       GF_E_PARAM, "File does not exist. (%s)", gf_path_get_string(full_path));
   }
   /*
   ** set file name
   */
-  _(gf_path_clone(&file_name, full_path));
+  rc = gf_path_clone(&file_name, full_path);
+  if (rc != GF_SUCCESS) {
+    gf_path_free(full_path);
+    gf_throw(rc);
+  }
 
   rc = gf_path_file_name(file_name);
   if (rc != GF_SUCCESS) {
+    gf_path_free(full_path);
     gf_path_free(file_name);
     gf_throw(rc);
   }
-  info->file_name = file_name;
+  rc = gf_path_copy(info->file_name, file_name);
+  gf_path_free(full_path);
+  gf_path_free(file_name);
+  if (rc != GF_SUCCESS) {
+    gf_throw(rc);
+  }
   
   return GF_SUCCESS;
 }
@@ -154,6 +169,16 @@ file_info_free(gf_any* any) {
 }
 
 static gf_status
+file_info_prepare_path(gf_file_info* info) {
+  gf_validate(info);
+
+  _(gf_path_new(&info->file_name, ""));
+  _(gf_path_new(&info->full_path, ""));
+  
+  return GF_SUCCESS;
+}
+
+static gf_status
 file_info_prepare_children(gf_file_info* info) {
   gf_array* children = 0;
   
@@ -172,7 +197,6 @@ gf_file_info_new(gf_file_info** info, const gf_path* path) {
   gf_file_info* tmp = NULL;
   
   gf_validate(info);
-  gf_validate(path);
 
   _(gf_malloc((gf_ptr*)&tmp, sizeof(*tmp)));
   rc = file_info_init(tmp);
@@ -180,30 +204,38 @@ gf_file_info_new(gf_file_info** info, const gf_path* path) {
     gf_free(tmp);
     gf_throw(rc);
   }
-  rc = file_info_set_path(tmp, path);
+  rc = file_info_prepare_path(tmp);
   if (rc != GF_SUCCESS) {
     gf_file_info_free(tmp);
     gf_throw(rc);
-  }
-  rc = file_info_set_stat(tmp);
-  if (rc != GF_SUCCESS) {
-    gf_file_info_free(tmp);
-    gf_throw(rc);
-  }
-  if (gf_file_info_is_file(tmp)) {
-    rc = file_info_set_hash(tmp);
-    if (rc != GF_SUCCESS) {
-      gf_file_info_free(tmp);
-      gf_throw(rc);
-    }
-  } else {
-    // TODO: memset must be wrapped by gf_memset
-    memset(tmp->hash, 0, tmp->hash_size);
   }
   rc = file_info_prepare_children(tmp);
   if (rc != GF_SUCCESS) {
     gf_file_info_free(tmp);
     gf_throw(rc);
+  }
+  /* If path is specified, we collect file information */
+  if (!gf_path_is_empty(path)) {
+    rc = file_info_set_path(tmp, path);
+    if (rc != GF_SUCCESS) {
+      gf_file_info_free(tmp);
+      gf_throw(rc);
+    }
+    rc = file_info_set_stat(tmp);
+    if (rc != GF_SUCCESS) {
+      gf_file_info_free(tmp);
+      gf_throw(rc);
+    }
+    if (gf_file_info_is_file(tmp)) {
+      rc = file_info_set_hash(tmp);
+      if (rc != GF_SUCCESS) {
+        gf_file_info_free(tmp);
+        gf_throw(rc);
+      }
+    } else {
+      // TODO: memset must be wrapped by gf_memset
+      memset(tmp->hash, 0, tmp->hash_size);
+    }
   }
 
   *info = tmp;
@@ -294,6 +326,54 @@ gf_file_info_free_any(gf_any* any) {
   if (any) {
     gf_file_info_free((gf_file_info*)(any->ptr));
   }
+}
+
+gf_status
+gf_file_info_copy(gf_file_info* dst, const gf_file_info* src) {
+  gf_validate(dst);
+  gf_validate(src);
+
+  _(gf_path_copy(dst->file_name, src->file_name));
+  _(gf_path_copy(dst->full_path, src->full_path));
+
+  /* NOTE: We don't touch the member 'dst->children' */
+  dst->inode          = dst->inode;
+  dst->mode           = src->mode;
+  dst->link_count     = src->link_count;
+  dst->uid            = src->uid;
+  dst->gid            = src->gid;
+  dst->device         = src->device;
+  dst->rdevice        = src->rdevice;
+  dst->file_size      = src->file_size;
+  dst->access_time    = src->access_time;
+  dst->modify_time    = src->modify_time;
+  dst->create_time    = src->create_time;
+  dst->user_data.data = src->user_data.data;
+  dst->user_flag      = src->user_flag;
+  dst->hash_size      = src->hash_size;
+
+  _(gf_memcpy(dst->hash, src->hash, src->hash_size));
+
+  return GF_SUCCESS;
+}
+
+gf_status
+gf_file_info_clone(gf_file_info** dst, const gf_file_info* src) {
+  gf_status rc = 0;
+  gf_file_info* tmp = NULL;
+  
+  gf_validate(dst);
+  gf_validate(src);
+
+  _(gf_file_info_new(&tmp, NULL));
+  rc = gf_file_info_copy(tmp, src);
+  if (rc != GF_SUCCESS) {
+    gf_file_info_free(tmp);
+    gf_throw(rc);
+  }
+  *dst = tmp;
+  
+  return GF_SUCCESS;
 }
 
 gf_bool

@@ -49,6 +49,10 @@ extern void gf_file_info_free(gf_file_info* info);
 
 extern void gf_file_info_free_any(gf_any* any);
 
+extern gf_status gf_file_info_copy(gf_file_info* dst, const gf_file_info* src);
+
+extern gf_status gf_file_info_clone(gf_file_info** dst, const gf_file_info* src);
+
 extern gf_bool gf_file_info_is_file(const gf_file_info* info);
 extern gf_bool gf_file_info_is_directory(const gf_file_info* info);
 

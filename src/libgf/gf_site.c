@@ -214,6 +214,9 @@ gf_entry_new(gf_entry** entry) {
 void
 gf_entry_free(gf_entry* entry) {
   if (entry) {
+    if (entry->file_info) {
+      gf_file_info_free(entry->file_info);
+    }
     if (entry->title) {
       gf_string_free(entry->title);
     }
@@ -285,7 +288,11 @@ gf_entry_set_file_info(gf_entry* entry, gf_file_info* info) {
   gf_validate(entry);
   gf_validate(info);
 
-  entry->file_info = info;
+  if (entry->file_info) {
+    gf_file_info_free(entry->file_info);
+    entry->file_info = NULL;
+  }
+  _(gf_file_info_clone(&entry->file_info, info));
   
   return GF_SUCCESS;
 }
@@ -685,7 +692,6 @@ entry_set_meta_info(gf_entry* entry) {
 */
 
 struct gf_site {
-  gf_file_info* root;       ///< The root of a site tree. (directory)
   gf_array*     entry_set;  ///< Entries to process
 };
 
@@ -701,7 +707,6 @@ static gf_status
 site_init(gf_site* site) {
   gf_validate(site);
 
-  site->root = NULL;
   site->entry_set = NULL;
   
   return GF_SUCCESS;
@@ -748,9 +753,8 @@ gf_status
 gf_site_reset(gf_site* site) {
   gf_validate(site);
 
-  if (site->root) {
-    gf_file_info_free(site->root);
-    site->root = NULL;
+  if (site->entry_set) {
+    _(gf_array_clear(site->entry_set));
   }
   
   return GF_SUCCESS;
@@ -965,10 +969,10 @@ gf_site_scan(gf_site** site, const gf_path* path) {
 
   /* Scan files */
   _(gf_file_info_scan(&file_info, path));
-  tmp->root = file_info;
 
   /* Traverse */
-  rc = site_scan_directories(tmp, tmp->root);
+  rc = site_scan_directories(tmp, file_info);
+  gf_file_info_free(file_info);
   if (rc != GF_SUCCESS) {
     gf_site_free(tmp);
     gf_throw(rc);
