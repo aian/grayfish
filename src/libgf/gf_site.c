@@ -359,7 +359,7 @@ entry_set_author(gf_entry* entry, xmlNodePtr node) {
     if (xmlNodeIsText(cur)) {
       // NOTE: By now, we don't care about the order of first and last name.
       // We concate the string components of an author in appearance order.
-      if (gf_string_is_empty(entry->author) > 0) {
+      if (!gf_string_is_empty(entry->author)) {
         _(gf_string_append(entry->author, " "));
       }
       _(gf_string_append(entry->author, (char*)cur->content));

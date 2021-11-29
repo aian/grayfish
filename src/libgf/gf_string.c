@@ -96,6 +96,7 @@ string_prepare(gf_string* str) {
   assert(!str->data);
 
   _(gf_malloc((gf_ptr*)&tmp, 1));
+  ((gf_char*)tmp)[0] = '\0';
   str->data = tmp;
   str->used = 1;
   str->size = 1;
@@ -231,7 +232,7 @@ gf_string_assign(gf_string** dst, const gf_string* src) {
 
 gf_bool
 gf_string_is_empty(const gf_string* str) {
-  return str && str->data && str->data[0] ? GF_TRUE: GF_FALSE;
+  return str && str->data && str->data[0] ? GF_FALSE : GF_TRUE;
 }
 
 gf_status
