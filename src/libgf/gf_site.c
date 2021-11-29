@@ -71,6 +71,7 @@ gf_category_new(gf_category** cat) {
     gf_category_free(tmp);
     gf_throw(rc);
   }
+  *cat = tmp;
   
   return GF_SUCCESS;
 }
@@ -443,7 +444,7 @@ entry_set_subject_set(gf_entry* entry, xmlNodePtr node) {
         if (!id) {
           gf_raise(GF_E_DATA, "Invalid XML data.");
         }
-        if (xmlNodeIsText(cur->children)) {
+        if (!xmlNodeIsText(cur->children)) {
           gf_raise(GF_E_DATA, "Invalid XML data.");
         }
         _(gf_category_new(&cat));
@@ -477,7 +478,7 @@ entry_set_subject_set(gf_entry* entry, xmlNodePtr node) {
           gf_category_free(cat);
           gf_throw(rc);
         }
-        rc = gf_array_add(entry->keyword_set, (gf_any){ .ptr = cat });
+        rc = gf_array_add(entry->subject_set, (gf_any){ .ptr = cat });
         if (rc != GF_SUCCESS) {
           gf_category_free(cat);
           gf_throw(rc);
@@ -507,7 +508,7 @@ entry_set_keyword_set(gf_entry* entry, xmlNodePtr node) {
         if (!id) {
           gf_raise(GF_E_DATA, "Invalid XML data.");
         }
-        if (xmlNodeIsText(cur->children)) {
+        if (!xmlNodeIsText(cur->children)) {
           gf_raise(GF_E_DATA, "Invalid XML data.");
         }
         _(gf_category_new(&cat));
@@ -1015,7 +1016,25 @@ site_add_xml_int16u(xmlNodePtr node, xmlChar* name, gf_16u value) {
   gf_validate(node);
   gf_validate(name);
 
-  snprintf(buf, 256, "%04x", value);
+  snprintf(buf, 256, "%d", value);
+  
+  cur = xmlNewTextChild(node, NULL, name, BAD_CAST buf);
+  if (!cur) {
+    gf_raise(GF_E_API, "Failed to create an XML node.");
+  }
+
+  return GF_SUCCESS;
+}
+
+static gf_status
+site_add_xml_int16u_hex(xmlNodePtr node, xmlChar* name, gf_16u value) {
+  xmlNodePtr cur = NULL;
+  char buf[256] = { 0 };
+  
+  gf_validate(node);
+  gf_validate(name);
+
+  snprintf(buf, 256, "%x", value);
   
   cur = xmlNewTextChild(node, NULL, name, BAD_CAST buf);
   if (!cur) {
@@ -1051,7 +1070,7 @@ site_add_xml_int32u(xmlNodePtr node, xmlChar* name, gf_32u value) {
   gf_validate(node);
   gf_validate(name);
 
-  snprintf(buf, 256, "%08x", value);
+  snprintf(buf, 256, "%d", value);
   
   cur = xmlNewTextChild(node, NULL, name, BAD_CAST buf);
   if (!cur) {
@@ -1069,7 +1088,25 @@ site_add_xml_int64u(xmlNodePtr node, xmlChar* name, gf_64u value) {
   gf_validate(node);
   gf_validate(name);
 
-  snprintf(buf, 256, "%016llx", value);
+  snprintf(buf, 256, "%lld", value);
+  
+  cur = xmlNewTextChild(node, NULL, name, BAD_CAST buf);
+  if (!cur) {
+    gf_raise(GF_E_API, "Failed to create an XML node.");
+  }
+
+  return GF_SUCCESS;
+}
+
+static gf_status
+site_add_xml_int64u_hex(xmlNodePtr node, xmlChar* name, gf_64u value) {
+  xmlNodePtr cur = NULL;
+  char buf[256] = { 0 };
+  
+  gf_validate(node);
+  gf_validate(name);
+
+  snprintf(buf, 256, "%llx", value);
   
   cur = xmlNewTextChild(node, NULL, name, BAD_CAST buf);
   if (!cur) {
@@ -1088,6 +1125,32 @@ site_add_xml_string(xmlNodePtr node, xmlChar* name, const gf_string* value) {
   gf_validate(value);
 
   cur = xmlNewTextChild(node, NULL, name, BAD_CAST gf_string_get(value));
+  if (!cur) {
+    gf_raise(GF_E_API, "Failed to create an XML node.");
+  }
+
+  return GF_SUCCESS;
+}
+
+static gf_status
+site_add_xml_date(xmlNodePtr node, xmlChar* name, gf_64u datetime) {
+  gf_status rc = 0;
+  gf_string* str = NULL;
+  xmlNodePtr cur = NULL;
+
+  gf_validate(node);
+  gf_validate(name);
+
+  _(gf_string_new(&str));
+  if (datetime > 0) {
+    rc = gf_date_make_string(str, (gf_datetime)datetime);
+    if (rc != GF_SUCCESS) {
+      gf_string_free(str);
+      gf_throw(rc);
+    }
+  }
+  cur = xmlNewTextChild(node, NULL, name, BAD_CAST gf_string_get(str));
+  gf_string_free(str);
   if (!cur) {
     gf_raise(GF_E_API, "Failed to create an XML node.");
   }
@@ -1219,6 +1282,22 @@ site_add_xml_file_info_int16u(
 }
 
 static gf_status
+site_add_xml_file_info_int16u_hex(
+  xmlNodePtr node, const gf_file_info* info, xmlChar* name,
+  gf_status (*fn)(const gf_file_info*, gf_16u*)) {
+  gf_16u n = 0;
+  
+  gf_validate(info);
+  gf_validate(name);
+  gf_validate(fn);
+
+  _(fn(info, &n));
+  _(site_add_xml_int16u_hex(node, name, n));
+
+  return GF_SUCCESS;
+}
+
+static gf_status
 site_add_xml_file_info_int16s(
   xmlNodePtr node, const gf_file_info* info, xmlChar* name,
   gf_status (*fn)(const gf_file_info*, gf_16s*)) {
@@ -1266,6 +1345,22 @@ site_add_xml_file_info_int64u(
   return GF_SUCCESS;
 }
 
+static gf_status
+site_add_xml_file_info_int64u_hex(
+  xmlNodePtr node, const gf_file_info* info, xmlChar* name,
+  gf_status (*fn)(const gf_file_info*, gf_64u*)) {
+  gf_64u n = 0;
+  
+  gf_validate(info);
+  gf_validate(name);
+  gf_validate(fn);
+
+  _(fn(info, &n));
+  _(site_add_xml_int64u_hex(node, name, n));
+
+  return GF_SUCCESS;
+}
+
 /*!
 **
 ** We do not write values of user_data and user_flag.
@@ -1290,7 +1385,7 @@ site_add_xml_file_info(
       node, value, BAD_CAST"hash-size", gf_file_info_get_hash_size));
   _(site_add_xml_file_info_int16u(
       node, value, BAD_CAST"inode", gf_file_info_get_inode));
-  _(site_add_xml_file_info_int16u(
+  _(site_add_xml_file_info_int16u_hex(
       node, value, BAD_CAST"mode", gf_file_info_get_mode));
   _(site_add_xml_file_info_int16s(
       node, value, BAD_CAST"link-count", gf_file_info_get_link_count));
@@ -1304,11 +1399,11 @@ site_add_xml_file_info(
       node, value, BAD_CAST"rdevice", gf_file_info_get_rdevice));
   _(site_add_xml_file_info_int64u(
       node, value, BAD_CAST"file-size", gf_file_info_get_file_size));
-  _(site_add_xml_file_info_int64u(
+  _(site_add_xml_file_info_int64u_hex(
       node, value, BAD_CAST"access-time", gf_file_info_get_access_time));
-  _(site_add_xml_file_info_int64u(
+  _(site_add_xml_file_info_int64u_hex(
       node, value, BAD_CAST"modify-time", gf_file_info_get_modify_time));
-  _(site_add_xml_file_info_int64u(
+  _(site_add_xml_file_info_int64u_hex(
       node, value, BAD_CAST"create-time", gf_file_info_get_create_time));
 
   return GF_SUCCESS;
@@ -1401,7 +1496,7 @@ site_make_entry_node(xmlNodePtr* node, gf_entry* entry) {
   _(site_add_xml_int32u(tmp, BAD_CAST"state", entry->state));
   _(site_add_xml_string(tmp, BAD_CAST"title", entry->title));
   _(site_add_xml_string(tmp, BAD_CAST"author", entry->author));
-  _(site_add_xml_int64u(tmp, BAD_CAST"state", entry->date));
+  _(site_add_xml_date(tmp, BAD_CAST"date", entry->date));
   _(site_add_xml_description(tmp, BAD_CAST"description", entry->description));
   _(site_add_xml_file_info(tmp, BAD_CAST"file-info", entry->file_info));
   _(site_add_xml_string(tmp, BAD_CAST"method", entry->method));
@@ -1409,7 +1504,7 @@ site_make_entry_node(xmlNodePtr* node, gf_entry* entry) {
   _(site_add_xml_category_set(
       tmp, BAD_CAST"subject-set", BAD_CAST"subject", entry->subject_set));
   _(site_add_xml_category_set(
-      tmp, BAD_CAST"keyword-set", BAD_CAST"subject", entry->keyword_set));
+      tmp, BAD_CAST"keyword-set", BAD_CAST"keyword", entry->keyword_set));
   _(site_add_xml_file_info_set(tmp, BAD_CAST"file-set", entry->file_set));
 
   *node = tmp;

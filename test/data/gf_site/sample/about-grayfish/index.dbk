@@ -5,7 +5,17 @@
     <author>
       <personname>aian</personname>
     </author>
-    <pubdate>2021-11-26 15:15:27</pubdate>
+    <pubdate>2021-11-29 11:44:21</pubdate>
+    <subjectset>
+      <subject>
+        <subjectterm xml:id="c-cpp-lang">C/C++</subjectterm>
+        <subjectterm xml:id="web">web</subjectterm>
+      </subject>
+    </subjectset>
+    <keywordset>
+      <keyword xml:id="grayfish">Grayfish</keyword>
+      <keyword xml:id="static-website">static website</keyword>
+    </keywordset>
   </info>
   <section>
     <info><title>Overview</title></info>
