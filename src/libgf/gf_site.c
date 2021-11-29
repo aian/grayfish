@@ -145,7 +145,10 @@ struct gf_entry {
   gf_array*      subject_set; ///< Array of gf_category objects
   gf_array*      keyword_set; ///< Array of gf_category objects
   gf_array*      file_set;    ///< Array of gf_file_info objects
+  gf_array*      children;    ///< Entry children
 };
+
+static void entry_free(gf_any* any);
 
 static gf_status
 entry_init(gf_entry* entry) {
@@ -164,6 +167,7 @@ entry_init(gf_entry* entry) {
   entry->subject_set = NULL;
   entry->keyword_set = NULL;
   entry->file_set    = NULL;
+  entry->children    = NULL;
   
   return GF_SUCCESS;
 }
@@ -183,6 +187,8 @@ entry_prepare(gf_entry* entry) {
   _(gf_array_new(&entry->keyword_set));
   _(gf_array_set_free_fn(entry->keyword_set, category_free));
   _(gf_array_new(&entry->file_set)); // this array doesn't free element objects
+  _(gf_array_new(&entry->children));
+  _(gf_array_set_free_fn(entry->children, entry_free));
 
   return GF_SUCCESS;
 }
@@ -234,6 +240,12 @@ gf_entry_free(gf_entry* entry) {
     }
     if (entry->keyword_set) {
       gf_array_free(entry->keyword_set);
+    }
+    if (entry->file_set) {
+      gf_array_free(entry->file_set);
+    }
+    if (entry->children) {
+      gf_array_free(entry->children);
     }
     entry_init(entry);
     gf_free(entry);
@@ -311,6 +323,11 @@ gf_entry_get_full_path_string(gf_entry* entry) {
   }
   
   return path;
+}
+
+gf_bool
+gf_entry_is_section(const gf_entry* entry) {
+  return entry && entry->type == GF_ENTRY_TYPE_SECTION ? GF_TRUE : GF_FALSE;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -892,11 +909,12 @@ site_collect_meta_info(gf_entry* entry, gf_file_info* file_info) {
 }
 
 static gf_status
-site_scan_directories(gf_site* site, gf_file_info* file_info) {
+site_scan_directories(gf_array* entry_set, gf_file_info* file_info) {
   gf_status rc = 0;
   gf_size_t cnt = 0;
+  gf_entry* entry = NULL;
   
-  gf_validate(site);
+  gf_validate(entry_set);
   gf_validate(file_info);
 
   /* non-directory files are not our target */
@@ -909,29 +927,25 @@ site_scan_directories(gf_site* site, gf_file_info* file_info) {
   }
 
   if (site_does_directory_have_document_file(file_info)) {
-    gf_entry* entry = NULL;
-
     _(gf_entry_new(&entry));
     rc = site_collect_document_info(entry, file_info);
     if (rc != GF_SUCCESS) {
       gf_entry_free(entry);
       gf_throw(rc);
     }
-    rc = gf_array_add(site->entry_set, (gf_any){ .ptr = entry });
+    rc = gf_array_add(entry_set, (gf_any){ .ptr = entry });
     if (rc != GF_SUCCESS) {
       gf_entry_free(entry);
       gf_throw(rc);
     }
   } else if (site_does_directory_have_meta_file(file_info)) {
-    gf_entry* entry = NULL;
-
     _(gf_entry_new(&entry));
     rc = site_collect_meta_info(entry, file_info);
     if (rc != GF_SUCCESS) {
       gf_entry_free(entry);
       gf_throw(rc);
     }
-    rc = gf_array_add(site->entry_set, (gf_any){ .ptr = entry });
+    rc = gf_array_add(entry_set, (gf_any){ .ptr = entry });
     if (rc != GF_SUCCESS) {
       gf_entry_free(entry);
       gf_throw(rc);
@@ -942,12 +956,14 @@ site_scan_directories(gf_site* site, gf_file_info* file_info) {
   }
 
   /* process children  */
-  cnt = gf_file_info_count_children(file_info);
-  for (gf_size_t i = 0; i < cnt; i++) {
-    gf_file_info* child_info = 0;
-
-    _(gf_file_info_get_child(file_info, i, &child_info));
-    _(site_scan_directories(site, child_info));
+  if (entry) {
+    cnt = gf_file_info_count_children(file_info);
+    for (gf_size_t i = 0; i < cnt; i++) {
+      gf_file_info* child_info = 0;
+      
+      _(gf_file_info_get_child(file_info, i, &child_info));
+      _(site_scan_directories(entry->children, child_info));
+    }
   }
   
   return GF_SUCCESS;
@@ -971,7 +987,7 @@ gf_site_scan(gf_site** site, const gf_path* path) {
   _(gf_file_info_scan(&file_info, path));
 
   /* Traverse */
-  rc = site_scan_directories(tmp, file_info);
+  rc = site_scan_directories(tmp->entry_set, file_info);
   gf_file_info_free(file_info);
   if (rc != GF_SUCCESS) {
     gf_site_free(tmp);
@@ -1490,10 +1506,12 @@ site_add_xml_file_info_set(
 static gf_status
 site_make_entry_node(xmlNodePtr* node, gf_entry* entry) {
   xmlNodePtr tmp = NULL;
+  xmlNodePtr children_node = NULL;
+  gf_size_t cnt = 0;
 
   tmp = xmlNewNode(NULL, BAD_CAST"entry");
   if (!tmp) {
-    gf_raise(GF_E_API, "Failed to  an XML node.");
+    gf_raise(GF_E_API, "Failed to create an XML node.");
   }
 
   _(site_add_xml_int32u(tmp, BAD_CAST"type", entry->type));
@@ -1511,6 +1529,32 @@ site_make_entry_node(xmlNodePtr* node, gf_entry* entry) {
       tmp, BAD_CAST"keyword-set", BAD_CAST"keyword", entry->keyword_set));
   _(site_add_xml_file_info_set(tmp, BAD_CAST"file-set", entry->file_set));
 
+  /* Process children */
+  children_node = xmlNewNode(NULL, BAD_CAST"children");
+  if (!children_node) {
+    gf_raise(GF_E_API, "Failed to create an XML node.");
+  }
+  children_node = xmlAddChild(tmp, children_node);
+  if (!children_node) {
+    xmlFreeNode(children_node);
+    gf_raise(GF_E_API, "Failed to add an XML node.");
+  }
+  if (gf_entry_is_section(entry)) {
+    cnt = gf_array_size(entry->children);
+    for (gf_size_t i = 0; i < cnt; i++) {
+      gf_any any = { 0 };
+      xmlNodePtr child_node = NULL;
+      
+      _(gf_array_get(entry->children, i, &any));
+      _(site_make_entry_node(&child_node, (gf_entry*)any.ptr));
+    
+      child_node = xmlAddChild(children_node, child_node);
+      if (!children_node) {
+        gf_raise(GF_E_API, "Failed to add an XML node.");
+      }
+    }
+  }
+  
   *node = tmp;
   
   return GF_SUCCESS;

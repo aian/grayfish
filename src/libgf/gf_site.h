@@ -111,6 +111,12 @@ extern void gf_entry_free(gf_entry* entry);
 
 extern gf_status gf_entry_set_file_info(gf_entry* entry, gf_file_info* info);
 
+/*!
+** @brief Sets A site entry object.
+*/
+
+extern gf_bool gf_entry_is_section(const gf_entry* entry);
+
 /* -------------------------------------------------------------------------- */
 
 typedef struct gf_site gf_site;
