@@ -36,7 +36,6 @@
 #include <libgf/gf_cmd_help.h>
 #include <libgf/gf_cmd_list.h>
 #include <libgf/gf_cmd_main.h>
-#include <libgf/gf_cmd_serve.h>
 #include <libgf/gf_cmd_setup.h>
 #include <libgf/gf_cmd_update.h>
 #include <libgf/gf_cmd_version.h>

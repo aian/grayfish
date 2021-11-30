@@ -30,7 +30,6 @@
 #include <libgf/gf_cmd_build.h>
 #include <libgf/gf_cmd_clean.h>
 #include <libgf/gf_cmd_list.h>
-#include <libgf/gf_cmd_serve.h>
 
 #include <libgf/gf_global.h>
 
@@ -46,7 +45,6 @@ static const gf_cmd_index command_index_[] = {
   { "build",   gf_cmd_build_new,  },
   { "clean",   gf_cmd_clean_new,  },
   { "list",    gf_cmd_list_new,   },
-  { "serve",   gf_cmd_serve_new,  },
 };
 
 static gf_status
