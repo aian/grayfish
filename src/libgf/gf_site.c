@@ -1624,10 +1624,46 @@ gf_site_write_file(const gf_site* site, const gf_path* path) {
 
 /* -------------------------------------------------------------------------- */
 
-gf_status
-gf_site_read_file(gf_site** site, const gf_path* path) {
+static gf_status
+site_read_file(gf_site* site, const gf_path* path) {
+  xmlDocPtr doc = NULL;
+
+#ifdef GF_DEBUG_
+  static const int option = 0;
+#else
+  static const int option =
+    XML_PARSE_NOERROR | XML_PARSE_NOWARNING | XML_PARSE_XINCLUDE;
+#endif
+
   gf_validate(site);
   gf_validate(!gf_path_is_empty(path));
+  
+  doc = xmlReadFile(gf_path_get_string(path), NULL, option);
+  if (!doc) {
+    gf_raise(GF_E_API, "Failed to read an XML file.");
+  }
+  // TODO: impelement me!
+  
+  return GF_SUCCESS;
+}
+
+gf_status
+gf_site_read_file(gf_site** site, const gf_path* path) {
+  gf_status rc = 0;
+  gf_site* tmp = NULL;
+  
+  gf_validate(site);
+  gf_validate(!gf_path_is_empty(path));
+  
+  _(gf_site_new(&tmp));
+  
+  rc = site_read_file(tmp, path);
+  gf_site_free(tmp);
+  if (rc != GF_SUCCESS) {
+    gf_throw(rc);
+  }
+
+  *site = tmp;
 
   return GF_SUCCESS;
 }
