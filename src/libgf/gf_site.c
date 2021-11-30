@@ -1625,8 +1625,19 @@ gf_site_write_file(const gf_site* site, const gf_path* path) {
 /* -------------------------------------------------------------------------- */
 
 static gf_status
+site_read_xml_document(gf_array* entry_set, const xmlNodePtr root) {
+  gf_validate(entry_set);
+  gf_validate(root);
+
+  return GF_SUCCESS;
+}
+
+
+static gf_status
 site_read_file(gf_site* site, const gf_path* path) {
+  gf_status rc = 0;
   xmlDocPtr doc = NULL;
+  xmlNodePtr root = NULL;
 
 #ifdef GF_DEBUG_
   static const int option = 0;
@@ -1642,7 +1653,17 @@ site_read_file(gf_site* site, const gf_path* path) {
   if (!doc) {
     gf_raise(GF_E_API, "Failed to read an XML file.");
   }
-  // TODO: impelement me!
+  root = xmlDocGetRootElement(doc);
+  if (!root) {
+    xmlFreeDoc(doc);
+    gf_raise(GF_E_API, "Failed to read an XML file.");
+  }
+  assert(site->entry_set);
+  rc = site_read_xml_document(site->entry_set, root);
+  xmlFreeDoc(doc);
+  if (rc != GF_SUCCESS) {
+    gf_throw(rc);
+  }
   
   return GF_SUCCESS;
 }
