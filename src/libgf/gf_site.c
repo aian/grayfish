@@ -1392,40 +1392,50 @@ site_add_xml_file_info_int64u_hex(
 static gf_status
 site_add_xml_file_info(
   xmlNodePtr node, xmlChar* name, const gf_file_info* value) {
+  xmlNodePtr cur = NULL;
+  
   gf_validate(node);
   gf_validate(name);
   gf_validate(value);
 
+  cur = xmlNewNode(NULL, BAD_CAST"file-info");
+  if (!cur) {
+    gf_raise(GF_E_API, "Failed to create an XML node.");
+   }
+  cur = xmlAddChild(node, cur);
+  if (!cur) {
+    gf_raise(GF_E_API, "Failed to add an XML node.");
+   }
   _(site_add_xml_file_info_string(
-      node, value, BAD_CAST"file-name", gf_file_info_get_file_name));
+      cur, value, BAD_CAST"file-name", gf_file_info_get_file_name));
   _(site_add_xml_file_info_string(
-      node, value, BAD_CAST"full-path", gf_file_info_get_full_path));
+      cur, value, BAD_CAST"full-path", gf_file_info_get_full_path));
   _(site_add_xml_file_info_hash(
-      node, value, BAD_CAST"hash", gf_file_info_get_hash_string));
+      cur, value, BAD_CAST"hash", gf_file_info_get_hash_string));
   _(site_add_xml_file_info_int16u(
-      node, value, BAD_CAST"hash-size", gf_file_info_get_hash_size));
+      cur, value, BAD_CAST"hash-size", gf_file_info_get_hash_size));
   _(site_add_xml_file_info_int16u(
-      node, value, BAD_CAST"inode", gf_file_info_get_inode));
+      cur, value, BAD_CAST"inode", gf_file_info_get_inode));
   _(site_add_xml_file_info_int16u_hex(
-      node, value, BAD_CAST"mode", gf_file_info_get_mode));
+      cur, value, BAD_CAST"mode", gf_file_info_get_mode));
   _(site_add_xml_file_info_int16s(
-      node, value, BAD_CAST"link-count", gf_file_info_get_link_count));
+      cur, value, BAD_CAST"link-count", gf_file_info_get_link_count));
   _(site_add_xml_file_info_int16s(
-      node, value, BAD_CAST"uid", gf_file_info_get_uid));
+      cur, value, BAD_CAST"uid", gf_file_info_get_uid));
   _(site_add_xml_file_info_int16s(
-      node, value, BAD_CAST"gid", gf_file_info_get_gid));
+      cur, value, BAD_CAST"gid", gf_file_info_get_gid));
   _(site_add_xml_file_info_int32u(
-      node, value, BAD_CAST"device", gf_file_info_get_device));
+      cur, value, BAD_CAST"device", gf_file_info_get_device));
   _(site_add_xml_file_info_int32u(
-      node, value, BAD_CAST"rdevice", gf_file_info_get_rdevice));
+      cur, value, BAD_CAST"rdevice", gf_file_info_get_rdevice));
   _(site_add_xml_file_info_int64u(
-      node, value, BAD_CAST"file-size", gf_file_info_get_file_size));
+      cur, value, BAD_CAST"file-size", gf_file_info_get_file_size));
   _(site_add_xml_file_info_int64u_hex(
-      node, value, BAD_CAST"access-time", gf_file_info_get_access_time));
+      cur, value, BAD_CAST"access-time", gf_file_info_get_access_time));
   _(site_add_xml_file_info_int64u_hex(
-      node, value, BAD_CAST"modify-time", gf_file_info_get_modify_time));
+      cur, value, BAD_CAST"modify-time", gf_file_info_get_modify_time));
   _(site_add_xml_file_info_int64u_hex(
-      node, value, BAD_CAST"create-time", gf_file_info_get_create_time));
+      cur, value, BAD_CAST"create-time", gf_file_info_get_create_time));
 
   return GF_SUCCESS;
 }
