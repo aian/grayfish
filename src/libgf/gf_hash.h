@@ -23,6 +23,8 @@ extern "C" {
 #define GF_HASH_BUFSIZE_SHA512 64
 
 extern gf_status gf_hash_file(gf_8u* buffer, gf_size_t size, gf_path* path);
+extern gf_status gf_hash_parse_string(
+  gf_8u* buffer, const gf_char* str, gf_size_t size);
 
 #ifdef __cplusplus
 }

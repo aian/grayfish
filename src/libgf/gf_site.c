@@ -16,6 +16,7 @@
 #include <libgf/gf_memory.h>
 #include <libgf/gf_array.h>
 #include <libgf/gf_path.h>
+#include <libgf/gf_hash.h>
 #include <libgf/gf_file_info.h>
 #include <libgf/gf_site.h>
 
@@ -1625,10 +1626,530 @@ gf_site_write_file(const gf_site* site, const gf_path* path) {
 /* -------------------------------------------------------------------------- */
 
 static gf_status
-site_read_xml_document(gf_array* entry_set, const xmlNodePtr root) {
+site_read_xml_int16u(gf_16u* value, const xmlNodePtr node) {
+  gf_16u n = 0;
+  gf_char* e = NULL;
+
+  gf_validate(value);
+  gf_validate(node);
+
+  if (!xmlNodeIsText(node)) {
+    gf_raise(GF_E_DATA, "Invalid site data.");
+  }
+  n = strtoul((gf_char*)node->content, &e, 10);
+  if (*e != '\0') {
+    gf_raise(GF_E_DATA, "Invalid site data.");
+  }
+  *value = (gf_16u)n;
+  
+  return GF_SUCCESS;
+}
+
+static gf_status
+site_read_xml_int16u_hex(gf_16u* value, const xmlNodePtr node) {
+  gf_16u n = 0;
+  gf_char* e = NULL;
+
+  gf_validate(value);
+  gf_validate(node);
+
+  if (!xmlNodeIsText(node)) {
+    gf_raise(GF_E_DATA, "Invalid site data.");
+  }
+  n = strtoul((gf_char*)node->content, &e, 16);
+  if (*e != '\0') {
+    gf_raise(GF_E_DATA, "Invalid site data.");
+  }
+  *value = (gf_16u)n;
+  
+  return GF_SUCCESS;
+}
+
+static gf_status
+site_read_xml_int16s(gf_16s* value, const xmlNodePtr node) {
+  gf_16s n = 0;
+  gf_char* e = NULL;
+
+  gf_validate(value);
+  gf_validate(node);
+  if (!xmlNodeIsText(node)) {
+    gf_raise(GF_E_DATA, "Invalid site data.");
+  }
+  n = strtol((gf_char*)node->content, &e, 10);
+  if (*e != '\0') {
+    gf_raise(GF_E_DATA, "Invalid site data.");
+  }
+  *value = (gf_16s)n;
+
+  return GF_SUCCESS;
+}
+
+static gf_status
+site_read_xml_int32u(gf_32u* value, const xmlNodePtr node) {
+  gf_32u n = 0;
+  gf_char* e = NULL;
+
+  gf_validate(value);
+  gf_validate(node);
+  if (!xmlNodeIsText(node)) {
+    gf_raise(GF_E_DATA, "Invalid site data.");
+  }
+
+  if (!xmlNodeIsText(node)) {
+    gf_raise(GF_E_DATA, "Invalid site data.");
+  }
+  n = strtoul((gf_char*)node->content, &e, 10);
+  if (*e != '\0') {
+    gf_raise(GF_E_DATA, "Invalid site data.");
+  }
+  *value = (gf_32u)n;
+
+  return GF_SUCCESS;
+}
+
+static gf_status
+site_read_xml_int64u(gf_64u* value, const xmlNodePtr node) {
+  gf_64u n = 0;
+  gf_char* e = NULL;
+
+  gf_validate(value);
+  gf_validate(node);
+  if (!xmlNodeIsText(node)) {
+    gf_raise(GF_E_DATA, "Invalid site data.");
+  }
+  if (!xmlNodeIsText(node)) {
+    gf_raise(GF_E_DATA, "Invalid site data.");
+  }
+  n = strtoul((gf_char*)node->content, &e, 10);
+  if (*e != '\0') {
+    gf_raise(GF_E_DATA, "Invalid site data.");
+  }
+  *value = (gf_64u)n;
+
+  return GF_SUCCESS;
+}
+
+static gf_status
+site_read_xml_int64u_hex(gf_64u* value, const xmlNodePtr node) {
+  gf_64u n = 0;
+  gf_char* e = NULL;
+
+  gf_validate(value);
+  gf_validate(node);
+  if (!xmlNodeIsText(node)) {
+    gf_raise(GF_E_DATA, "Invalid site data.");
+  }
+  n = strtoul((gf_char*)node->content, &e, 16);
+  if (*e != '\0') {
+    gf_raise(GF_E_DATA, "Invalid site data.");
+  }
+  *value = (gf_64u)n;
+
+  return GF_SUCCESS;
+}
+
+static gf_status
+site_read_xml_string(gf_string* value, const xmlNodePtr node) {
+  gf_validate(value);
+  gf_validate(node);
+
+  if (!xmlNodeIsText(node)) {
+    gf_raise(GF_E_DATA, "Invalid site data.");
+  }
+  _(gf_string_set(value, (gf_char*)node->content));
+
+  return GF_SUCCESS;
+}
+
+static gf_status
+site_read_xml_path(gf_path* value, const xmlNodePtr node) {
+  gf_validate(value);
+  gf_validate(node);
+
+  if (!xmlNodeIsText(node)) {
+    gf_raise(GF_E_DATA, "Invalid site data.");
+  }
+  _(gf_path_set_string(value, (gf_char*)node->content));
+  
+  return GF_SUCCESS;
+}
+
+static gf_status
+site_read_xml_date(gf_datetime* value, const xmlNodePtr node) {
+  gf_validate(value);
+  gf_validate(node);
+  
+  if (!xmlNodeIsText(node)) {
+    gf_raise(GF_E_DATA, "Invalid site data.");
+  }
+  _(gf_date_parse((const gf_char*)node->content, value));
+  
+  return GF_SUCCESS;
+}
+
+static gf_status
+site_read_xml_description(gf_array* value, const xmlNodePtr node) {
+  gf_validate(value);
+  gf_validate(node);
+
+  for (xmlNodePtr cur = node->children; cur; cur = cur->next) {
+    gf_status rc = 0;
+    gf_string* str = NULL;
+    xmlNodePtr txt = NULL;
+    
+    if (!xmlStrcmp(cur->name, BAD_CAST"p")) {
+      assert(0);
+      continue;
+    }
+    txt = cur->children;
+    if (!xmlNodeIsText(txt)) {
+      assert(0);
+      continue;
+    }
+    _(gf_string_new(&str));
+    rc = gf_string_set(str, (gf_char*)txt->content);
+    if (rc != GF_SUCCESS) {
+      gf_string_free(str);
+      gf_throw(rc);
+    }
+    rc = gf_array_add(value, (gf_any){ .ptr = str });
+    if (rc != GF_SUCCESS) {
+      gf_string_free(str);
+      gf_throw(rc);
+    }
+  }
+
+  return GF_SUCCESS;
+}
+
+static gf_status
+site_read_xml_category(
+  gf_array* value, const xmlChar* name, const xmlNodePtr node) {
+  gf_status rc = 0;
+
+  gf_validate(value);
+  gf_validate(name);
+  gf_validate(node);
+
+  for (xmlNodePtr cur = node->children; cur; cur = cur->next) {
+    gf_category* cat = NULL;
+    gf_string* str = NULL;
+    xmlNodePtr txt = NULL;
+    xmlChar* id = NULL;
+    
+    if (!!xmlStrcmp(cur->name, name)) {
+      assert(0);
+      continue;
+    }
+    id = xmlGetProp(cur, BAD_CAST"id");
+    if (!id) {
+      assert(0);
+      continue;
+    }
+    txt = cur->children;
+    if (!txt || !xmlNodeIsText(txt)) {
+      assert(0);
+      continue;
+    }
+
+    _(gf_category_new(&cat));
+
+    rc = gf_string_new(&str);
+    if (rc != GF_SUCCESS) {
+      gf_category_free(cat);
+      gf_throw(rc);
+    }
+    gf_string_set(str, (gf_char*)id);
+    if (rc != GF_SUCCESS) {
+      gf_string_free(str);
+      gf_category_free(cat);
+      gf_throw(rc);
+    }
+    rc = gf_category_set_id(cat, str);
+    if (rc != GF_SUCCESS) {
+      gf_category_free(cat);
+      gf_throw(rc);
+    }
+
+    gf_string_set(str, (gf_char*)txt->content);
+    if (rc != GF_SUCCESS) {
+      gf_string_free(str);
+      gf_category_free(cat);
+      gf_throw(rc);
+    }
+    rc = gf_category_set_name(cat, str);
+    gf_string_free(str);
+    if (rc != GF_SUCCESS) {
+      gf_category_free(cat);
+      gf_throw(rc);
+    }
+    rc = gf_array_add(value, (gf_any){ .ptr = cat });
+    if (rc != GF_SUCCESS) {
+      gf_category_free(cat);
+      gf_throw(rc);
+    }
+  }
+
+  return GF_SUCCESS;
+}
+
+gf_status
+site_read_xml_file_info_string(
+  gf_file_info* info, const xmlNodePtr node,
+  gf_status (*fn)(gf_file_info*, const gf_char*)) {
+
+  gf_status rc = 0;
+  gf_string* str = NULL;
+
+  gf_validate(info);
+  gf_validate(str);
+  gf_validate(fn);
+
+  _(gf_string_new(&str));
+
+  rc = site_read_xml_string(str, node);
+  if (rc != GF_SUCCESS) {
+    gf_string_free(str);
+    gf_throw(rc);
+  }
+  rc = fn(info, gf_string_get(str));
+  gf_string_free(str);
+  if (rc != GF_SUCCESS) {
+    gf_throw(rc);
+  }
+
+  return GF_SUCCESS;
+}
+
+gf_status
+site_read_xml_file_info_int16u(
+  gf_file_info* info, const xmlNodePtr node,
+  gf_status (*fn)(gf_file_info*, gf_16u)) {
+  gf_16u n = 0;
+
+  gf_validate(info);
+  gf_validate(node);
+  gf_validate(fn);
+
+  _(site_read_xml_int16u(&n, node));
+  _(fn(info, n));
+
+  return GF_SUCCESS;
+}
+
+gf_status
+site_read_xml_file_info_int16u_hex(
+  gf_file_info* info, const xmlNodePtr node,
+  gf_status (*fn)(gf_file_info*, gf_16u)) {
+  gf_16u n = 0;
+
+  gf_validate(info);
+  gf_validate(node);
+  gf_validate(fn);
+
+  _(site_read_xml_int16u_hex(&n, node));
+  _(fn(info, n));
+
+  return GF_SUCCESS;
+}
+
+gf_status
+site_read_xml_file_info_int16s(
+  gf_file_info* info, const xmlNodePtr node,
+  gf_status (*fn)(gf_file_info*, gf_16s)) {
+  gf_16s n = 0;
+
+  gf_validate(info);
+  gf_validate(node);
+  gf_validate(fn);
+
+  _(site_read_xml_int16s(&n, node));
+  _(fn(info, n));
+
+  return GF_SUCCESS;
+}
+
+gf_status
+site_read_xml_file_info_int32u(
+  gf_file_info* info, const xmlNodePtr node,
+  gf_status (*fn)(gf_file_info*, gf_32u)) {
+  gf_32u n = 0;
+
+  gf_validate(info);
+  gf_validate(node);
+  gf_validate(fn);
+
+  _(site_read_xml_int32u(&n, node));
+  _(fn(info, n));
+
+  return GF_SUCCESS;
+}
+
+gf_status
+site_read_xml_file_info_int64u(
+  gf_file_info* info, const xmlNodePtr node,
+  gf_status (*fn)(gf_file_info*, gf_64u)) {
+  gf_64u n = 0;
+
+  gf_validate(info);
+  gf_validate(node);
+  gf_validate(fn);
+
+  _(site_read_xml_int64u(&n, node));
+  _(fn(info, n));
+
+  return GF_SUCCESS;
+}
+
+gf_status
+site_read_xml_file_info_int64u_hex(
+  gf_file_info* info, const xmlNodePtr node,
+  gf_status (*fn)(gf_file_info*, gf_64u)) {
+  gf_64u n = 0;
+
+  gf_validate(info);
+  gf_validate(node);
+  gf_validate(fn);
+
+  _(site_read_xml_int64u_hex(&n, node));
+  _(fn(info, n));
+
+  return GF_SUCCESS;
+}
+
+gf_status
+site_read_xml_file_info_hash(
+  gf_file_info* info, const xmlNodePtr node,
+  gf_status (*fn)(gf_file_info*, gf_size_t, gf_8u*)) {
+
+  gf_16u size = 0;
+
+  gf_validate(info);
+  gf_validate(node);
+  gf_validate(fn);
+
+  _(gf_file_info_get_hash_size(info, &size));
+  _(fn(info, size, (gf_8u*)node->content));
+
+  return GF_SUCCESS;
+}
+
+static gf_status
+site_read_xml_file_info(gf_file_info* info, const xmlNodePtr node) {
+  gf_validate(info);
+  gf_validate(node);
+
+  for (xmlNodePtr cur = node->children; cur; cur = cur->next) {
+    if (!xmlStrcmp(cur->name, BAD_CAST"file-name")) {
+      _(site_read_xml_file_info_string(
+          info, cur->children, gf_file_info_set_file_name));
+    } else if (!xmlStrcmp(cur->name, BAD_CAST"full-path")) {
+      _(site_read_xml_file_info_string(
+          info, cur->children, gf_file_info_set_full_path));
+    } else if (!xmlStrcmp(cur->name, BAD_CAST"hash")) {
+      _(site_read_xml_file_info_hash(
+          info, cur->children, gf_file_info_set_hash_string));
+    } else if (!xmlStrcmp(cur->name, BAD_CAST"hash-size")) {
+      _(site_read_xml_file_info_int16u(
+          info, cur->children, gf_file_info_set_hash_size));
+    } else if (!xmlStrcmp(cur->name, BAD_CAST"inode")) {
+      _(site_read_xml_file_info_int16u(
+          info, cur->children, gf_file_info_set_inode));
+    } else if (!xmlStrcmp(cur->name, BAD_CAST"mode")) {
+      _(site_read_xml_file_info_int16u_hex(
+          info, cur->children, gf_file_info_set_mode));
+    } else if (!xmlStrcmp(cur->name, BAD_CAST"link-count")) {
+      _(site_read_xml_file_info_int16s(
+          info, cur->children, gf_file_info_set_link_count));
+    } else if (!xmlStrcmp(cur->name, BAD_CAST"uid")) {
+      _(site_read_xml_file_info_int16s(
+          info, cur->children, gf_file_info_set_uid));
+    } else if (!xmlStrcmp(cur->name, BAD_CAST"gid")) {
+      _(site_read_xml_file_info_int16s(
+          info, cur->children, gf_file_info_set_gid));
+    } else if (!xmlStrcmp(cur->name, BAD_CAST"device")) {
+      _(site_read_xml_file_info_int32u(
+          info, cur->children, gf_file_info_set_device));
+    } else if (!xmlStrcmp(cur->name, BAD_CAST"rdevice")) {
+      _(site_read_xml_file_info_int32u(
+          info, cur->children, gf_file_info_set_rdevice));
+    } else if (!xmlStrcmp(cur->name, BAD_CAST"file-size")) {
+      _(site_read_xml_file_info_int64u(
+          info, cur->children, gf_file_info_set_file_size));
+    } else if (!xmlStrcmp(cur->name, BAD_CAST"access-time")) {
+      _(site_read_xml_file_info_int64u_hex(
+          info, cur->children, gf_file_info_set_access_time));
+    } else if (!xmlStrcmp(cur->name, BAD_CAST"modify-time")) {
+      _(site_read_xml_file_info_int64u_hex(
+          info, cur->children, gf_file_info_set_modify_time));
+    } else if (!xmlStrcmp(cur->name, BAD_CAST"create-time")) {
+      _(site_read_xml_file_info_int64u_hex(
+          info, cur->children, gf_file_info_set_create_time));
+    } else {
+      /* Unknown element - ignore */
+      assert(0);
+    }
+  }
+
+  return GF_SUCCESS;
+}
+
+static gf_status
+site_read_xml_entry(gf_array* entry_set, const xmlNodePtr root) {
+  gf_status rc = 0;
+  gf_entry* entry = NULL;
+  
   gf_validate(entry_set);
   gf_validate(root);
 
+  if (!!xmlStrcmp(root->name, BAD_CAST"entry")) {
+    gf_raise(GF_E_DATA, "Invalid site file.");
+  }
+  rc = gf_entry_new(&entry);
+  if (rc != GF_SUCCESS) {
+    gf_throw(rc);
+  }
+  rc = gf_array_add(entry_set, (gf_any){ .ptr = entry });
+  if (rc != GF_SUCCESS) {
+    gf_entry_free(entry);
+    gf_throw(rc);
+  }
+  /* Process children */
+  for (xmlNodePtr cur = root->children; cur; cur = cur->next) {
+    if (!xmlStrcmp(cur->name, BAD_CAST"type")) {
+      _(site_read_xml_int32u(&entry->type, cur->children));
+    } else if (!xmlStrcmp(cur->name, BAD_CAST"state")) {
+      _(site_read_xml_int32u(&entry->state, cur->children));
+    } else if (!xmlStrcmp(cur->name, BAD_CAST"title")) {
+      _(site_read_xml_string(entry->title, cur->children));
+    } else if (!xmlStrcmp(cur->name, BAD_CAST"author")) {
+      _(site_read_xml_string(entry->author, cur->children));
+    } else if (!xmlStrcmp(cur->name, BAD_CAST"date")) {
+      _(site_read_xml_date(&entry->date, cur->children));
+    } else if (!xmlStrcmp(cur->name, BAD_CAST"description")) {
+      _(site_read_xml_description(entry->description, cur));
+    } else if (!xmlStrcmp(cur->name, BAD_CAST"file-info")) {
+      _(site_read_xml_file_info(entry->file_info, cur));
+    } else if (!xmlStrcmp(cur->name, BAD_CAST"method")) {
+      _(site_read_xml_string(entry->method, cur->children));
+    } else if (!xmlStrcmp(cur->name, BAD_CAST"output-path")) {
+      _(site_read_xml_path(entry->output_path, cur->children));
+    } else if (!xmlStrcmp(cur->name, BAD_CAST"subject-set")) {
+      _(site_read_xml_category(
+          entry->subject_set, BAD_CAST"subject", cur->children));
+    } else if (!xmlStrcmp(cur->name, BAD_CAST"keyword-set")) {
+      _(site_read_xml_category(
+          entry->keyword_set, BAD_CAST"keyword", cur->children));
+    } else if (!xmlStrcmp(cur->name, BAD_CAST"children")) {
+      for (xmlNodePtr child = cur->children; child; child = child->next) {
+        _(site_read_xml_entry(entry->children, child));
+      }
+    } else {
+      /* Unknown element - ignore */
+      assert(0);
+    }
+  }
+  
   return GF_SUCCESS;
 }
 
@@ -1658,8 +2179,12 @@ site_read_file(gf_site* site, const gf_path* path) {
     xmlFreeDoc(doc);
     gf_raise(GF_E_API, "Failed to read an XML file.");
   }
+  if (!!xmlStrcmp(root->name, BAD_CAST"site")) {
+    gf_raise(GF_E_DATA, "Invalid site file.");
+  }
+  root = root->children;
   assert(site->entry_set);
-  rc = site_read_xml_document(site->entry_set, root);
+  rc = site_read_xml_entry(site->entry_set, root);
   xmlFreeDoc(doc);
   if (rc != GF_SUCCESS) {
     gf_throw(rc);

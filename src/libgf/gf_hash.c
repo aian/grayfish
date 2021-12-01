@@ -6,6 +6,8 @@
 ** @file libgf/gf_hash.c
 ** @brief Hash functions
 */
+#include <string.h>
+
 #include <openssl/sha.h>
 
 #include <libgf/gf_memory.h>
@@ -19,7 +21,6 @@
   if (ret == 0) {                                         \
     gf_raise(GF_E_API, "Failed to calcurate file hash."); \
   }
-
 
 gf_status
 gf_hash_file(gf_8u* hash, gf_size_t size, gf_path* path) {
@@ -49,6 +50,30 @@ gf_hash_file(gf_8u* hash, gf_size_t size, gf_path* path) {
 
   ret = SHA512_Final(hash, &ctxt);
   OPENSSL_RAISE(ret);
+
+  return GF_SUCCESS;
+}
+
+gf_status
+gf_hash_parse_string(gf_8u* buffer, const gf_char* str, gf_size_t size) {
+  gf_char chr[3] = { 0 };
+  gf_char* e = NULL;
+  unsigned long n = 0;
+  
+  gf_validate(buffer);
+  gf_validate(str);
+  gf_validate(size > 0);
+
+  for (gf_size_t i = 0; i < size; i++) {
+    chr[0] = str[i * 2 + 0];
+    chr[1] = str[i * 2 + 1];
+
+    n = strtoul(chr, &e, 16);
+    if (*e != '\0') {
+      gf_raise(GF_E_DATA, "Ivalid hex string");
+    }
+    buffer[i] = (gf_8u)n;
+  }
 
   return GF_SUCCESS;
 }

@@ -605,3 +605,139 @@ gf_file_info_get_create_time(const gf_file_info* info, gf_64u* create_time) {
 
   return GF_SUCCESS;
 }
+
+/* -------------------------------------------------------------------------- */
+
+gf_status
+gf_file_info_set_file_name(gf_file_info* info, const gf_char* file_name) {
+  gf_validate(info);
+  gf_validate(file_name);
+  _(gf_path_set_string(info->file_name, file_name));
+  return GF_SUCCESS;
+}
+
+gf_status
+gf_file_info_set_full_path(gf_file_info* info, const gf_char* full_path) {
+  gf_validate(info);
+  gf_validate(full_path);
+  _(gf_path_set_string(info->full_path, full_path));
+  return GF_SUCCESS;
+}
+
+gf_status
+gf_file_info_set_hash(gf_file_info* info, gf_size_t size, gf_8u* hash) {
+  gf_validate(info);
+  gf_validate(size > 0);
+  gf_validate(hash);
+  _(gf_memcpy(info->hash, hash, size));
+  return GF_SUCCESS;
+}
+
+gf_status
+gf_file_info_set_hash_string(gf_file_info* info, gf_size_t size, gf_8u* str) {
+  gf_validate(info);
+  gf_validate(size > 0);
+  gf_validate(str);
+
+  _(gf_hash_parse_string(info->hash, (gf_char*)str, size));
+  
+  return GF_SUCCESS;
+}
+
+gf_status
+gf_file_info_set_user_data(gf_file_info* info, gf_any user_data) {
+  gf_validate(info);
+  info->user_data.data = user_data.data;
+  return GF_SUCCESS;
+}
+
+gf_status
+gf_file_info_set_user_flag(gf_file_info* info, gf_32u user_flag) {
+  gf_validate(info);
+  info->user_flag = user_flag;
+  return GF_SUCCESS;
+}
+
+gf_status
+gf_file_info_set_hash_size(gf_file_info* info, gf_16u hash_size) {
+  gf_validate(info);
+  info->hash_size = hash_size;
+  return GF_SUCCESS;
+}
+
+gf_status
+gf_file_info_set_inode(gf_file_info* info, gf_16u inode) {
+  gf_validate(info);
+  info->inode = inode;
+  return GF_SUCCESS;
+}
+
+gf_status
+gf_file_info_set_mode(gf_file_info* info, gf_16u mode) {
+  gf_validate(info);
+  info->mode = mode;
+  return GF_SUCCESS;
+}
+
+gf_status
+gf_file_info_set_link_count(gf_file_info* info, gf_16s link_count) {
+  gf_validate(info);
+  info->link_count = link_count;
+  return GF_SUCCESS;
+}
+
+gf_status
+gf_file_info_set_uid(gf_file_info* info, gf_16s uid) {
+  gf_validate(info);
+  info->uid = uid;
+  return GF_SUCCESS;
+}
+
+gf_status
+gf_file_info_set_gid(gf_file_info* info, gf_16s gid) {
+  gf_validate(info);
+  info->gid = gid;
+  return GF_SUCCESS;
+}
+
+gf_status
+gf_file_info_set_device(gf_file_info* info, gf_32u device) {
+  gf_validate(info);
+  info->device = device;
+  return GF_SUCCESS;
+}
+
+gf_status
+gf_file_info_set_rdevice(gf_file_info* info, gf_32u rdevice) {
+  gf_validate(info);
+  info->rdevice = rdevice;
+  return GF_SUCCESS;
+}
+
+gf_status
+gf_file_info_set_file_size(gf_file_info* info, gf_64u file_size) {
+  gf_validate(info);
+  info->file_size = file_size;
+  return GF_SUCCESS;
+}
+
+gf_status
+gf_file_info_set_access_time(gf_file_info* info, gf_64u access_time) {
+  gf_validate(info);
+  info->access_time = access_time;
+  return GF_SUCCESS;
+}
+
+gf_status
+gf_file_info_set_modify_time(gf_file_info* info, gf_64u modify_time) {
+  return GF_SUCCESS;
+  info->modify_time = modify_time;
+  gf_validate(info);
+}
+
+gf_status
+gf_file_info_set_create_time(gf_file_info* info, gf_64u create_time) {
+  gf_validate(info);
+  info->create_time = create_time;
+  return GF_SUCCESS;
+}
