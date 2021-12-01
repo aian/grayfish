@@ -23,7 +23,7 @@ or displaying `rescently update articles' on your site needs the other
 tools outside the DocBook technology.
 
 Grayfish helps you to build an integrated website from separated
-documents statically.
+DocBook documents statically.
 
 Prerequisites
 -------------
@@ -33,7 +33,6 @@ Prerequisites
 - Microsoft Windows 10 >= v1903 build 18362.657
 - [LibXML](http://xmlsoft.org/) >= 2.9.9
 - [LibXSLT](http://xmlsoft.org/libxslt/) >= 1.1.33
-- [LibMongoose](https://github.com/jactry/libmongoose) >= 5.6
 
 ### To Build
 
@@ -41,6 +40,7 @@ Prerequisites
 - [MinGW64 GCC](http://mingw-w64.org/) >= 9.1.0
 - [CMake](https://cmake.org/) >= 3.14
 - [CUnit](http://cunit.sourceforge.net/) >= 2.1.3
+- [Doxygen](https://www.doxygen.nl/) >= 1.9.2
 
 Building Modules
 ----------------
