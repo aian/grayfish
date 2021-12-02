@@ -12,6 +12,7 @@
 #include <dirent.h>
 
 #include <libgf/gf_memory.h>
+#include <libgf/gf_string.h>
 #include <libgf/gf_hash.h>
 #include <libgf/gf_array.h>
 #include <libgf/gf_file_info.h>
@@ -429,6 +430,24 @@ gf_file_info_get_file_name(
 
   return GF_SUCCESS;
 }
+
+gf_bool
+gf_file_info_does_file_name_equal(
+  const gf_file_info* info, const gf_char* file_name) {
+  gf_bool ret = GF_FALSE;
+
+  if (!info || gf_strnull(file_name)) {
+    return GF_FALSE;
+  }
+  if (!strcmp(gf_path_get_string(info->file_name), file_name)) {
+    ret = GF_TRUE;
+  } else {
+    ret = GF_FALSE;
+  }
+
+  return ret;
+}
+
 
 gf_status
 gf_file_info_get_full_path(

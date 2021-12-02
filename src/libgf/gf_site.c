@@ -922,7 +922,8 @@ site_collect_file_info(gf_array* file_set, gf_file_info* root) {
 
     if (gf_file_info_is_directory(child)) {
       if (!site_does_directory_have_document_file(child) &&
-          !site_does_directory_have_meta_file(child)) {
+          !site_does_directory_have_meta_file(child) &&
+          !gf_file_info_does_file_name_equal(child, GF_CONFIG_DIRECTORY)) {
         _(site_collect_file_info(file_set, child));
       }
     } else {
@@ -1433,10 +1434,9 @@ site_add_xml_file_info(
   xmlNodePtr cur = NULL;
   
   gf_validate(node);
-  gf_validate(name);
   gf_validate(value);
 
-  cur = xmlNewNode(NULL, BAD_CAST"file-info");
+  cur = xmlNewNode(NULL, name);
   if (!cur) {
     gf_raise(GF_E_API, "Failed to create an XML node.");
    }
@@ -1499,6 +1499,30 @@ site_add_xml_category(
 }
 
 static gf_status
+site_add_xml_file_set(xmlNodePtr node, xmlChar* name, const gf_array* value) {
+  xmlNodePtr cur = NULL;
+  gf_size_t cnt = 0;
+
+  cur = xmlNewNode(NULL, name);
+  if (!cur) {
+    gf_raise(GF_E_API, "Failed to create an XML node.");
+  }
+  cur = xmlAddChild(node, cur);
+  if (!cur) {
+    gf_raise(GF_E_API, "Failed to add an XML node.");
+  }
+  cnt = gf_array_size(value);
+  for (gf_size_t i = 0; i < cnt; i++) {
+    gf_any any = { 0 };
+
+    _(gf_array_get(value, i, &any));
+    _(site_add_xml_file_info(cur, BAD_CAST"file-info", (gf_file_info*)any.ptr));
+  }
+  
+  return GF_SUCCESS;
+}
+
+static gf_status
 site_add_xml_category_set(
   xmlNodePtr node, xmlChar* name, xmlChar* child_name, const gf_array* value) {
   xmlNodePtr cur = NULL;
@@ -1537,7 +1561,7 @@ site_add_xml_file_info_set(
   gf_validate(name);
   gf_validate(value);
 
-  cur = xmlNewNode(NULL, BAD_CAST "file-set");
+  cur = xmlNewNode(NULL, name);
   if (!cur) {
     gf_raise(GF_E_API, "Failed to add an XML node.");
   }
@@ -1546,7 +1570,7 @@ site_add_xml_file_info_set(
     gf_any any = { 0 };
 
     _(gf_array_get(value, i, &any));
-    _(site_add_xml_file_info(cur, BAD_CAST"file", (gf_file_info*)(any.ptr)));
+    _(site_add_xml_file_info(cur, BAD_CAST"file-info", (gf_file_info*)(any.ptr)));
   }
   
   return GF_SUCCESS;
@@ -1572,6 +1596,7 @@ site_make_entry_node(xmlNodePtr* node, gf_entry* entry) {
   _(site_add_xml_file_info(tmp, BAD_CAST"file-info", entry->file_info));
   _(site_add_xml_string(tmp, BAD_CAST"method", entry->method));
   _(site_add_xml_path(tmp, BAD_CAST"output-path", entry->output_path));
+  _(site_add_xml_file_set(tmp, BAD_CAST"file-set", entry->file_set));
   _(site_add_xml_category_set(
       tmp, BAD_CAST"subject-set", BAD_CAST"subject", entry->subject_set));
   _(site_add_xml_category_set(
