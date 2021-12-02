@@ -136,11 +136,16 @@ struct gf_entry {
   gf_entry_type  type;        ///< Type of a entry
   gf_entry_state state;       ///< State of a entry
   gf_string*     title;       ///< Entry title retrieved from an entry file
+  gf_string*     subtitle;    ///< Entry subtitle retrieved from an entry file
   gf_string*     author;      ///< Name of an author read from an entry file
   gf_datetime    date;        ///< Published date read from an entry file
-  gf_array*      description; ///< A description composed with paragraph strings
+  gf_16u         issue;       ///< The number of an issue
+  gf_16u         volume;      ///< The number of a volume
+  gf_string*     series;      ///< Numbers of the volumes in a series.
+  gf_string*     edition;     ///< The name or number of an edition
+  gf_array*      description; ///< A description composed with paragraphs
   gf_file_info*  file_info;   ///< The info file. (meta.gf, index.dbk ...)
-  gf_string*     method;      ///< The process type linked to the XSLT file name
+  gf_string*     method;      ///< The process type linked to the XSLT name
   gf_site*       site;        ///< The site object which includes this object
   gf_path*       output_path; ///< The output path 
   gf_array*      subject_set; ///< Array of gf_category objects
