@@ -2168,6 +2168,29 @@ site_read_xml_file_info(gf_file_info* info, const xmlNodePtr node) {
 }
 
 static gf_status
+site_read_xml_file_set(gf_array* file_set, const xmlNodePtr node) {
+  gf_status rc = 0;
+
+  gf_validate(file_set);
+  gf_validate(node);
+  
+  for (xmlNodePtr cur = node->children; cur; cur = cur->next) {
+    if (!xmlStrcmp(cur->name, BAD_CAST"file-info")) {
+      gf_file_info* info = NULL;
+
+      _(gf_file_info_new(&info, NULL));
+      rc = gf_array_add(file_set, (gf_any){ .ptr = info });
+      if (rc != GF_SUCCESS) {
+        gf_file_info_free(info);
+        gf_throw(rc);
+      }
+    }
+  }
+
+  return GF_SUCCESS;
+}
+
+static gf_status
 site_read_xml_entry(gf_array* entry_set, const xmlNodePtr root) {
   gf_status rc = 0;
   gf_entry* entry = NULL;
@@ -2207,6 +2230,8 @@ site_read_xml_entry(gf_array* entry_set, const xmlNodePtr root) {
       _(site_read_xml_string(entry->method, cur->children));
     } else if (!xmlStrcmp(cur->name, BAD_CAST"output-path")) {
       _(site_read_xml_path(entry->output_path, cur->children));
+    } else if (!xmlStrcmp(cur->name, BAD_CAST"file-set")) {
+      _(site_read_xml_file_set(entry->file_set, cur));
     } else if (!xmlStrcmp(cur->name, BAD_CAST"subject-set")) {
       _(site_read_xml_category(
           entry->subject_set, BAD_CAST"subject", cur->children));
