@@ -27,7 +27,7 @@
 #include <libgf/gf_config.h>
 #include <libgf/gf_args.h>
 #include <libgf/gf_site.h>
-#include <libgf/gf_convert.h>
+#include <libgf/gf_xslt.h>
 
 #include <libgf/gf_cmd_base.h>
 #include <libgf/gf_cmd_build.h>

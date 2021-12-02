@@ -15,15 +15,15 @@
 #include <libgf/gf_cmd_config.h>
 #include <libgf/gf_site.h>
 #include <libgf/gf_system.h>
-#include <libgf/gf_convert.h>
+#include <libgf/gf_xslt.h>
 #include <libgf/gf_cmd_build.h>
 
 #include "gf_local.h"
 
 struct gf_cmd_build {
-  gf_cmd_base      base;
-  gf_site*         site;
-  gf_convert_ctxt* ctxt;
+  gf_cmd_base base;
+  gf_site*    site;
+  gf_xslt*    xslt;
 };
 
 /*!
@@ -61,7 +61,7 @@ init(gf_cmd_base* cmd) {
   _(gf_cmd_base_init(cmd));
   
   GF_CMD_BUILD_CAST(cmd)->site = NULL;
-  GF_CMD_BUILD_CAST(cmd)->ctxt = NULL;
+  GF_CMD_BUILD_CAST(cmd)->xslt = NULL;
 
   return GF_SUCCESS;
 }
@@ -108,8 +108,8 @@ gf_cmd_build_free(gf_cmd_base* cmd) {
       gf_site_free(GF_CMD_BUILD_CAST(cmd)->site);
       GF_CMD_BUILD_CAST(cmd)->site = NULL;
     }
-    if (GF_CMD_BUILD_CAST(cmd)->ctxt) {
-      gf_convert_ctxt_free(GF_CMD_BUILD_CAST(cmd)->ctxt);
+    if (GF_CMD_BUILD_CAST(cmd)->xslt) {
+      gf_xslt_free(GF_CMD_BUILD_CAST(cmd)->xslt);
       GF_CMD_BUILD_CAST(cmd)->site = NULL;
     }
 
