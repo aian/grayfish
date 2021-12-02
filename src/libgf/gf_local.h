@@ -35,10 +35,6 @@
 #define GF_SITE_FILE_NAME "site.xml"
 #endif  /* GF_SITE_FILE_NAME */
 
-#ifndef GF_SERVE_PORT_DEFAULT
-#define GF_SERVE_PORT_DEFAULT 8080
-#endif
-
 /*!
 ** @brief The parser options for LibXML2
 */

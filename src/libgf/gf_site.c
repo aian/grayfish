@@ -341,8 +341,7 @@ entry_read_xml_file(xmlDocPtr* doc, gf_entry* entry) {
 #ifdef GF_DEBUG_
   static const int option = 0;
 #else
-  static const int option =
-    XML_PARSE_NOERROR | XML_PARSE_NOWARNING | XML_PARSE_XINCLUDE;
+  static const int option = GF_XML_PARSE_OPTIONS;
 #endif
   
   gf_validate(doc);
@@ -2261,8 +2260,7 @@ site_read_file(gf_site* site, const gf_path* path) {
 #ifdef GF_DEBUG_
   static const int option = 0;
 #else
-  static const int option =
-    XML_PARSE_NOERROR | XML_PARSE_NOWARNING | XML_PARSE_XINCLUDE;
+  static const int option = GF_XML_PARSE_OPTIONS;
 #endif
 
   gf_validate(site);
