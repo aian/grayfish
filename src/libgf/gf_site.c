@@ -910,6 +910,38 @@ site_collect_meta_info(gf_entry* entry, gf_file_info* file_info) {
 }
 
 static gf_status
+site_collect_file_info(gf_array* file_set, gf_file_info* root) {
+  gf_status rc = 0;
+  gf_size_t cnt = 0;
+
+  cnt = gf_file_info_count_children(root);
+  for (gf_size_t i = 0; i < cnt; i++) {
+    gf_file_info* child = NULL;
+    
+    _(gf_file_info_get_child(root, i, &child));
+
+    if (gf_file_info_is_directory(child)) {
+      if (!site_does_directory_have_document_file(child) &&
+          !site_does_directory_have_meta_file(child)) {
+        _(site_collect_file_info(file_set, child));
+      }
+    } else {
+      gf_file_info* info = NULL;
+
+      _(gf_file_info_clone(&info, child));
+      rc = gf_array_add(file_set, (gf_any){ .ptr = info });
+      if (rc != GF_SUCCESS) {
+        gf_file_info_free(info);
+        gf_throw(rc);
+      }
+    }
+  }
+
+  return GF_SUCCESS;
+}
+
+
+static gf_status
 site_scan_directories(gf_array* entry_set, gf_file_info* file_info) {
   gf_status rc = 0;
   gf_size_t cnt = 0;
@@ -955,12 +987,18 @@ site_scan_directories(gf_array* entry_set, gf_file_info* file_info) {
     /* This directory is not our target */
     return GF_SUCCESS;
   }
-
+  /* collect file info */
+  if (entry) {
+    rc = site_collect_file_info(entry->file_set, file_info);
+    if (rc != GF_SUCCESS) {
+      gf_throw(rc);
+    }
+  }
   /* process children  */
   if (entry) {
     cnt = gf_file_info_count_children(file_info);
     for (gf_size_t i = 0; i < cnt; i++) {
-      gf_file_info* child_info = 0;
+      gf_file_info* child_info = NULL;
       
       _(gf_file_info_get_child(file_info, i, &child_info));
       _(site_scan_directories(entry->children, child_info));
