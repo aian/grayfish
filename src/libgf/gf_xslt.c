@@ -32,14 +32,16 @@
 */
 
 struct gf_xslt {
-  xsltStylesheetPtr template;
+  xsltStylesheetPtr xsl;
+  xmlDocPtr         res;  ///< Result XML tree
 };
 
 static gf_status
-xslt_ctxt_init(gf_xslt* xslt) {
+xslt_init(gf_xslt* xslt) {
   gf_validate(xslt);
 
-  xslt->template = NULL;
+  xslt->xsl = NULL;
+  xslt->res = NULL;
 
   return GF_SUCCESS;
 }
@@ -52,7 +54,7 @@ gf_xslt_new(gf_xslt** xslt) {
   gf_validate(xslt);
 
   _(gf_malloc((gf_ptr* )&tmp, sizeof(*tmp)));
-  rc = xslt_ctxt_init(tmp);
+  rc = xslt_init(tmp);
   if (rc != GF_SUCCESS) {
     gf_xslt_free(tmp);
     gf_throw(rc);
@@ -75,9 +77,9 @@ gf_status
 gf_xslt_reset(gf_xslt* xslt) {
   gf_validate(xslt);
 
-  if (xslt->template) {
-    xsltFreeStylesheet(xslt->template);
-    xslt->template = NULL;
+  if (xslt->xsl) {
+    xsltFreeStylesheet(xslt->xsl);
+    xslt->xsl = NULL;
   }
 
   return GF_SUCCESS;
@@ -86,7 +88,7 @@ gf_xslt_reset(gf_xslt* xslt) {
 gf_status
 gf_xslt_read_template(gf_xslt* xslt, const gf_path* path) {
   xmlDocPtr tmp = NULL;
-  xsltStylesheetPtr sty = NULL;
+  xsltStylesheetPtr xsl = NULL;
   
   gf_validate(xslt);
   gf_validate(path);
@@ -96,47 +98,75 @@ gf_xslt_read_template(gf_xslt* xslt, const gf_path* path) {
     gf_raise(GF_E_READ,
              "Failed to read style file. (%s)", gf_path_get_string(path));
   }
-  sty = xsltParseStylesheetDoc(tmp);
+  xsl = xsltParseStylesheetDoc(tmp);
   // TODO: Add error handling.
-  if (xslt->template) {
+  if (xslt->xsl) {
     _(gf_xslt_reset(xslt));
   }
-  xslt->template = sty;
+  xslt->xsl = xsl;
+  
+  return GF_SUCCESS;
+}
+
+static gf_status
+xslt_release_result(gf_xslt* xslt) {
+  gf_validate(xslt);
+  
+  if (xslt->res) {
+    xmlFreeDoc(xslt->res);
+    xslt->res = NULL;
+  }
   
   return GF_SUCCESS;
 }
 
 gf_status
-gf_xslt_file(gf_xslt* xslt, const gf_path* dst, const gf_path* src) {
-//  FILE* fp = NULL;
+gf_xslt_process(gf_xslt* xslt, const gf_path* path) {
+  gf_status rc = 0;
   xmlDocPtr doc = NULL;
   xmlDocPtr res = NULL;
   
   gf_validate(xslt);
-  gf_validate(!gf_path_is_empty(dst));
-  gf_validate(!gf_path_is_empty(src));
+  gf_validate(!gf_path_is_empty(path));
 
-  doc = xmlReadFile(gf_path_get_string(src), NULL, GF_XML_PARSE_OPTIONS);
+  doc = xmlReadFile(gf_path_get_string(path), NULL, GF_XML_PARSE_OPTIONS);
   if (!doc) {
     gf_raise(GF_E_READ,
-             "Failed to read source file. (%s)", gf_path_get_string(src));
+             "Failed to read source file. (%s)", gf_path_get_string(path));
   }
   xmlXIncludeProcessFlags(doc, XSLT_PARSE_OPTIONS);
-  
-  res = xsltApplyStylesheet(xslt->template, doc, NULL);
+
+  res = xsltApplyStylesheet(xslt->xsl, doc, NULL);
   xmlFreeDoc(doc);
-  xmlFreeDoc(res);
+  if (!res) {
+    gf_raise(GF_E_API,
+             "Failed to transform the file. (%s)", gf_path_get_string(path));
+  }
+  rc = xslt_release_result(xslt);
+  if (rc != GF_SUCCESS) {
+    gf_throw(rc);
+  }
+  xslt->res = res;
+    
+  return GF_SUCCESS;
+}
+
+
+gf_status
+gf_xslt_write_file(gf_xslt* xslt, const gf_path* path) {
+  int ret = 0;
+  FILE* fp = NULL;
+
+  fp = fopen(gf_path_get_string(path), "w");
+  if (!fp) {
+    gf_raise(GF_E_OPEN, "Failed to open file. (%s)", gf_path_get_string(path));
+  }
   
-  /*
-  ** TODO: Output file when res is not empty.
-  */
-//  fp = fopen(dst, "w");
-//  if (!fp) {
-//    xmlFreeDoc(res);
-//    gf_raise(GF_E_OPEN, "Failed to open file. (%s)", dst);
-//  }
-//
-//  xsltSaveResultToFile(fp, res, ctxt->template);
-  
+  ret = xsltSaveResultToFile(fp, xslt->res, xslt->xsl);
+  fclose(fp);
+  if (ret < 0) {
+    gf_raise(GF_E_OPEN, "Failed to save file. (%s)", gf_path_get_string(path));
+  }
+
   return GF_SUCCESS;
 }

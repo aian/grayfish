@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<shelf>
+  <book>
+    <title>Programming Language C</title>
+    <rating>4</rating>
+  </book>
+  <book>
+    <title>UNIX Programming Environment</title>
+    <rating>5</rating>
+  </book>
+</shelf>

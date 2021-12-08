@@ -56,17 +56,26 @@ extern gf_status gf_xslt_reset(gf_xslt* xslt);
 extern gf_status gf_xslt_read_template(gf_xslt* xslt, const gf_path* path);
 
 /*!
-** @brief Xslt the file according to the context scheme.
+** @brief Do the XSLT processing.
 **
 ** @param [in, out] xslt File xslt context
-** @param [in]      dst  Destination file path
-** @param [in]      src  Source file path
+** @param [in]      path XML file path, from which is converted.
 **
 ** @return GF_SUCCESS on success, GF_E_* otherwise.
 */
 
-extern gf_status gf_xslt_file(
-  gf_xslt* xslt, const gf_path* dst, const gf_path* src);
+extern gf_status gf_xslt_process(gf_xslt* xslt, const gf_path* path);
+
+/*!
+** @brief Write a result file.
+**
+** @param [in, out] xslt File xslt context
+** @param [in]      path Output file path
+**
+** @return GF_SUCCESS on success, GF_E_* otherwise.
+*/
+
+extern gf_status gf_xslt_write_file(gf_xslt* xslt, const gf_path* path);
 
 #ifdef __cplusplus
 }
