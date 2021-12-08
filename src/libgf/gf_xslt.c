@@ -119,7 +119,7 @@ struct gf_xslt_param {
   gf_xslt_tuple item[GF_XSLT_PARAM_MAX + 1];
 };
 
-#define LIBXSLT_PARAM_ARRAY_CAST(ParamPtr) ((gf_char**)(ParamPtr))
+#define XSLT_TUPLE_ITEM_TO_PARAM_ARRAY(ItemArray) ((const gf_char**)(ItemArray))
 
 gf_status
 xslt_param_init(gf_xslt_param* param) {
@@ -176,11 +176,49 @@ xslt_param_is_full(const gf_xslt_param* param) {
 }
 
 gf_status
-gf_xslt_param_set_value(
-  gf_xslt_param* param, const gf_char* key, const gf_char* value) {
+xslt_param_get_tuple(
+  gf_xslt_param* param, const gf_char* key, gf_xslt_tuple** tuple) {
   gf_validate(param);
   gf_validate(!gf_strnull(key));
-  gf_validate(!gf_strnull(value));  
+  gf_validate(!tuple);
+
+  for (gf_size_t i = 0; i < GF_XSLT_PARAM_MAX; i++) {
+    if (xslt_tuple_is_null(&param->item[i])) {
+      *tuple = NULL;
+      break;
+    }
+    if (!strcmp(param->item[i].key, key)) {
+      *tuple = &param->item[i];
+    }
+  }
+
+  return GF_SUCCESS;
+}
+
+gf_status
+gf_xslt_param_set_value(
+  gf_xslt_param* param, const gf_char* key, const gf_char* value) {
+  gf_xslt_tuple* tmp = NULL;
+  
+  gf_validate(param);
+  gf_validate(!gf_strnull(key));
+  gf_validate(!gf_strnull(value));
+
+  _(xslt_param_get_tuple(param, key, &tmp));
+  if (tmp) {
+    _(gf_strassign(&tmp->value, value));
+  } else {
+    gf_status rc = 0;
+    gf_xslt_tuple tuple = { 0 };
+
+    _(gf_xslt_tuple_assign(&tuple, key, value));
+    
+    rc = gf_xslt_param_add_tuple(param, &tuple);
+    gf_xslt_tuple_clear(&tuple);
+    if (rc != GF_SUCCESS) {
+      gf_throw(rc);
+    }
+  }
   
   return GF_SUCCESS;
 }
@@ -188,12 +226,17 @@ gf_xslt_param_set_value(
 gf_status
 gf_xslt_param_add_tuple(
   gf_xslt_param* param, const gf_xslt_tuple* tuple) {
+  gf_size_t cnt = 0;
+
   gf_validate(param);
   gf_validate(tuple);
 
   if (xslt_param_is_full(param)) {
     gf_raise(GF_E_PARAM, "XSLT param is full-tank.");
   }
+  cnt = gf_xslt_param_count(param);
+  assert(cnt > 0);
+  _(gf_xslt_tuple_assign(&param->item[cnt - 1], tuple->key, tuple->value));
 
   return GF_SUCCESS;
 }
@@ -212,7 +255,7 @@ gf_xslt_param_count(const gf_xslt_param* param) {
 }
 
 gf_status
-gf_xslt_param_get_tuple(
+gf_xslt_param_get_tuple_by_index(
   const gf_xslt_param* param, gf_size_t index, const gf_xslt_tuple** tuple) {
   gf_validate(param);
   gf_validate(index < GF_XSLT_PARAM_MAX);
@@ -224,21 +267,33 @@ gf_xslt_param_get_tuple(
 }
 
 gf_status
-gf_xslt_param_get_value(
-  const gf_xslt_param* param, const gf_char* key, const gf_char** value) {
+gf_xslt_param_get_tuple(
+  const gf_xslt_param* param, const gf_char* key, const gf_xslt_tuple** tuple) {
+  gf_xslt_tuple* tmp = NULL;
+
   gf_validate(param);
   gf_validate(!gf_strnull(key));
-  gf_validate(!value);
+  gf_validate(tuple);
 
-  for (gf_size_t i = 0; i < GF_XSLT_PARAM_MAX; i++) {
-    if (xslt_tuple_is_null(&param->item[i])) {
-      *value = NULL;
-      break;
-    }
-    if (!strcmp(param->item[i].key, key)) {
-      *value = param->item[i].value;
-    }
-  }
+  // NOTE: It discards 'const' qualifier but nothing get changed.
+  _(xslt_param_get_tuple((gf_xslt_param*)param, key, &tmp));
+  *tuple = tmp;
+  
+  return GF_SUCCESS;
+}
+
+gf_status
+gf_xslt_param_get_value(
+  const gf_xslt_param* param, const gf_char* key, const gf_char** value) {
+  gf_xslt_tuple* tmp = NULL;
+
+  gf_validate(param);
+  gf_validate(!gf_strnull(key));
+  gf_validate(value);
+
+  // NOTE: It discards 'const' qualifier but nothing get changed.
+  _(xslt_param_get_tuple((gf_xslt_param*)param, key, &tmp));
+  *value = tmp->value;
 
   return GF_SUCCESS;
 }
@@ -251,7 +306,8 @@ gf_xslt_param_get_value(
 
 struct gf_xslt {
   xsltStylesheetPtr xsl;
-  xmlDocPtr         res;  ///< Result XML tree
+  xmlDocPtr         res;   ///< Result XML tree
+  gf_xslt_param *   param;
 };
 
 static gf_status
@@ -260,6 +316,16 @@ xslt_init(gf_xslt* xslt) {
 
   xslt->xsl = NULL;
   xslt->res = NULL;
+  xslt->param = NULL;
+
+  return GF_SUCCESS;
+}
+
+static gf_status
+xslt_prepare(gf_xslt* xslt) {
+  gf_validate(xslt);
+
+  _(gf_xslt_param_new(&xslt->param));
 
   return GF_SUCCESS;
 }
@@ -273,6 +339,11 @@ gf_xslt_new(gf_xslt** xslt) {
 
   _(gf_malloc((gf_ptr* )&tmp, sizeof(*tmp)));
   rc = xslt_init(tmp);
+  if (rc != GF_SUCCESS) {
+    gf_xslt_free(tmp);
+    gf_throw(rc);
+  }
+  rc = xslt_prepare(tmp);
   if (rc != GF_SUCCESS) {
     gf_xslt_free(tmp);
     gf_throw(rc);
@@ -354,7 +425,8 @@ gf_xslt_process(gf_xslt* xslt, const gf_path* path) {
   }
   xmlXIncludeProcessFlags(doc, XSLT_PARSE_OPTIONS);
 
-  res = xsltApplyStylesheet(xslt->xsl, doc, NULL);
+  res = xsltApplyStylesheet(
+    xslt->xsl, doc, XSLT_TUPLE_ITEM_TO_PARAM_ARRAY(xslt->param->item));
   xmlFreeDoc(doc);
   if (!res) {
     gf_raise(GF_E_API,

@@ -47,8 +47,11 @@ extern gf_status gf_xslt_param_add_tuple(
 
 extern gf_size_t gf_xslt_param_count(const gf_xslt_param* param);
 
-extern gf_status gf_xslt_param_get_tuple(
+extern gf_status gf_xslt_param_get_tuple_by_index(
   const gf_xslt_param* param, gf_size_t index, const gf_xslt_tuple** tuple);
+
+extern gf_status gf_xslt_param_get_tuple(
+  const gf_xslt_param* param, const gf_char* key, const gf_xslt_tuple** tuple);
 
 extern gf_status gf_xslt_param_get_value(
   const gf_xslt_param* param, const gf_char* key, const gf_char** value);
