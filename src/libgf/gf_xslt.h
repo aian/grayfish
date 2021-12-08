@@ -21,6 +21,41 @@
 extern "C" {
 #endif
 
+/* -------------------------------------------------------------------------- */
+
+typedef struct gf_xslt_tuple gf_xslt_tuple;
+
+extern void gf_xslt_tuple_clear(gf_xslt_tuple* tuple);
+extern const gf_char* gf_xslt_tuple_get_key(gf_xslt_tuple* tuple);
+extern const gf_char* gf_xslt_tuple_get_value(gf_xslt_tuple* tuple);
+extern gf_status gf_xslt_tuple_assign(
+  gf_xslt_tuple* tuple, const gf_char* key, const gf_char* value);
+
+/* -------------------------------------------------------------------------- */
+
+typedef struct gf_xslt_param gf_xslt_param;
+
+extern gf_status gf_xslt_param_new(gf_xslt_param** param);
+
+extern void gf_xslt_param_free(gf_xslt_param* param);
+
+extern gf_status gf_xslt_param_set_value(
+  gf_xslt_param* param, const gf_char* key, const gf_char* value);
+
+extern gf_status gf_xslt_param_add_tuple(
+  gf_xslt_param* param, const gf_xslt_tuple* tuple);
+
+extern gf_size_t gf_xslt_param_count(const gf_xslt_param* param);
+
+extern gf_status gf_xslt_param_get_tuple(
+  const gf_xslt_param* param, gf_size_t index, const gf_xslt_tuple** tuple);
+
+extern gf_status gf_xslt_param_get_value(
+  const gf_xslt_param* param, const gf_char* key, const gf_char** value);
+
+
+/* -------------------------------------------------------------------------- */
+
 typedef struct gf_xslt gf_xslt;
 
 /*!

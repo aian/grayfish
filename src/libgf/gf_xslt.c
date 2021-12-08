@@ -27,6 +27,224 @@
 
 #include "gf_local.h"
 
+/* -------------------------------------------------------------------------- */
+
+struct gf_xslt_tuple {
+  gf_char* key;
+  gf_char* value;
+};
+
+gf_status
+xslt_tuple_init(gf_xslt_tuple* tuple) {
+  gf_validate(tuple);
+
+  tuple->key = NULL;
+  tuple->value = NULL;
+  
+  return GF_SUCCESS;
+}
+
+void
+gf_xslt_tuple_clear(gf_xslt_tuple* tuple) {
+  if (tuple) {
+    if (tuple->key) {
+      gf_free(tuple->key);
+      tuple->key = NULL;
+    }
+    if (tuple->value) {
+      gf_free(tuple->value);
+      tuple->value = NULL;
+    }
+  }
+}
+
+const gf_char*
+gf_xslt_tuple_get_key(gf_xslt_tuple* tuple) {
+  return tuple ? tuple->key : NULL;
+}
+
+const gf_char*
+gf_xslt_tuple_get_value(gf_xslt_tuple* tuple) {
+  return tuple ? tuple->value : NULL;
+}
+
+gf_bool
+xslt_tuple_is_null(const gf_xslt_tuple* tuple) {
+  return (!tuple || !tuple->key || !tuple->value) ? GF_TRUE : GF_FALSE;
+}
+
+gf_status
+gf_xslt_tuple_assign(
+  gf_xslt_tuple* tuple, const gf_char* key, const gf_char* value) {
+  gf_status rc = 0;
+  gf_char* tmp_key = NULL;
+  gf_char* tmp_value = NULL;
+
+  gf_validate(tuple);
+  gf_validate(key);
+  gf_validate(value);
+  
+  rc = gf_strdup(&tmp_key, key);
+  if (rc != GF_SUCCESS) {
+    gf_throw(rc);
+  }
+  rc = gf_strdup(&tmp_value, value);
+  if (rc != GF_SUCCESS) {
+    gf_free(tmp_key);
+    gf_throw(rc);
+  }
+  /* assign */
+  if (tuple->key) {
+    gf_free(tuple->key);
+    tuple->key = NULL;
+  }
+  tuple->key = tmp_key;
+
+  if (tuple->value) {
+    gf_free(tuple->value);
+    tuple->value = NULL;
+  }
+  tuple->value = tmp_value;
+  
+  return GF_SUCCESS;
+}
+
+/* -------------------------------------------------------------------------- */
+
+#ifndef GF_XSLT_PARAM_MAX
+#define GF_XSLT_PARAM_MAX 16
+#endif
+
+struct gf_xslt_param {
+  gf_xslt_tuple item[GF_XSLT_PARAM_MAX + 1];
+};
+
+#define LIBXSLT_PARAM_ARRAY_CAST(ParamPtr) ((gf_char**)(ParamPtr))
+
+gf_status
+xslt_param_init(gf_xslt_param* param) {
+  static const gf_size_t cnt = GF_XSLT_PARAM_MAX + 1;
+  
+  gf_validate(param);
+
+  for (gf_size_t i = 0; i < cnt; i++) {
+    _(xslt_tuple_init(&param->item[i]));
+  }
+  
+  return GF_SUCCESS;
+}
+
+gf_status
+gf_xslt_param_new(gf_xslt_param** param) {
+  gf_status rc = 0;
+  gf_xslt_param* tmp = NULL;
+  
+  gf_validate(param);
+
+  _(gf_malloc((gf_ptr*)&tmp, sizeof(*tmp)));
+  rc = xslt_param_init(tmp);
+  if (rc != GF_SUCCESS) {
+    gf_free(tmp);
+    gf_throw(rc);
+  }
+  *param = tmp;
+  
+  return GF_SUCCESS;
+}
+
+void
+gf_xslt_param_free(gf_xslt_param* param) {
+  if (param) {
+    for (gf_size_t i = 0; i <= GF_XSLT_PARAM_MAX; i++) {
+      gf_xslt_tuple_clear(&param->item[i]);
+    }
+    gf_free(param);
+  }
+}
+
+static gf_bool
+xslt_param_is_full(const gf_xslt_param* param) {
+  gf_size_t cnt = 0;
+
+  if (!param) {
+    assert(0);
+    return GF_TRUE;
+  }
+  cnt = gf_xslt_param_count(param);
+  
+  return cnt < GF_XSLT_PARAM_MAX ? GF_FALSE : GF_TRUE;
+}
+
+gf_status
+gf_xslt_param_set_value(
+  gf_xslt_param* param, const gf_char* key, const gf_char* value) {
+  gf_validate(param);
+  gf_validate(!gf_strnull(key));
+  gf_validate(!gf_strnull(value));  
+  
+  return GF_SUCCESS;
+}
+
+gf_status
+gf_xslt_param_add_tuple(
+  gf_xslt_param* param, const gf_xslt_tuple* tuple) {
+  gf_validate(param);
+  gf_validate(tuple);
+
+  if (xslt_param_is_full(param)) {
+    gf_raise(GF_E_PARAM, "XSLT param is full-tank.");
+  }
+
+  return GF_SUCCESS;
+}
+
+gf_size_t
+gf_xslt_param_count(const gf_xslt_param* param) {
+  gf_size_t cnt = 0;
+
+  for (cnt = 0; cnt <= GF_XSLT_PARAM_MAX; cnt++) {
+    if (xslt_tuple_is_null(&param->item[cnt])) {
+      break;
+    }
+  }
+
+  return cnt;
+}
+
+gf_status
+gf_xslt_param_get_tuple(
+  const gf_xslt_param* param, gf_size_t index, const gf_xslt_tuple** tuple) {
+  gf_validate(param);
+  gf_validate(index < GF_XSLT_PARAM_MAX);
+  gf_validate(tuple);
+
+  *tuple = &param->item[index];
+  
+  return GF_SUCCESS;
+}
+
+gf_status
+gf_xslt_param_get_value(
+  const gf_xslt_param* param, const gf_char* key, const gf_char** value) {
+  gf_validate(param);
+  gf_validate(!gf_strnull(key));
+  gf_validate(!value);
+
+  for (gf_size_t i = 0; i < GF_XSLT_PARAM_MAX; i++) {
+    if (xslt_tuple_is_null(&param->item[i])) {
+      *value = NULL;
+      break;
+    }
+    if (!strcmp(param->item[i].key, key)) {
+      *value = param->item[i].value;
+    }
+  }
+
+  return GF_SUCCESS;
+}
+
+/* -------------------------------------------------------------------------- */
+
 /*!
 **
 */
