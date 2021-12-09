@@ -29,57 +29,57 @@
 
 <!-- ==================================================================== -->
 
-<xsl:include href="../VERSION.xsl"/>
-<xsl:include href="../xhtml/param.xsl"/>
-<xsl:include href="../lib/lib.xsl"/>
-<xsl:include href="../common/l10n.xsl"/>
-<xsl:include href="../common/common.xsl"/>
-<xsl:include href="../common/utility.xsl"/>
-<xsl:include href="../common/labels.xsl"/>
-<xsl:include href="../common/titles.xsl"/>
-<xsl:include href="../common/subtitles.xsl"/>
-<xsl:include href="../common/gentext.xsl"/>
-<xsl:include href="../common/targets.xsl"/>
-<xsl:include href="../common/olink.xsl"/>
-<xsl:include href="../common/pi.xsl"/>
-<xsl:include href="../xhtml/autotoc.xsl"/>
-<xsl:include href="../xhtml/autoidx.xsl"/>
-<xsl:include href="../xhtml/lists.xsl"/>
-<xsl:include href="../xhtml/callout.xsl"/>
-<xsl:include href="../xhtml/verbatim.xsl"/>
-<xsl:include href="../xhtml/graphics.xsl"/>
-<xsl:include href="../xhtml/xref.xsl"/>
-<xsl:include href="../xhtml/formal.xsl"/>
-<xsl:include href="../xhtml/table.xsl"/>
-<xsl:include href="../xhtml/htmltbl.xsl"/>
-<xsl:include href="../xhtml/sections.xsl"/>
-<xsl:include href="../xhtml/inline.xsl"/>
-<xsl:include href="../xhtml/footnote.xsl"/>
-<xsl:include href="../xhtml/html.xsl"/>
-<xsl:include href="../xhtml/info.xsl"/>
-<xsl:include href="../xhtml/keywords.xsl"/>
-<xsl:include href="../xhtml/division.xsl"/>
-<xsl:include href="../xhtml/toc.xsl"/>
-<xsl:include href="../xhtml/index.xsl"/>
-<xsl:include href="../xhtml/refentry.xsl"/>
-<xsl:include href="../xhtml/math.xsl"/>
-<xsl:include href="../xhtml/admon.xsl"/>
-<xsl:include href="../xhtml/component.xsl"/>
-<xsl:include href="../xhtml/biblio.xsl"/>
-<xsl:include href="../xhtml/biblio-iso690.xsl"/>
-<xsl:include href="../xhtml/glossary.xsl"/>
-<xsl:include href="../xhtml/block.xsl"/>
-<xsl:include href="../xhtml/task.xsl"/>
-<xsl:include href="../xhtml/qandaset.xsl"/>
-<xsl:include href="../xhtml/synop.xsl"/>
-<xsl:include href="../xhtml/titlepage.xsl"/>
-<xsl:include href="../xhtml/titlepage.templates.xsl"/>
-<xsl:include href="../xhtml/pi.xsl"/>
-<xsl:include href="../xhtml/ebnf.xsl"/>
-<xsl:include href="../xhtml/chunker.xsl"/>
-<xsl:include href="../xhtml/html-rtf.xsl"/>
-<xsl:include href="../xhtml/annotations.xsl"/>
-<xsl:include href="../common/addns.xsl"/>
+<xsl:include href="VERSION.xsl"/>
+<xsl:include href="param.xsl"/>
+<xsl:include href="lib.xsl"/>
+<xsl:include href="l10n.xsl"/>
+<xsl:include href="common.xsl"/>
+<xsl:include href="utility.xsl"/>
+<xsl:include href="labels.xsl"/>
+<xsl:include href="titles.xsl"/>
+<xsl:include href="subtitles.xsl"/>
+<xsl:include href="gentext.xsl"/>
+<xsl:include href="targets.xsl"/>
+<xsl:include href="olink.xsl"/>
+<xsl:include href="pi.xsl"/>
+<xsl:include href="autotoc.xsl"/>
+<xsl:include href="autoidx.xsl"/>
+<xsl:include href="lists.xsl"/>
+<xsl:include href="callout.xsl"/>
+<xsl:include href="verbatim.xsl"/>
+<xsl:include href="graphics.xsl"/>
+<xsl:include href="xref.xsl"/>
+<xsl:include href="formal.xsl"/>
+<xsl:include href="table.xsl"/>
+<xsl:include href="htmltbl.xsl"/>
+<xsl:include href="sections.xsl"/>
+<xsl:include href="inline.xsl"/>
+<xsl:include href="footnote.xsl"/>
+<xsl:include href="html.xsl"/>
+<xsl:include href="info.xsl"/>
+<xsl:include href="keywords.xsl"/>
+<xsl:include href="division.xsl"/>
+<xsl:include href="toc.xsl"/>
+<xsl:include href="index.xsl"/>
+<xsl:include href="refentry.xsl"/>
+<xsl:include href="math.xsl"/>
+<xsl:include href="admon.xsl"/>
+<xsl:include href="component.xsl"/>
+<xsl:include href="biblio.xsl"/>
+<xsl:include href="biblio-iso690.xsl"/>
+<xsl:include href="glossary.xsl"/>
+<xsl:include href="block.xsl"/>
+<xsl:include href="task.xsl"/>
+<xsl:include href="qandaset.xsl"/>
+<xsl:include href="synop.xsl"/>
+<xsl:include href="titlepage.xsl"/>
+<xsl:include href="titlepage.templates.xsl"/>
+<xsl:include href="xhtml-pi.xsl"/>
+<xsl:include href="ebnf.xsl"/>
+<xsl:include href="chunker.xsl"/>
+<xsl:include href="html-rtf.xsl"/>
+<xsl:include href="annotations.xsl"/>
+<xsl:include href="addns.xsl"/>
 
 <xsl:param name="stylesheet.result.type" select="'xhtml'"/>
 <xsl:param name="htmlhelp.output" select="0"/>
@@ -311,6 +311,11 @@ var popup_</xsl:text>
 <xsl:template name="user.footer.navigation">
   <xsl:param name="node" select="."/>
 </xsl:template>
+
+<xsl:template name="user.tail.content">
+  <xsl:param name="node" select="."/>
+</xsl:template>
+
 
 <xslo:include xmlns:xslo="http://www.w3.org/1999/XSL/Transform" href="../profiling/profile-mode.xsl"/><xslo:variable xmlns:xslo="http://www.w3.org/1999/XSL/Transform" name="profiled-content"><xslo:choose><xslo:when test="*/self::ng:* or */self::db:*"><xslo:message>Note: namesp. add : added namespace before processing</xslo:message><xslo:variable name="stripped-content"><xslo:apply-templates select="/" mode="addNS"/></xslo:variable><xslo:message>Note: namesp. add : processing stripped document</xslo:message><xslo:apply-templates select="exslt:node-set($stripped-content)" mode="profile"/></xslo:when><xslo:otherwise><xslo:apply-templates select="/" mode="profile"/></xslo:otherwise></xslo:choose></xslo:variable><xslo:variable xmlns:xslo="http://www.w3.org/1999/XSL/Transform" name="profiled-nodes" select="exslt:node-set($profiled-content)"/><xsl:template match="/">
   <!-- * Get a title for current doc so that we let the user -->

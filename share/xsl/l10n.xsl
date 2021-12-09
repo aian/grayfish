@@ -14,7 +14,7 @@
      This file contains localization templates (for internationalization)
      ******************************************************************** -->
 
-<xsl:param name="l10n.xml" select="document('../common/l10n.xml')"/>
+<xsl:param name="l10n.xml" select="document('l10n.xml')"/>
 <xsl:param name="local.l10n.xml" select="document('')"/>
 <xsl:param name="empty.local.l10n.xml" select="not($local.l10n.xml//l:l10n)"/>
 

@@ -1,7 +1,7 @@
 <xsl:stylesheet exclude-result-prefixes="d"
                 xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
                 xmlns:d="http://docbook.org/ns/docbook"
-		xmlns:xslo="http://www.w3.org/1999/XSL/TransformAlias"
+                xmlns:xslo="http://www.w3.org/1999/XSL/TransformAlias"
                 version="1.0">
 
 <xsl:output indent="no" method="xml"/>
@@ -46,6 +46,6 @@
 <xsl:template match="comment()
              [starts-with(string(.), 'from the HTML stylesheets')]"/>
 
-<xsl:include href="../common/subtitles.xsl"/>
+<xsl:include href="subtitles.xsl"/>
 </xsl:stylesheet>
 

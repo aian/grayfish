@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE xsl:stylesheet [
-<!ENTITY % common.entities SYSTEM "../common/entities.ent">
+<!ENTITY % common.entities SYSTEM "entities.ent">
 %common.entities;
 ]>
 <xsl:stylesheet 
