@@ -23,6 +23,7 @@ extern void gft_shell_add_tests(void);
 extern void gft_array_add_tests(void);
 extern void gft_file_info_add_tests(void);
 extern void gft_site_add_tests(void);
+extern void gft_xslt_add_tests(void);
 
 #ifdef __cplusplus
 }
