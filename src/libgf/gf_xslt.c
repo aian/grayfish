@@ -397,6 +397,17 @@ gf_xslt_read_template(gf_xslt* xslt, const gf_path* path) {
   return GF_SUCCESS;
 }
 
+gf_status
+gf_xslt_set_param(gf_xslt* xslt, const gf_char* key, const gf_char* value) {
+  gf_validate(xslt);
+  gf_validate(!gf_strnull(key));
+  gf_validate(!gf_strnull(value));
+
+  _(gf_xslt_param_set_value(xslt->param, key, value));
+  
+  return GF_SUCCESS;
+}
+
 static gf_status
 xslt_release_result(gf_xslt* xslt) {
   gf_validate(xslt);

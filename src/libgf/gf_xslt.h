@@ -93,6 +93,10 @@ extern gf_status gf_xslt_reset(gf_xslt* xslt);
 
 extern gf_status gf_xslt_read_template(gf_xslt* xslt, const gf_path* path);
 
+
+extern gf_status gf_xslt_set_param(
+  gf_xslt* xslt, const gf_char* key, const gf_char* value);
+
 /*!
 ** @brief Do the XSLT processing.
 **
@@ -114,6 +118,7 @@ extern gf_status gf_xslt_process(gf_xslt* xslt, const gf_path* path);
 */
 
 extern gf_status gf_xslt_write_file(gf_xslt* xslt, const gf_path* path);
+
 
 #ifdef __cplusplus
 }
