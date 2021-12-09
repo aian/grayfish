@@ -11,10 +11,13 @@
               indent="no"/>
 
   <xsl:include href="param.xsl"/>
+  <xsl:include href="libdbk.xsl"/>
+  <!--
   <xsl:include href="lib.xsl"/>
   <xsl:include href="l10n.xsl"/>
   <xsl:include href="common.xsl"/>
   <xsl:include href="utility.xsl"/>
+  -->
   <xsl:include href="labels.xsl"/>
   <xsl:include href="titles.xsl"/>
   <xsl:include href="subtitles.xsl"/>
