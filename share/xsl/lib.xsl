@@ -1,12 +1,5 @@
-<?xml version="1.0" encoding="UTF-8"?><!-- ********************************************************************
-
-     This file is part of the XSL DocBook Stylesheet distribution.
-     See ../README or https://cdn.docbook.org/release/xsl/current/ for
-     copyright and other information.
-
-     This module implements DTD-independent functions
-
-     ******************************************************************** --><xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
+<?xml version="1.0" encoding="UTF-8"?>
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
 
 <xsl:template name="dot.count">
   <!-- Returns the number of "." characters in a string -->

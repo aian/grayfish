@@ -7,12 +7,12 @@
   exclude-result-prefixes="exsl d"
   version="1.0">
 
-<xsl:import href="docbook.xsl"/>
+  <xsl:import href="docbook.xsl"/>
 
-<xsl:import href="chunk-common.xsl"/>
+  <xsl:import href="chunk-common.xsl"/>
 
-<xsl:include href="chunk-code.xsl"/>
+  <xsl:include href="chunk-code.xsl"/>
 
-<xsl:include href="html5-chunk-mods.xsl"/>
+  <xsl:include href="html5-chunk-mods.xsl"/>
 
 </xsl:stylesheet>
