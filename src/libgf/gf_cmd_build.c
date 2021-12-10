@@ -119,16 +119,26 @@ gf_cmd_build_free(gf_cmd_base* cmd) {
 
 static gf_status
 build_prepare_output_path(gf_cmd_build* cmd) {
-  const gf_path* dst_path = GF_CMD_BASE_CAST(cmd)->dst_path;
-
   gf_validate(cmd);
+  _(gf_path_evacuate(GF_CMD_BASE_CAST(cmd)->dst_path));
+  return GF_SUCCESS;
+}
 
-  /* check if the output path exisit */
-  if (gf_path_file_exists(dst_path)) {
-    /* backup the old path */
-    
-  }
+static gf_status
+build_create_directories(gf_cmd_build* cmd) {
+  gf_validate(cmd);
+  return GF_SUCCESS;
+}
 
+static gf_status
+build_copy_static_files(gf_cmd_build* cmd) {
+  gf_validate(cmd);
+  return GF_SUCCESS;
+}
+
+static gf_status
+build_convert_document_files(gf_cmd_build* cmd) {
+  gf_validate(cmd);
   return GF_SUCCESS;
 }
 
@@ -150,10 +160,20 @@ build_process(gf_cmd_build* cmd) {
     gf_throw(rc);
   }
   /* create directories */
-
+  rc = build_create_directories(cmd);
+  if (rc != GF_SUCCESS) {
+    gf_throw(rc);
+  }
   /* copy static files */
-
+  rc = build_copy_static_files(cmd);
+  if (rc != GF_SUCCESS) {
+    gf_throw(rc);
+  }
   /* tranlate XML files */
+  rc = build_convert_document_files(cmd);
+  if (rc != GF_SUCCESS) {
+    gf_throw(rc);
+  }
   
   return GF_SUCCESS;
 }
