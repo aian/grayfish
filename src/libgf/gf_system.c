@@ -41,12 +41,6 @@ gf_system_make_project(const gf_path* base, const char* name) {
   _(gf_path_append_string(&path, base, name));
   /* Evacuate the existing file */
   rc = gf_path_evacuate(path);
-  if (rc != GF_SUCCESS) {
-    gf_path_free(path);
-    return rc;
-  }
-  /* Create project directory */
-  rc = gf_path_create_directory(path);
   gf_path_free(path);
   if (rc != GF_SUCCESS) {
     return rc;

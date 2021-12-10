@@ -21,6 +21,8 @@
 #include <libgf/gf_memory.h>
 #include <libgf/gf_string.h>
 #include <libgf/gf_path.h>
+#include <libgf/gf_datetime.h>
+#include <libgf/gf_shell.h>
 #include <libgf/gf_config.h>
 
 #include "gf_local.h"
@@ -355,6 +357,7 @@ gf_path_append_string(gf_path** dst, const gf_path* src, const char* str) {
 gf_status
 gf_path_evacuate(const gf_path* path) {
   gf_status rc = 0;
+  gf_string* str_date = NULL;
   gf_path* new_path = NULL;
   gf_size_t len = 0;
   char* buf = NULL;
@@ -367,20 +370,58 @@ gf_path_evacuate(const gf_path* path) {
   if (!gf_path_file_exists(path)) {
     return GF_SUCCESS;
   }
-  /* Make the evacuating path string */
-  _(gf_path_new(&new_path, gf_path_get_string(path)));
-  len = path->len + extra;
+  /* Make a current time string */
+  rc = gf_string_new(&str_date);
+  if (rc != GF_SUCCESS) {
+    gf_throw(rc);
+  }
+  rc = gf_datetime_make_current_digit_string(str_date);
+  if (rc != GF_SUCCESS) {
+    gf_string_free(str_date);
+    gf_throw(rc);
+  }
+  /* Make a evacuating path string */
+  rc = gf_path_new(&new_path, gf_path_get_string(path));
+  if (rc != GF_SUCCESS) {
+    gf_string_free(str_date);
+    gf_throw(rc);
+  }
+
+  len = path->len + gf_string_size(str_date) + extra;
   rc = gf_malloc((gf_ptr *)buf, len);
   if (rc != GF_SUCCESS) {
     gf_path_free(new_path);
-    return rc;
+    gf_string_free(str_date);
+    gf_throw(rc);
   }
   for (gf_size_t i = 0; ; i++) {
     int ret = 0;
-    ret = sprintf_s(buf, len, "%s.old%04d", path->buf, i);
+    
+    ret = sprintf_s(buf, len, "%s.%s-%04d",
+                    path->buf, gf_string_get(str_date), i);
     if (ret == 0) {
       gf_path_free(new_path);
+      gf_string_free(str_date);
       gf_raise(GF_E_API, "Failed to evacuate the existing directory.");
+    }
+    rc = gf_path_set_string(new_path, buf);
+    if (rc != GF_SUCCESS) {
+      gf_path_free(new_path);
+      gf_string_free(str_date);
+      gf_throw(rc);
+    }
+    if (!gf_path_file_exists(new_path)) {
+      rc = gf_shell_move(new_path, path);
+      gf_path_free(new_path);
+      gf_string_free(str_date);
+      if (rc != GF_SUCCESS) {
+        gf_throw(rc);
+      }
+      rc = gf_shell_make_directory(path);
+      if (rc != GF_SUCCESS) {
+        gf_throw(rc);
+      }
+      break;
     }
   }
   
