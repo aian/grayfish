@@ -406,7 +406,7 @@ entry_set_date(gf_entry* entry, xmlNodePtr node) {
   if (!xmlNodeIsText(child)) {
     gf_raise(GF_E_DATA, "Invalid XML data.");
   }
-  _(gf_date_parse((const char*)child->content, &entry->date));
+  _(gf_datetime_parse_iso8061_string((const char*)child->content, &entry->date));
   
   return GF_SUCCESS;
 }
@@ -1202,7 +1202,7 @@ site_add_xml_date(xmlNodePtr node, xmlChar* name, gf_64u datetime) {
 
   _(gf_string_new(&str));
   if (datetime > 0) {
-    rc = gf_date_make_string(str, (gf_datetime)datetime);
+    rc = gf_datetime_make_iso8061_string(str, (gf_datetime)datetime);
     if (rc != GF_SUCCESS) {
       gf_string_free(str);
       gf_throw(rc);
@@ -1854,7 +1854,7 @@ site_read_xml_date(gf_datetime* value, const xmlNodePtr node) {
   if (!xmlNodeIsText(node)) {
     gf_raise(GF_E_DATA, "Invalid site data.");
   }
-  _(gf_date_parse((const gf_char*)node->content, value));
+  _(gf_datetime_parse_iso8061_string((const gf_char*)node->content, value));
   
   return GF_SUCCESS;
 }

@@ -118,9 +118,43 @@ gf_cmd_build_free(gf_cmd_base* cmd) {
 }
 
 static gf_status
-build_process(gf_cmd_build* cmd) {
+build_prepare_output_path(gf_cmd_build* cmd) {
+  const gf_path* dst_path = GF_CMD_BASE_CAST(cmd)->dst_path;
+
   gf_validate(cmd);
 
+  /* check if the output path exisit */
+  if (gf_path_file_exists(dst_path)) {
+    /* backup the old path */
+    
+  }
+
+  return GF_SUCCESS;
+}
+
+static gf_status
+build_process(gf_cmd_build* cmd) {
+  gf_status rc = 0;
+  
+  gf_validate(cmd);
+
+  /* read the site file */
+  assert(!cmd->site);
+  rc = gf_site_read_file(&cmd->site, GF_CMD_BASE_CAST(cmd)->site_path);
+  if (rc != GF_SUCCESS) {
+    gf_throw(rc);
+  }
+  /* prepare the output root path */
+  rc = build_prepare_output_path(cmd);
+  if (rc != GF_SUCCESS) {
+    gf_throw(rc);
+  }
+  /* create directories */
+
+  /* copy static files */
+
+  /* tranlate XML files */
+  
   return GF_SUCCESS;
 }
 
