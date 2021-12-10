@@ -311,7 +311,23 @@ gf_entry_set_file_info(gf_entry* entry, gf_file_info* info) {
 }
 
 const gf_char*
-gf_entry_get_full_path_string(gf_entry* entry) {
+gf_entry_get_file_name_string(const gf_entry* entry) {
+  gf_status rc = 0;
+  const gf_char* path = NULL;
+  
+  if (!entry || !entry->file_info) {
+    return NULL;
+  }
+  rc = gf_file_info_get_file_name(entry->file_info, &path);
+  if (rc != GF_SUCCESS) {
+    return NULL;
+  }
+  
+  return path;
+}
+
+const gf_char*
+gf_entry_get_full_path_string(const gf_entry* entry) {
   gf_status rc = 0;
   const gf_char* path = NULL;
   
@@ -329,6 +345,24 @@ gf_entry_get_full_path_string(gf_entry* entry) {
 gf_bool
 gf_entry_is_section(const gf_entry* entry) {
   return entry && entry->type == GF_ENTRY_TYPE_SECTION ? GF_TRUE : GF_FALSE;
+}
+
+gf_size_t
+gf_entry_count_children(const gf_entry* entry) {
+  return entry && entry->children ? gf_array_size(entry->children) : 0;
+}
+
+gf_status
+gf_entry_get_child(gf_entry* entry, gf_size_t index, gf_entry** child) {
+  gf_any any = { 0 };
+  
+  gf_validate(entry);
+  gf_validate(child);
+
+  _(gf_array_get(entry->children, index, &any));
+  *child = (gf_entry*)(any.ptr);
+  
+  return GF_SUCCESS;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -772,6 +806,26 @@ gf_site_reset(gf_site* site) {
 
   if (site->entry_set) {
     _(gf_array_clear(site->entry_set));
+  }
+  
+  return GF_SUCCESS;
+}
+
+
+gf_status
+gf_site_get_root_entry(gf_site* site, gf_entry** entry) {
+  gf_size_t cnt = 0;
+  
+  gf_validate(site);
+  gf_validate(entry);
+
+  cnt = gf_array_size(site->entry_set);
+  if (cnt <= 0) {
+    *entry = NULL;
+  } else {
+    gf_any any = { 0 };
+    _(gf_array_get(site->entry_set, 0, &any));
+    *entry = (gf_entry*)(any.ptr);
   }
   
   return GF_SUCCESS;

@@ -125,8 +125,76 @@ build_prepare_output_path(gf_cmd_build* cmd) {
 }
 
 static gf_status
+build_create_directory(const gf_path* path, gf_entry* entry) {
+  gf_status rc = 0;
+  gf_path* current_path = NULL;
+  const gf_char* file_name = NULL;
+  gf_size_t cnt = 0;
+  
+  gf_validate(path);
+  gf_validate(entry);
+
+  file_name = gf_entry_get_file_name_string(entry);
+  if (!file_name) {
+    gf_raise(GF_E_STATE, "File name does not exist.");
+  }
+  rc = gf_path_append_string(&current_path, path, file_name);
+  if (rc != GF_SUCCESS) {
+    gf_throw(rc);
+  }
+  rc = gf_path_create_directory(current_path);
+  if (rc != GF_SUCCESS) {
+    gf_path_free(current_path);
+    gf_throw(rc);
+  }
+
+  cnt = gf_entry_count_children(entry);
+  for (gf_size_t i = 0; i < cnt; i++) {
+    gf_entry* child = NULL;
+
+    rc = gf_entry_get_child(entry, i, &child);
+    if (rc != GF_SUCCESS) {
+      gf_path_free(current_path);
+      gf_throw(rc);
+    }
+    rc = build_create_directory(current_path, child);
+    if (rc != GF_SUCCESS) {
+      gf_path_free(current_path);
+      gf_throw(rc);
+    }
+  }
+
+  gf_path_free(current_path);
+
+  return GF_SUCCESS;
+}
+
+static gf_status
 build_create_directories(gf_cmd_build* cmd) {
+  gf_status rc = 0;
+  gf_entry *entry = NULL;
+  gf_size_t cnt = 0;
+  
   gf_validate(cmd);
+
+  _(gf_site_get_root_entry(cmd->site, &entry));
+  if (!entry) {
+    gf_raise(GF_E_STATE, "The root entry was not found.");
+  }
+  // The root directory must exist. We process the children.
+  for (gf_size_t i = 0; i < cnt; i++) {
+    gf_entry* child = NULL;
+
+    rc = gf_entry_get_child(entry, i, &child);
+    if (rc != GF_SUCCESS) {
+      gf_throw(rc);
+    }
+    rc = build_create_directory(GF_CMD_BASE_CAST(cmd)->dst_path, child);
+    if (rc != GF_SUCCESS) {
+      gf_throw(rc);
+    }
+  }
+
   return GF_SUCCESS;
 }
 

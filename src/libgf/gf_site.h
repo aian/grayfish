@@ -111,11 +111,18 @@ extern void gf_entry_free(gf_entry* entry);
 
 extern gf_status gf_entry_set_file_info(gf_entry* entry, gf_file_info* info);
 
+extern const gf_char* gf_entry_get_file_name_string(const gf_entry* entry);
+extern const gf_char* gf_entry_get_full_path_string(const gf_entry* entry);
+
 /*!
 ** @brief Sets A site entry object.
 */
 
 extern gf_bool gf_entry_is_section(const gf_entry* entry);
+
+extern gf_size_t gf_entry_count_children(const gf_entry* entry);
+extern gf_status gf_entry_get_child(
+  gf_entry* entry, gf_size_t index, gf_entry** child);
 
 /* -------------------------------------------------------------------------- */
 
@@ -161,6 +168,9 @@ extern void gf_site_free(gf_site* site);
 */
 
 extern gf_status gf_site_reset(gf_site* site);
+
+
+extern gf_status gf_site_get_root_entry(gf_site* site, gf_entry** entry);
 
 /*!
 ** @brief Write directory information to specified file.
