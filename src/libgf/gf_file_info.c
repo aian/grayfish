@@ -87,6 +87,14 @@ file_info_set_path(gf_file_info* info, const gf_path* path) {
     gf_path_free(full_path);
     gf_throw(rc);
   }
+  // In the Windows environment, we substitute path separators from
+  // backslash ('\') to slash ('/') because Windows API can accept both
+  // slash and backslash separators.
+  rc = gf_path_substitute_separators_from_backslash_to_slash(full_path);
+  if (rc != GF_SUCCESS) {
+    gf_path_free(full_path);
+    gf_throw(rc);
+  }
   rc = gf_path_copy(info->full_path, full_path);
   if (rc != GF_SUCCESS) {
     gf_path_free(full_path);

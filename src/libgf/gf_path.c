@@ -355,6 +355,22 @@ gf_path_append_string(gf_path** dst, const gf_path* src, const char* str) {
 }
 
 gf_status
+gf_path_substitute_separators_from_backslash_to_slash(gf_path* path) {
+  gf_validate(path);
+
+  static const gf_char w_sep = GF_PATH_SEPARATOR_WINDOWS[0];
+  static const gf_char u_sep = GF_PATH_SEPARATOR_UNIX[0];
+
+  for (gf_size_t i = 0; path->buf[i]; i++) {
+    if (path->buf[i] == w_sep) {
+      path->buf[i] = u_sep;
+    }
+  }
+  
+  return GF_SUCCESS;
+}
+
+gf_status
 gf_path_evacuate(const gf_path* path) {
   gf_status rc = 0;
   gf_string* str_date = NULL;

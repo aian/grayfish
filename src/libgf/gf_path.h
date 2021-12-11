@@ -166,6 +166,9 @@ extern gf_status gf_path_append(gf_path* path, const gf_path* src);
 extern gf_status gf_path_append_string(
   gf_path** dst, const gf_path* src, const char* str);
 
+extern gf_status gf_path_substitute_separators_from_backslash_to_slash(
+  gf_path* path);
+
 /*!
 ** @brief 
 **
