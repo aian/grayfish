@@ -87,10 +87,18 @@ file_info_set_path(gf_file_info* info, const gf_path* path) {
     gf_path_free(full_path);
     gf_throw(rc);
   }
-  // In the Windows environment, we substitute path separators from
-  // backslash ('\') to slash ('/') because Windows API can accept both
-  // slash and backslash separators.
+  // In the Windows environment, we substitute path separators from backslash
+  // ('\') to slash ('/') because Windows API can accept both slash and
+  // backslash separators.
   rc = gf_path_substitute_separators_from_backslash_to_slash(full_path);
+  if (rc != GF_SUCCESS) {
+    gf_path_free(full_path);
+    gf_throw(rc);
+  }
+  // Because a drive letter is a Windows specific path element, we don't set
+  // that. So, in the Windows environment, you cannot treat the files in the
+  // different directories from your current directory.
+  rc = gf_path_remove_drive_letters(full_path);
   if (rc != GF_SUCCESS) {
     gf_path_free(full_path);
     gf_throw(rc);

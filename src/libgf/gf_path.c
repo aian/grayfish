@@ -371,6 +371,30 @@ gf_path_substitute_separators_from_backslash_to_slash(gf_path* path) {
 }
 
 gf_status
+gf_path_remove_drive_letters(gf_path* path) {
+  gf_status rc = 0;
+  
+  gf_validate(path);
+  // The length of a drive letter must be longer than 1 characters.
+  if (path->len < 2) {
+    return GF_SUCCESS;
+  }
+  if (path->buf[1] == ':') {
+    gf_char* tmp = NULL;
+    const gf_char* ptr = path->buf + 2;
+
+    _(gf_strdup(&tmp, ptr));
+    rc = gf_path_set_string(path, tmp);
+    gf_free(tmp);
+    if (rc != GF_SUCCESS) {
+      gf_throw(rc);
+    }
+  }
+  
+  return GF_SUCCESS;
+}
+
+gf_status
 gf_path_evacuate(const gf_path* path) {
   gf_status rc = 0;
   gf_string* str_date = NULL;

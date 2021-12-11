@@ -169,6 +169,8 @@ extern gf_status gf_path_append_string(
 extern gf_status gf_path_substitute_separators_from_backslash_to_slash(
   gf_path* path);
 
+extern gf_status gf_path_remove_drive_letters(gf_path* path);
+
 /*!
 ** @brief 
 **
