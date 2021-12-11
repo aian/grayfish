@@ -215,7 +215,7 @@ gf_file_info_new(gf_file_info** info, const gf_path* path) {
     gf_file_info_free(tmp);
     gf_throw(rc);
   }
-  /* If path is specified, we collect file information */
+  /* If a path is specified, we collect file information */
   if (!gf_path_is_empty(path)) {
     rc = file_info_set_path(tmp, path);
     if (rc != GF_SUCCESS) {
