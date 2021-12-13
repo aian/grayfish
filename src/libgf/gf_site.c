@@ -2231,7 +2231,7 @@ site_read_xml_file_set(gf_array* file_set, const xmlNodePtr node) {
     if (!xmlStrcmp(cur->name, BAD_CAST"file-info")) {
       gf_file_info* info = NULL;
 
-      _(gf_file_info_new(&info, NULL));
+      _(gf_file_info_new(&info, NULL, NULL));
       rc = gf_array_add(file_set, (gf_any){ .ptr = info });
       if (rc != GF_SUCCESS) {
         gf_file_info_free(info);

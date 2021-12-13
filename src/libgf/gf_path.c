@@ -260,8 +260,9 @@ gf_bool
 gf_path_has_separator(const gf_path* path) {
   gf_bool ret = GF_FALSE;
   char* last = NULL;
-
-  if (path && path->buf && path->len > 0) {
+  
+  // Now we return GF_FALSE when a path string is only '/'.
+  if (path && path->buf && path->len > 1) {
     last = &path->buf[path->len - 1];
     switch (*last) {
     case '\\':
@@ -297,7 +298,10 @@ gf_path_append(gf_path* path, const gf_path* src) {
   /* 
   ** <path length> + <seaparator> + <src length>
   */
-  if (path->len > 0) {
+  // TODO: make a function to check this condition below
+  if (path->len == 1 && path->buf[0] == '/') {
+    len = path->len + src->len;
+  } else if (path->len > 0) {
     len = path->len + 1 + src->len;
   } else {
     len = src->len;
@@ -310,8 +314,11 @@ gf_path_append(gf_path* path, const gf_path* src) {
   if (path->len > 0) {
     memcpy_s(ptr, path->len, path->buf, path->len);
     ptr += path->len;
-    ptr[0] = GF_PATH_SEPARATOR_CHAR;
-    ptr++;
+    // TODO: make a function to check this condition below
+    if (path->len > 1 || path->buf[0] != '/') {
+      ptr[0] = GF_PATH_SEPARATOR_CHAR;
+      ptr++;
+    }
   }
   memcpy_s(ptr, src->len, src->buf, src->len);
 
