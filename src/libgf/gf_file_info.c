@@ -71,74 +71,31 @@ file_info_init(gf_file_info* info) {
 static gf_status
 file_info_set_path(gf_file_info* info, const gf_path* disp_path) {
   gf_status rc = 0;
-//  gf_path* full_path = NULL;
   gf_path* file_name = NULL;
   
-//  gf_validate(info);
-//  gf_validate(path);
+  gf_validate(info);
 
   /*
   ** set full path name
   */
-//  _(gf_path_clone(&full_path, path));
-
-//  rc = gf_path_absolute_path(full_path);
-//  if (rc != GF_SUCCESS) {
-//    gf_path_free(full_path);
-//    gf_throw(rc);
-//  }
-  // In the Windows environment, we substitute path separators from backslash
-  // ('\') to slash ('/') because Windows API can accept both slash and
-  // backslash separators.
-//  rc = gf_path_substitute_separators_from_backslash_to_slash(full_path);
-//  if (rc != GF_SUCCESS) {
-//    gf_path_free(full_path);
-//    gf_throw(rc);
-//  }
-  // Because a drive letter is a Windows specific path element, we don't set
-  // that. So, in the Windows environment, you cannot treat the files in the
-  // different directories from your current directory.
-//  rc = gf_path_remove_drive_letters(full_path);
-//  if (rc != GF_SUCCESS) {
-//    gf_path_free(full_path);
-//    gf_throw(rc);
-//  }
-  /*
-  rc = gf_path_copy(info->full_path, full_path);
-  *********************************************/
   rc = gf_path_copy(info->full_path, disp_path);
   if (rc != GF_SUCCESS) {
-//    gf_path_free(full_path);
     gf_throw(rc);
   }
   /*
-  ** check if the path exist
-  */
-//  if (!gf_path_file_exists(full_path)) {
-//    gf_path_free(full_path);
-//    gf_raise(
-//      GF_E_PARAM, "File does not exist. (%s)", gf_path_get_string(full_path));
-//  }
-  /*
   ** set file name
   */
-  /*
-  rc = gf_path_clone(&file_name, full_path);
-  *********************************************/
   rc = gf_path_clone(&file_name, disp_path);
   if (rc != GF_SUCCESS) {
-//    gf_path_free(full_path);
     gf_throw(rc);
   }
 
   rc = gf_path_file_name(file_name);
   if (rc != GF_SUCCESS) {
-//    gf_path_free(full_path);
     gf_path_free(file_name);
     gf_throw(rc);
   }
   rc = gf_path_copy(info->file_name, file_name);
-//  gf_path_free(full_path);
   gf_path_free(file_name);
   if (rc != GF_SUCCESS) {
     gf_throw(rc);
@@ -148,13 +105,14 @@ file_info_set_path(gf_file_info* info, const gf_path* disp_path) {
 }
 
 static gf_status
-file_info_set_stat(gf_file_info* info) {
+file_info_set_stat(gf_file_info* info, const gf_path* path) {
   int ret = 0;
   struct stat64 st = { 0 };
 
   gf_validate(info);
+  gf_validate(path);
 
-  ret = stat64(gf_path_get_string(info->full_path), &st);
+  ret = stat64(gf_path_get_string(path), &st);
   if (ret != 0) {
     gf_raise(GF_E_API, "Could not get a file information.");
   }
@@ -174,10 +132,11 @@ file_info_set_stat(gf_file_info* info) {
 }
 
 static gf_status
-file_info_set_hash(gf_file_info* info) {
+file_info_set_hash(gf_file_info* info, const gf_path* path) {
   gf_validate(info);
+  gf_validate(path);
 
-  _(gf_hash_file(info->hash, GF_HASH_BUFSIZE_SHA512, info->full_path));
+  _(gf_hash_file(info->hash, GF_HASH_BUFSIZE_SHA512, path));
   
   return GF_SUCCESS;
 }
@@ -245,13 +204,13 @@ gf_file_info_new(
       gf_file_info_free(tmp);
       gf_throw(rc);
     }
-    rc = file_info_set_stat(tmp);
+    rc = file_info_set_stat(tmp, path);
     if (rc != GF_SUCCESS) {
       gf_file_info_free(tmp);
       gf_throw(rc);
     }
     if (gf_file_info_is_file(tmp)) {
-      rc = file_info_set_hash(tmp);
+      rc = file_info_set_hash(tmp, path);
       if (rc != GF_SUCCESS) {
         gf_file_info_free(tmp);
         gf_throw(rc);
@@ -272,8 +231,6 @@ file_info_scan(
   gf_file_info** info, const gf_path* relpath, const gf_path* path) {
   gf_status rc = 0;
 
-  printf("path: %s\n", gf_path_get_string(relpath));
-
   rc = gf_file_info_new(info, relpath, path);
   if (rc != GF_SUCCESS) {
     gf_throw(rc);
@@ -282,7 +239,6 @@ file_info_scan(
     DIR* dp = NULL;
     struct dirent* ep = NULL;
 
-//    dp = opendir(gf_path_get_string((*info)->full_path));
     dp = opendir(gf_path_get_string(path));
     if (!dp) {
       gf_raise(GF_E_API, "Couldn't open the directory.");
@@ -335,7 +291,7 @@ gf_file_info_scan(gf_file_info** info, const gf_path* path) {
 
   _(gf_path_new(&root, GF_PATH_SEPARATOR));
 
-  // Do scan
+  /* Do scan */
   rc = file_info_scan(info, root, path);
   gf_path_free(root);
   if (rc != GF_SUCCESS) {

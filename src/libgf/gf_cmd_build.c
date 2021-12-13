@@ -200,7 +200,15 @@ build_create_directories(gf_cmd_build* cmd) {
 
 static gf_status
 build_copy_static_files(gf_cmd_build* cmd) {
+  gf_entry* entry = NULL;
+  
   gf_validate(cmd);
+
+  _(gf_site_get_root_entry(cmd->site, &entry));
+  if (!entry) {
+    gf_raise(GF_E_STATE, "The root entry was not found.");
+  }
+  
   return GF_SUCCESS;
 }
 
