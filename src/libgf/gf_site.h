@@ -113,6 +113,9 @@ extern gf_status gf_entry_set_file_info(gf_entry* entry, gf_file_info* info);
 
 extern const gf_char* gf_entry_get_file_name_string(const gf_entry* entry);
 extern const gf_char* gf_entry_get_full_path_string(const gf_entry* entry);
+extern gf_path* gf_entry_get_local_path(
+  const gf_entry* entry, const gf_path* root);
+
 
 /*!
 ** @brief Sets A site entry object.

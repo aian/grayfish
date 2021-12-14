@@ -32,6 +32,9 @@ struct gf_path {
   gf_size_t len;
 };
 
+const gf_path* GF_PATH_CURRENT = &(gf_path){ .buf = ".",  .len = 1 };
+const gf_path* GF_PATH_PARENT  = &(gf_path){ .buf = "..", .len = 2 };
+
 gf_status
 path_init(gf_path* path) {
   gf_validate(path);

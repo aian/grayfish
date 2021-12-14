@@ -346,7 +346,7 @@ gf_entry_get_full_path_string(const gf_entry* entry) {
 ** @warning The returned path must be freed.
 */
 gf_path*
-gf_entry_get_local_path_string(const gf_entry* entry, const gf_path* root) {
+gf_entry_get_local_path(const gf_entry* entry, const gf_path* root) {
   gf_status rc = 0;
   const gf_char* full_path = NULL;
   gf_path* path = NULL;
@@ -406,7 +406,7 @@ entry_read_xml_file(xmlDocPtr* doc, const gf_path* root, gf_entry* entry) {
   gf_validate(doc);
   gf_validate(entry);
 
-  path = gf_entry_get_local_path_string(entry, root);
+  path = gf_entry_get_local_path(entry, root);
   if (!path) {
     gf_raise(GF_E_PATH, "Failed to create local path");
   }

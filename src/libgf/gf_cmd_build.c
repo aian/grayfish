@@ -127,24 +127,29 @@ build_prepare_output_path(gf_cmd_build* cmd) {
 static gf_status
 build_create_directory(const gf_path* path, gf_entry* entry) {
   gf_status rc = 0;
-  gf_path* current_path = NULL;
-  const gf_char* file_name = NULL;
+  gf_path* local_path = NULL;
   gf_size_t cnt = 0;
   
   gf_validate(path);
   gf_validate(entry);
-
-  file_name = gf_entry_get_file_name_string(entry);
-  if (!file_name) {
-    gf_raise(GF_E_STATE, "File name does not exist.");
+  
+  local_path = gf_entry_get_local_path(entry, path);
+  if (!local_path) {
+    gf_raise(GF_E_STATE, "Failed to build a path.");
   }
-  rc = gf_path_append_string(&current_path, path, file_name);
+  rc = gf_path_append(local_path, GF_PATH_PARENT);
   if (rc != GF_SUCCESS) {
+    gf_path_free(local_path);
     gf_throw(rc);
   }
-  rc = gf_path_create_directory(current_path);
+  rc = gf_path_absolute_path(local_path);
   if (rc != GF_SUCCESS) {
-    gf_path_free(current_path);
+    gf_path_free(local_path);
+    gf_throw(rc);
+  }
+  rc = gf_path_create_directory(local_path);
+  gf_path_free(local_path);
+  if (rc != GF_SUCCESS) {
     gf_throw(rc);
   }
 
@@ -154,23 +159,19 @@ build_create_directory(const gf_path* path, gf_entry* entry) {
 
     rc = gf_entry_get_child(entry, i, &child);
     if (rc != GF_SUCCESS) {
-      gf_path_free(current_path);
       gf_throw(rc);
     }
-    rc = build_create_directory(current_path, child);
+    rc = build_create_directory(path, child);
     if (rc != GF_SUCCESS) {
-      gf_path_free(current_path);
       gf_throw(rc);
     }
   }
-
-  gf_path_free(current_path);
 
   return GF_SUCCESS;
 }
 
 static gf_status
-build_create_directories(gf_cmd_build* cmd) {
+build_create_directory_set(gf_cmd_build* cmd) {
   gf_status rc = 0;
   gf_entry *entry = NULL;
   gf_size_t cnt = 0;
@@ -236,7 +237,7 @@ build_process(gf_cmd_build* cmd) {
     gf_throw(rc);
   }
   /* create directories */
-  rc = build_create_directories(cmd);
+  rc = build_create_directory_set(cmd);
   if (rc != GF_SUCCESS) {
     gf_throw(rc);
   }

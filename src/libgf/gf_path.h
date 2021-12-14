@@ -32,6 +32,10 @@ extern "C" {
 
 typedef struct gf_path gf_path;
 
+
+extern const gf_path* GF_PATH_CURRENT;
+extern const gf_path* GF_PATH_PARENT;
+
 /*!
 ** @brief Create a path object.
 **
