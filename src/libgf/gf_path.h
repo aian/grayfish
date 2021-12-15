@@ -23,6 +23,8 @@
 #define GF_PATH_SEPARATOR_CHAR (GF_PATH_SEPARATOR [0])
 
 #define GF_PATH_SYSTEM_DIR ".gf"
+#define GF_PATH_CONF_FILE  "gf.conf"
+#define GF_PATH_BUILD_DIR  ".build"
 
 #ifdef __cplusplus
 extern "C" {
@@ -57,7 +59,7 @@ extern void gf_path_free(gf_path* path);
 
 /*!
 ** @brief Set a path string to path object.
-*/
+cc*/
 
 extern gf_status gf_path_set_string(gf_path* path, const char* path_str);
 
