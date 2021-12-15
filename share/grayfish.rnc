@@ -15,6 +15,7 @@ meta =
       author? &
       description? &
       image?
+      process-set?
     }
   }
 
@@ -36,4 +37,12 @@ image =
     attribute width { xsd:integer },
     attribute height { xsd:integer },
     empty
+  }
+
+process-set =
+  element gf:process-set {
+    element gf:process {
+      element gf:method { text } &
+      element gf:output? { text }
+    }*
   }
