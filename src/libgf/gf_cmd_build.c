@@ -121,7 +121,12 @@ gf_cmd_build_free(gf_cmd_base* cmd) {
 static gf_status
 build_prepare_output_path(gf_cmd_build* cmd) {
   gf_validate(cmd);
+
   _(gf_path_evacuate(GF_CMD_BASE_CAST(cmd)->dst_path));
+  if (!gf_path_file_exists(GF_CMD_BASE_CAST(cmd)->build_path)) {
+    _(gf_shell_make_directory(GF_CMD_BASE_CAST(cmd)->build_path));
+  }
+  
   return GF_SUCCESS;
 }
 
@@ -300,9 +305,151 @@ build_copy_static_file_set(gf_cmd_build* cmd) {
   return GF_SUCCESS;
 }
 
+static xmlNodePtr
+build_xml_get_process_set(xmlNodePtr node) {
+  if (node) {
+    if (!xmlStrcmp(node->name, BAD_CAST "process-set")) {
+      return node;
+    }
+    for (xmlNodePtr cur = node->children; cur; cur = cur->next) {
+      return build_xml_get_process_set(cur);
+    }
+  }
+  return NULL;
+}
+
 static gf_status
-build_convert_document_files(gf_cmd_build* cmd) {
+build_process_file(xmlNodePtr node, gf_cmd_build* cmd) {
+  gf_status rc = 0;
+  gf_xslt* xslt = NULL;
+  gf_path* style_path = NULL;
+  
+  const gf_char* method = NULL;
+  const gf_char* output = NULL;
+  
+  gf_validate(node);
   gf_validate(cmd);
+
+  method = (gf_char*)xmlGetProp(node, BAD_CAST "method");
+  output = (gf_char*)xmlGetProp(node, BAD_CAST "output");
+
+  if (!method) {
+    gf_raise(GF_E_READ, "Invalid meta file.");
+  }
+
+  rc = gf_xslt_new(&xslt);
+  if (rc != GF_SUCCESS) {
+    gf_throw(rc);
+  }
+
+  // TODO: Implement a processing routine.
+  rc = gf_xslt_read_template(xslt, style_path);
+  if (rc != GF_SUCCESS) {
+    gf_xslt_free(xslt);
+    gf_throw(rc);
+  }
+  rc = gf_xslt_process(xslt, GF_CMD_BASE_CAST(cmd)->site_path);
+  if (rc != GF_SUCCESS) {
+    gf_xslt_free(xslt);
+    gf_throw(rc);
+  }
+  /* Output when it is needed */
+  if (output) {
+    gf_path* output_path = NULL;
+
+    rc = gf_path_new(&output_path, output);
+    if (rc != GF_SUCCESS) {
+      gf_xslt_free(xslt);
+      gf_throw(rc);
+    }
+    rc = gf_xslt_write_file(xslt, output_path);
+    if (rc != GF_SUCCESS) {
+      gf_xslt_free(xslt);
+      gf_throw(rc);
+    }
+  }
+
+  gf_xslt_free(xslt);
+  
+  return GF_SUCCESS;
+}
+
+static gf_status
+build_process_site_file(gf_entry* entry, gf_cmd_build* cmd) {
+  gf_status rc = 0;
+  gf_size_t cnt = 0;
+  const gf_path* src = NULL;
+
+  gf_validate(entry);
+  gf_validate(cmd);
+
+  /* alias */
+  src = GF_CMD_BASE_CAST(cmd)->src_path;
+
+  if (gf_entry_is_section(entry)) {
+    gf_path* path = NULL;
+    xmlDocPtr doc = NULL;
+    xmlNodePtr root = NULL;
+    xmlNodePtr node = NULL;
+
+    /* Read meta.gf */
+    path = gf_entry_get_local_path(entry, src);
+    if (!path) {
+      gf_raise(GF_E_PATH, "Failed to build a path.");
+    }
+    doc = xmlReadFile(gf_path_get_string(path), NULL, GF_XML_PARSE_OPTIONS);
+    gf_path_free(path);
+    if (!doc) {
+      gf_raise(GF_E_PARSE, "Failed to read site file");
+    }
+    root = xmlDocGetRootElement(doc);
+    if (root) {
+      node = build_xml_get_process_set(root);
+      if (node) {
+        for (xmlNodePtr cur = node->children; cur; cur = cur->next) {
+          assert(!xmlStrcmp(cur->name, BAD_CAST "process"));
+          _(build_process_file(cur, cmd));
+        }
+      }
+    }
+  }
+  
+  cnt = gf_entry_count_children(entry);
+  for (gf_size_t i = 0; i < cnt; i++) {
+    gf_entry* child = NULL;
+
+    rc = gf_entry_get_child(entry, i, &child);
+    if (rc != GF_SUCCESS) {
+      gf_throw(rc);
+    }
+    rc = build_process_site_file(child, cmd);
+    if (rc != GF_SUCCESS) {
+      gf_throw(rc);
+    }
+  }
+  
+  return GF_SUCCESS;
+}
+
+static gf_status
+build_convert_document_file_set(gf_cmd_build* cmd) {
+  gf_status rc = 0;
+  gf_entry* entry = NULL;
+  
+  gf_validate(cmd);
+
+  rc = gf_site_get_root_entry(cmd->site, &entry);
+  if (rc != GF_SUCCESS) {
+    gf_throw(rc);
+  }
+  /* Convert site.xml */
+  rc = build_process_site_file(entry, cmd);
+  if (rc != GF_SUCCESS) {
+    gf_throw(rc);
+  }
+  
+  /* Convert documents */
+  
   return GF_SUCCESS;
 }
 
@@ -334,7 +481,7 @@ build_process(gf_cmd_build* cmd) {
     gf_throw(rc);
   }
   /* tranlate XML files */
-  rc = build_convert_document_files(cmd);
+  rc = build_convert_document_file_set(cmd);
   if (rc != GF_SUCCESS) {
     gf_throw(rc);
   }

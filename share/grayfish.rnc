@@ -14,7 +14,7 @@ meta =
       title &
       author? &
       description? &
-      image?
+      image? &
       process-set?
     }
   }
@@ -42,7 +42,8 @@ image =
 process-set =
   element gf:process-set {
     element gf:process {
-      element gf:method { text } &
-      element gf:output? { text }
+      attribute method { text },
+      attribute output { text }?,
+      empty
     }*
   }
