@@ -238,23 +238,18 @@ build_get_static_path(
 }
 
 static gf_status
-build_copy_static_files(gf_cmd_build* cmd) {
+build_copy_static_file(
+  gf_entry* entry, const gf_path* src, const gf_path* dst) {
   gf_status rc = 0;
-  gf_entry* entry = NULL;
+  gf_size_t cnt = 0;
   gf_path* src_path = NULL;
   gf_path* dst_path = NULL;
-  
-  gf_validate(cmd);
 
-  _(gf_site_get_root_entry(cmd->site, &entry));
-  if (!entry) {
-    gf_raise(GF_E_STATE, "The root entry was not found.");
-  }
-  rc = build_get_static_path(&src_path, entry, GF_CMD_BASE_CAST(cmd)->src_path);
+  rc = build_get_static_path(&src_path, entry, src);
   if (rc != GF_SUCCESS) {
     gf_throw(rc);
   }
-  rc = build_get_static_path(&dst_path, entry, GF_CMD_BASE_CAST(cmd)->dst_path);
+  rc = build_get_static_path(&dst_path, entry, dst);
   if (rc != GF_SUCCESS) {
     gf_path_free(src_path);
     gf_throw(rc);
@@ -265,7 +260,43 @@ build_copy_static_files(gf_cmd_build* cmd) {
   if (rc != GF_SUCCESS) {
     gf_throw(rc);
   }
+  /* Process children */
+  cnt = gf_entry_count_children(entry);
+  for (gf_size_t i = 0; i < cnt; i++) {
+    gf_entry* child = NULL;
 
+    rc = gf_entry_get_child(entry, i, &child);
+    if (rc != GF_SUCCESS) {
+      gf_throw(rc);
+    }
+    rc = build_copy_static_file(child, src, dst);
+    if (rc != GF_SUCCESS) {
+      gf_throw(rc);
+    }
+  }
+
+  return GF_SUCCESS;
+}
+
+static gf_status
+build_copy_static_file_set(gf_cmd_build* cmd) {
+  gf_status rc = 0;
+  gf_entry* entry = NULL;
+  /* alias */
+  const gf_path* src = GF_CMD_BASE_CAST(cmd)->src_path;
+  const gf_path* dst = GF_CMD_BASE_CAST(cmd)->dst_path;;
+
+  gf_validate(cmd);
+
+  rc = gf_site_get_root_entry(cmd->site, &entry);
+  if (rc != GF_SUCCESS) {
+    gf_throw(rc);
+  }
+  rc = build_copy_static_file(entry, src, dst);
+  if (rc != GF_SUCCESS) {
+    gf_throw(rc);
+  }
+  
   return GF_SUCCESS;
 }
 
@@ -298,7 +329,7 @@ build_process(gf_cmd_build* cmd) {
     gf_throw(rc);
   }
   /* copy static files */
-  rc = build_copy_static_files(cmd);
+  rc = build_copy_static_file_set(cmd);
   if (rc != GF_SUCCESS) {
     gf_throw(rc);
   }
