@@ -15,6 +15,7 @@
 #include <libgf/gf_cmd_config.h>
 #include <libgf/gf_site.h>
 #include <libgf/gf_system.h>
+#include <libgf/gf_shell.h>
 #include <libgf/gf_xslt.h>
 #include <libgf/gf_cmd_build.h>
 
@@ -200,8 +201,48 @@ build_create_directory_set(gf_cmd_build* cmd) {
 }
 
 static gf_status
+build_get_static_path(
+  gf_path** static_path, const gf_entry* entry, const gf_path* root) {
+  gf_status rc = 0;
+  gf_path* static_file = NULL;
+  gf_path* path = NULL;
+  
+  gf_validate(static_path);
+  gf_validate(entry);
+  gf_validate(root);
+
+  path = gf_entry_get_local_path(entry, root);
+  if (!path) {
+    gf_raise(GF_E_PATH, "Failed to build a path string.");
+  }
+  rc = gf_path_new(&static_file, "/../_");
+  if (rc != GF_SUCCESS) {
+    gf_path_free(path);
+    gf_throw(rc);
+  }
+  rc = gf_path_append(path, static_file);
+  gf_path_free(static_file);
+  if (rc != GF_SUCCESS) {
+    gf_path_free(path);
+    gf_throw(rc);
+  }
+  rc = gf_path_absolute_path(path);
+  if (rc != GF_SUCCESS) {
+    gf_path_free(path);
+    gf_throw(rc);
+  }
+
+  *static_path = path;
+
+  return GF_SUCCESS;
+}
+
+static gf_status
 build_copy_static_files(gf_cmd_build* cmd) {
+  gf_status rc = 0;
   gf_entry* entry = NULL;
+  gf_path* src_path = NULL;
+  gf_path* dst_path = NULL;
   
   gf_validate(cmd);
 
@@ -209,7 +250,22 @@ build_copy_static_files(gf_cmd_build* cmd) {
   if (!entry) {
     gf_raise(GF_E_STATE, "The root entry was not found.");
   }
-  
+  rc = build_get_static_path(&src_path, entry, GF_CMD_BASE_CAST(cmd)->src_path);
+  if (rc != GF_SUCCESS) {
+    gf_throw(rc);
+  }
+  rc = build_get_static_path(&dst_path, entry, GF_CMD_BASE_CAST(cmd)->dst_path);
+  if (rc != GF_SUCCESS) {
+    gf_path_free(src_path);
+    gf_throw(rc);
+  }
+  rc = gf_shell_copy_tree(dst_path, src_path);
+  gf_path_free(src_path);
+  gf_path_free(dst_path);
+  if (rc != GF_SUCCESS) {
+    gf_throw(rc);
+  }
+
   return GF_SUCCESS;
 }
 
