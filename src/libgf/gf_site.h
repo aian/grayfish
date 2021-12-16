@@ -123,6 +123,8 @@ extern gf_path* gf_entry_get_local_path(
 
 extern gf_bool gf_entry_is_section(const gf_entry* entry);
 
+extern gf_bool gf_entry_is_document(const gf_entry* entry);
+
 extern gf_size_t gf_entry_count_children(const gf_entry* entry);
 extern gf_status gf_entry_get_child(
   gf_entry* entry, gf_size_t index, gf_entry** child);

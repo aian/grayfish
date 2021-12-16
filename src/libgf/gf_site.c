@@ -372,6 +372,11 @@ gf_entry_is_section(const gf_entry* entry) {
   return entry && entry->type == GF_ENTRY_TYPE_SECTION ? GF_TRUE : GF_FALSE;
 }
 
+gf_bool
+gf_entry_is_document(const gf_entry* entry) {
+  return entry && entry->type == GF_ENTRY_TYPE_DOCUMENT ? GF_TRUE : GF_FALSE;
+}
+
 gf_size_t
 gf_entry_count_children(const gf_entry* entry) {
   return entry && entry->children ? gf_array_size(entry->children) : 0;

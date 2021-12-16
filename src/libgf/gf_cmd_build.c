@@ -343,7 +343,7 @@ build_get_style_path(
 }
 
 static gf_status
-build_process_file(xmlNodePtr node, gf_cmd_build* cmd) {
+build_process_site_file_low(xmlNodePtr node, gf_cmd_build* cmd) {
   gf_status rc = 0;
   gf_xslt* xslt = NULL;
   gf_path* style_path = NULL;
@@ -421,13 +421,9 @@ static gf_status
 build_process_site_file(gf_entry* entry, gf_cmd_build* cmd) {
   gf_status rc = 0;
   gf_size_t cnt = 0;
-  const gf_path* src = NULL;
 
   gf_validate(entry);
   gf_validate(cmd);
-
-  /* alias */
-  src = GF_CMD_BASE_CAST(cmd)->src_path;
 
   if (gf_entry_is_section(entry)) {
     gf_path* path = NULL;
@@ -435,6 +431,11 @@ build_process_site_file(gf_entry* entry, gf_cmd_build* cmd) {
     xmlNodePtr root = NULL;
     xmlNodePtr node = NULL;
 
+    const gf_path* src = NULL;
+
+    /* alias */
+    src = GF_CMD_BASE_CAST(cmd)->src_path;
+    
     /* Read meta.gf */
     path = gf_entry_get_local_path(entry, src);
     if (!path) {
@@ -451,12 +452,11 @@ build_process_site_file(gf_entry* entry, gf_cmd_build* cmd) {
       if (node) {
         for (xmlNodePtr cur = node->children; cur; cur = cur->next) {
           assert(!xmlStrcmp(cur->name, BAD_CAST "process"));
-          _(build_process_file(cur, cmd));
+          _(build_process_site_file_low(cur, cmd));
         }
       }
     }
   }
-  
   cnt = gf_entry_count_children(entry);
   for (gf_size_t i = 0; i < cnt; i++) {
     gf_entry* child = NULL;
@@ -471,6 +471,131 @@ build_process_site_file(gf_entry* entry, gf_cmd_build* cmd) {
     }
   }
   
+  return GF_SUCCESS;
+}
+
+static gf_status
+build_get_document_stylesheet(
+  gf_xslt** xslt, const gf_path* style_root, const gf_path* src_path) {
+  gf_status rc = 0;
+  xmlDocPtr doc = NULL;
+  xmlNodePtr root = NULL;
+  xmlChar* role = NULL;
+  gf_char* method = NULL;
+  gf_char style_file[1024] = { 0 };
+  gf_path* style_path = NULL;
+  gf_xslt* tmp = NULL;
+  
+  gf_validate(xslt);
+  gf_validate(src_path);
+
+  doc = xmlReadFile(gf_path_get_string(src_path), NULL, GF_XML_PARSE_OPTIONS);
+  if (!doc) {
+    gf_raise(GF_E_PARSE, "Failed to read a document file.");
+  }
+  root = xmlDocGetRootElement(doc);
+  if (!root) {
+    gf_raise(GF_E_PARSE, "Failed to read a document file.");
+  }
+  role = xmlGetProp(root, BAD_CAST "role");
+  if (role && role[0]) {
+    method = (gf_char*)role;
+  } else {
+    method = (gf_char*)(root->name);
+  }
+  assert(method && method[0]);
+  sprintf_s(style_file, 1024, "%s.xsl", method);
+
+  rc = gf_path_append_string(&style_path, style_root, style_file);
+  if (rc != GF_SUCCESS) {
+    gf_throw(rc);
+  }
+  rc = gf_xslt_new(&tmp);
+  if (rc != GF_SUCCESS) {
+    gf_path_free(style_path);
+    gf_throw(rc);
+  }
+  rc = gf_xslt_read_template(tmp, style_path);
+  gf_path_free(style_path);
+  if (rc != GF_SUCCESS) {
+    gf_xslt_free(tmp);
+    gf_throw(rc);
+  }
+  
+  *xslt = tmp;
+
+  return GF_SUCCESS;
+}
+
+static gf_status
+build_process_document_file_low(
+  const gf_path* dst, const gf_path* src, gf_cmd_build* cmd) {
+  gf_status rc = 0;
+  gf_xslt* xslt = NULL;
+  
+  gf_validate(src);
+  gf_validate(dst);
+  gf_validate(cmd);
+
+  rc = build_get_document_stylesheet(
+    &xslt, GF_CMD_BASE_CAST(cmd)->style_path, src);
+  if (rc != GF_SUCCESS) {
+    gf_throw(rc);
+  }
+  rc = gf_xslt_process(xslt, src);
+  if (rc != GF_SUCCESS) {
+    gf_xslt_free(xslt);
+    gf_throw(rc);
+  }
+
+  gf_xslt_free(xslt);
+  
+  return GF_SUCCESS;
+}
+
+static gf_status
+build_process_document_file(gf_entry* entry, gf_cmd_build* cmd) {
+  gf_status rc = 0;
+  gf_size_t cnt = 0;
+
+  gf_validate(entry);
+  gf_validate(cmd);
+  
+  if (gf_entry_is_document(entry)) {
+    gf_path* src = NULL;
+    gf_path* dst = NULL;
+
+    src = gf_entry_get_local_path(entry, GF_CMD_BASE_CAST(cmd)->src_path);
+    if (!src) {
+      gf_raise(GF_E_PATH, "Failed to build a local document path.");
+    }
+    // NOTE: dst_path is a directory path
+    dst = GF_CMD_BASE_CAST(cmd)->dst_path;
+    if (!dst) {
+      gf_path_free(src);
+      gf_raise(GF_E_PATH, "Failed to build a local document path.");
+    }
+    rc = build_process_document_file_low(dst, src, cmd);
+    gf_path_free(src);
+    gf_path_free(dst);
+    if (rc != GF_SUCCESS) {
+      gf_throw(rc);
+    }
+  }
+  cnt = gf_entry_count_children(entry);
+  for (gf_size_t i = 0; i < cnt; i++) {
+    gf_entry* child = NULL;
+
+    rc = gf_entry_get_child(entry, i, &child);
+    if (rc != GF_SUCCESS) {
+      gf_throw(rc);
+    }
+    rc = build_process_document_file(child, cmd);
+    if (rc != GF_SUCCESS) {
+      gf_throw(rc);
+    }
+  }
+
   return GF_SUCCESS;
 }
 
@@ -491,6 +616,10 @@ build_convert_document_file_set(gf_cmd_build* cmd) {
     gf_throw(rc);
   }
   /* Convert documents */
+  rc = build_process_document_file(entry, cmd);
+  if (rc != GF_SUCCESS) {
+    gf_throw(rc);
+  }
   
   return GF_SUCCESS;
 }
