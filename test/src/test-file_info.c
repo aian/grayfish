@@ -24,7 +24,7 @@ new_free_normal(void) {
   CU_ASSERT_EQUAL_FATAL(rc, GF_SUCCESS);
 
   
-  rc = gf_file_info_new(&info, path);
+  rc = gf_file_info_new(&info, NULL, path);
   gf_path_free(path);
   CU_ASSERT_EQUAL(rc, GF_SUCCESS);
 

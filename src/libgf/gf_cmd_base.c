@@ -13,6 +13,7 @@
 #include <libgf/gf_string.h>
 #include <libgf/gf_memory.h>
 #include <libgf/gf_log.h>
+#include <libgf/gf_path.h>
 #include <libgf/gf_system.h>
 #include <libgf/gf_config.h>
 
@@ -34,6 +35,8 @@ gf_cmd_base_init(gf_cmd_base* cmd) {
   cmd->conf_path   = NULL;
   cmd->conf_file   = NULL;
   cmd->site_path   = NULL;
+  cmd->build_path  = NULL;
+  cmd->style_path  = NULL;
   cmd->src_path    = NULL;
   cmd->dst_path    = NULL;
   cmd->create      = NULL;
@@ -73,8 +76,9 @@ cmd_base_init_paths(gf_cmd_base* cmd) {
   gf_status rc = 0;
   gf_path* path = NULL;
 
-  static const char CONF_PATH[] = ".gf";
-  static const char CONF_FILE[] = "gf.conf";
+  static const char CONF_PATH[]  = GF_PATH_SYSTEM_DIR;
+  static const char CONF_FILE[]  = GF_PATH_CONF_FILE;
+  static const char BUILD_PATH[] = GF_PATH_BUILD_DIR;
 
   gf_validate(cmd);
 
@@ -115,6 +119,15 @@ cmd_base_init_paths(gf_cmd_base* cmd) {
   }
   if (!gf_path_is_empty(cmd->conf_path)) {
     _(gf_path_append_string(&cmd->conf_file, cmd->conf_path, CONF_FILE));
+  }
+
+  /* The intermediate build path */
+  if (cmd->build_path) {
+    gf_path_free(cmd->build_path);
+    cmd->build_path = NULL;
+  }
+  if (!gf_path_is_empty(cmd->root_path)) {
+    _(gf_path_append_string(&cmd->build_path, cmd->root_path, BUILD_PATH));
   }
   
   /* The source file path */
@@ -216,6 +229,12 @@ gf_cmd_base_clear(gf_cmd_base* cmd) {
     }
     if (cmd->site_path) {
       gf_path_free(cmd->site_path);
+    }
+    if (cmd->build_path) {
+      gf_path_free(cmd->build_path);
+    }
+    if (cmd->style_path) {
+      gf_path_free(cmd->style_path);
     }
     if (cmd->src_path) {
       gf_path_free(cmd->src_path);

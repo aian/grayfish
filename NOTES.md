@@ -48,8 +48,6 @@ SUB-COMMANDS
     <dd>The sub-command, which cleans up entire the website directory. The entries of `site.xml` will be marked as 'NOT BUILT'. Because you must re-build the source files, it is not recommended to run this without specific ideas. </dd>
     <dt>list</dt>
     <dd>The sub-command, which lists the document entries and their statuses. This sub-command uses `site.xml` database file. So if this file doesn't exists, sub-command `update` is automatically called.</dd>
-    <dt>serve</dt>
-    <dd>[EXPERIMENTAL] The sub-command, which brings up the server process. This server process watches over the source file directory and automatically calls appropriate sub-commands along with the changes of this directory.</dd>
   </dl>
 
 ### PREREQUISITES
@@ -68,7 +66,6 @@ SUB-COMMANDS
   | build       |      O       |     X(*1) |     X(*2)  |    O     |    O     |
   | clean       |      O       |     X     |     X      |    X     |    X     |
   | list        |      O       |     O(*1) |     X      |    X(*3) |    X     |
-  | serve       |      O       |     O(*1) |     X(*2)  |    O     |    O     |
 
 
 (*1) Required, however, if the file was not found, this sub-command internally
