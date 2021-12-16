@@ -32,11 +32,13 @@ typedef struct gf_file_info gf_file_info;
 ** directory tree, use gf_file_info_scan() instead.
 **
 ** @param [out] info The pointer to the pointer of a new gf_file_info object.
+** @param [in]  disp_path The path for display.
 ** @param [in]  path A path of the file from which you want to get information.
 **
 ** @return GF_SUCCESS on success, GF_E_* otherwise.
 */
-extern gf_status gf_file_info_new(gf_file_info** info, const gf_path* path);
+extern gf_status gf_file_info_new(
+  gf_file_info** info, const gf_path* disp_path, const gf_path* path);
 
 extern gf_status gf_file_info_scan(gf_file_info** info, const gf_path* path);
 

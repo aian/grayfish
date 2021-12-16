@@ -19,10 +19,12 @@
 #define GF_PATH_SEPARATOR_WINDOWS "\\"
 #define GF_PATH_SEPARATOR_UNIX    "/"
 
-#define GF_PATH_SEPARATOR      GF_PATH_SEPARATOR_WINDOWS
+#define GF_PATH_SEPARATOR      GF_PATH_SEPARATOR_UNIX
 #define GF_PATH_SEPARATOR_CHAR (GF_PATH_SEPARATOR [0])
 
 #define GF_PATH_SYSTEM_DIR ".gf"
+#define GF_PATH_CONF_FILE  "gf.conf"
+#define GF_PATH_BUILD_DIR  ".build"
 
 #ifdef __cplusplus
 extern "C" {
@@ -31,6 +33,10 @@ extern "C" {
 ///@{ @name The Path Object
 
 typedef struct gf_path gf_path;
+
+
+extern const gf_path* GF_PATH_CURRENT;
+extern const gf_path* GF_PATH_PARENT;
 
 /*!
 ** @brief Create a path object.
@@ -53,7 +59,7 @@ extern void gf_path_free(gf_path* path);
 
 /*!
 ** @brief Set a path string to path object.
-*/
+cc*/
 
 extern gf_status gf_path_set_string(gf_path* path, const char* path_str);
 
@@ -165,6 +171,11 @@ extern gf_status gf_path_append(gf_path* path, const gf_path* src);
 
 extern gf_status gf_path_append_string(
   gf_path** dst, const gf_path* src, const char* str);
+
+extern gf_status gf_path_substitute_separators_from_backslash_to_slash(
+  gf_path* path);
+
+extern gf_status gf_path_remove_drive_letters(gf_path* path);
 
 /*!
 ** @brief 

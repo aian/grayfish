@@ -69,54 +69,33 @@ file_info_init(gf_file_info* info) {
 }
 
 static gf_status
-file_info_set_path(gf_file_info* info, const gf_path* path) {
+file_info_set_path(gf_file_info* info, const gf_path* disp_path) {
   gf_status rc = 0;
-  gf_path* full_path = NULL;
   gf_path* file_name = NULL;
   
   gf_validate(info);
-  gf_validate(path);
 
   /*
   ** set full path name
   */
-  _(gf_path_clone(&full_path, path));
-
-  rc = gf_path_absolute_path(full_path);
+  rc = gf_path_copy(info->full_path, disp_path);
   if (rc != GF_SUCCESS) {
-    gf_path_free(full_path);
     gf_throw(rc);
-  }
-  rc = gf_path_copy(info->full_path, full_path);
-  if (rc != GF_SUCCESS) {
-    gf_path_free(full_path);
-    gf_throw(rc);
-  }
-  /*
-  ** check if the path exist
-  */
-  if (!gf_path_file_exists(full_path)) {
-    gf_path_free(full_path);
-    gf_raise(
-      GF_E_PARAM, "File does not exist. (%s)", gf_path_get_string(full_path));
   }
   /*
   ** set file name
   */
-  rc = gf_path_clone(&file_name, full_path);
+  rc = gf_path_clone(&file_name, disp_path);
   if (rc != GF_SUCCESS) {
-    gf_path_free(full_path);
     gf_throw(rc);
   }
 
   rc = gf_path_file_name(file_name);
   if (rc != GF_SUCCESS) {
-    gf_path_free(full_path);
     gf_path_free(file_name);
     gf_throw(rc);
   }
   rc = gf_path_copy(info->file_name, file_name);
-  gf_path_free(full_path);
   gf_path_free(file_name);
   if (rc != GF_SUCCESS) {
     gf_throw(rc);
@@ -126,13 +105,14 @@ file_info_set_path(gf_file_info* info, const gf_path* path) {
 }
 
 static gf_status
-file_info_set_stat(gf_file_info* info) {
+file_info_set_stat(gf_file_info* info, const gf_path* path) {
   int ret = 0;
   struct stat64 st = { 0 };
 
   gf_validate(info);
+  gf_validate(path);
 
-  ret = stat64(gf_path_get_string(info->full_path), &st);
+  ret = stat64(gf_path_get_string(path), &st);
   if (ret != 0) {
     gf_raise(GF_E_API, "Could not get a file information.");
   }
@@ -152,10 +132,11 @@ file_info_set_stat(gf_file_info* info) {
 }
 
 static gf_status
-file_info_set_hash(gf_file_info* info) {
+file_info_set_hash(gf_file_info* info, const gf_path* path) {
   gf_validate(info);
+  gf_validate(path);
 
-  _(gf_hash_file(info->hash, GF_HASH_BUFSIZE_SHA512, info->full_path));
+  _(gf_hash_file(info->hash, GF_HASH_BUFSIZE_SHA512, path));
   
   return GF_SUCCESS;
 }
@@ -193,12 +174,13 @@ file_info_prepare_children(gf_file_info* info) {
 }
 
 gf_status
-gf_file_info_new(gf_file_info** info, const gf_path* path) {
+gf_file_info_new(
+  gf_file_info** info, const gf_path* disp_path, const gf_path* path) {
   gf_status rc = 0;
   gf_file_info* tmp = NULL;
   
   gf_validate(info);
-
+  
   _(gf_malloc((gf_ptr*)&tmp, sizeof(*tmp)));
   rc = file_info_init(tmp);
   if (rc != GF_SUCCESS) {
@@ -215,20 +197,20 @@ gf_file_info_new(gf_file_info** info, const gf_path* path) {
     gf_file_info_free(tmp);
     gf_throw(rc);
   }
-  /* If path is specified, we collect file information */
-  if (!gf_path_is_empty(path)) {
-    rc = file_info_set_path(tmp, path);
+  /* If a path is specified, we collect file information */
+  if (!gf_path_is_empty(disp_path) && !gf_path_is_empty(path)) {
+    rc = file_info_set_path(tmp, disp_path);
     if (rc != GF_SUCCESS) {
       gf_file_info_free(tmp);
       gf_throw(rc);
     }
-    rc = file_info_set_stat(tmp);
+    rc = file_info_set_stat(tmp, path);
     if (rc != GF_SUCCESS) {
       gf_file_info_free(tmp);
       gf_throw(rc);
     }
     if (gf_file_info_is_file(tmp)) {
-      rc = file_info_set_hash(tmp);
+      rc = file_info_set_hash(tmp, path);
       if (rc != GF_SUCCESS) {
         gf_file_info_free(tmp);
         gf_throw(rc);
@@ -245,10 +227,11 @@ gf_file_info_new(gf_file_info** info, const gf_path* path) {
 }
 
 static gf_status
-file_info_scan(gf_file_info** info, const gf_path* path) {
+file_info_scan(
+  gf_file_info** info, const gf_path* relpath, const gf_path* path) {
   gf_status rc = 0;
 
-  rc = gf_file_info_new(info, path);
+  rc = gf_file_info_new(info, relpath, path);
   if (rc != GF_SUCCESS) {
     gf_throw(rc);
   }
@@ -256,13 +239,14 @@ file_info_scan(gf_file_info** info, const gf_path* path) {
     DIR* dp = NULL;
     struct dirent* ep = NULL;
 
-    dp = opendir(gf_path_get_string((*info)->full_path));
+    dp = opendir(gf_path_get_string(path));
     if (!dp) {
       gf_raise(GF_E_API, "Couldn't open the directory.");
     }
     while ((ep = readdir(dp)) != NULL) {
       gf_file_info* child = NULL;
       gf_path* child_path = NULL;
+      gf_path* child_relpath = NULL;
 
       if (!strcmp(ep->d_name, ".") || !strcmp(ep->d_name, "..")) {
         continue;
@@ -272,8 +256,15 @@ file_info_scan(gf_file_info** info, const gf_path* path) {
         (void)closedir(dp);
         gf_throw(rc);
       }
-      rc = file_info_scan(&child, child_path);
+      rc = gf_path_append_string(&child_relpath, relpath, ep->d_name);
+      if (rc != GF_SUCCESS) {
+        (void)closedir(dp);
+        gf_path_free(child_path);
+        gf_throw(rc);
+      }
+      rc = file_info_scan(&child, child_relpath, child_path);
       gf_path_free(child_path);
+      gf_path_free(child_relpath);
       if (rc != GF_SUCCESS) {
         (void)closedir(dp);
         gf_throw(rc);
@@ -293,11 +284,16 @@ file_info_scan(gf_file_info** info, const gf_path* path) {
 gf_status
 gf_file_info_scan(gf_file_info** info, const gf_path* path) {
   gf_status rc = 0;
+  gf_path* root = NULL;
   
   gf_validate(info);
   gf_validate(path);
 
-  rc = file_info_scan(info, path);
+  _(gf_path_new(&root, GF_PATH_SEPARATOR));
+
+  /* Do scan */
+  rc = file_info_scan(info, root, path);
+  gf_path_free(root);
   if (rc != GF_SUCCESS) {
     gf_throw(rc);
   }
@@ -366,7 +362,7 @@ gf_file_info_clone(gf_file_info** dst, const gf_file_info* src) {
   gf_validate(dst);
   gf_validate(src);
 
-  _(gf_file_info_new(&tmp, NULL));
+  _(gf_file_info_new(&tmp, NULL, NULL));
   rc = gf_file_info_copy(tmp, src);
   if (rc != GF_SUCCESS) {
     gf_file_info_free(tmp);

@@ -23,7 +23,7 @@
   }
 
 gf_status
-gf_hash_file(gf_8u* hash, gf_size_t size, gf_path* path) {
+gf_hash_file(gf_8u* hash, gf_size_t size, const gf_path* path) {
   int ret = 0;
   SHA512_CTX ctxt = { 0 };
   FILE* fp = NULL;

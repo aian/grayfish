@@ -311,7 +311,23 @@ gf_entry_set_file_info(gf_entry* entry, gf_file_info* info) {
 }
 
 const gf_char*
-gf_entry_get_full_path_string(gf_entry* entry) {
+gf_entry_get_file_name_string(const gf_entry* entry) {
+  gf_status rc = 0;
+  const gf_char* path = NULL;
+  
+  if (!entry || !entry->file_info) {
+    return NULL;
+  }
+  rc = gf_file_info_get_file_name(entry->file_info, &path);
+  if (rc != GF_SUCCESS) {
+    return NULL;
+  }
+  
+  return path;
+}
+
+const gf_char*
+gf_entry_get_full_path_string(const gf_entry* entry) {
   gf_status rc = 0;
   const gf_char* path = NULL;
   
@@ -326,18 +342,66 @@ gf_entry_get_full_path_string(gf_entry* entry) {
   return path;
 }
 
+/*!
+** @warning The returned path must be freed.
+*/
+gf_path*
+gf_entry_get_local_path(const gf_entry* entry, const gf_path* root) {
+  gf_status rc = 0;
+  const gf_char* full_path = NULL;
+  gf_path* path = NULL;
+
+  if (!entry || !root) {
+    return NULL;
+  }
+  full_path = gf_entry_get_full_path_string(entry);
+  if (!full_path) {
+    return NULL;
+  }
+  rc = gf_path_append_string(&path, root, full_path);
+  if (rc != GF_SUCCESS) {
+    return NULL;
+  }
+
+  return path;
+}
+
+
 gf_bool
 gf_entry_is_section(const gf_entry* entry) {
   return entry && entry->type == GF_ENTRY_TYPE_SECTION ? GF_TRUE : GF_FALSE;
 }
 
+gf_bool
+gf_entry_is_document(const gf_entry* entry) {
+  return entry && entry->type == GF_ENTRY_TYPE_DOCUMENT ? GF_TRUE : GF_FALSE;
+}
+
+gf_size_t
+gf_entry_count_children(const gf_entry* entry) {
+  return entry && entry->children ? gf_array_size(entry->children) : 0;
+}
+
+gf_status
+gf_entry_get_child(gf_entry* entry, gf_size_t index, gf_entry** child) {
+  gf_any any = { 0 };
+  
+  gf_validate(entry);
+  gf_validate(child);
+
+  _(gf_array_get(entry->children, index, &any));
+  *child = (gf_entry*)(any.ptr);
+  
+  return GF_SUCCESS;
+}
+
 /* -------------------------------------------------------------------------- */
 
 static gf_status
-entry_read_xml_file(xmlDocPtr* doc, gf_entry* entry) {
-  const gf_char* path = NULL;
+entry_read_xml_file(xmlDocPtr* doc, const gf_path* root, gf_entry* entry) {
+  gf_path* path = NULL;
   xmlDocPtr tmp = NULL;
-
+  
 #ifdef GF_DEBUG_
   static const int option = 0;
 #else
@@ -347,10 +411,12 @@ entry_read_xml_file(xmlDocPtr* doc, gf_entry* entry) {
   gf_validate(doc);
   gf_validate(entry);
 
-  path = gf_entry_get_full_path_string(entry);
-  assert(!gf_strnull(path));
-
-  tmp = xmlReadFile(path, NULL, option);
+  path = gf_entry_get_local_path(entry, root);
+  if (!path) {
+    gf_raise(GF_E_PATH, "Failed to create local path");
+  }
+  tmp = xmlReadFile(gf_path_get_string(path), NULL, option);
+  gf_path_free(path);
   if (!tmp) {
     gf_raise(GF_E_API, "Failed to read an XML file.");
   }
@@ -406,7 +472,7 @@ entry_set_date(gf_entry* entry, xmlNodePtr node) {
   if (!xmlNodeIsText(child)) {
     gf_raise(GF_E_DATA, "Invalid XML data.");
   }
-  _(gf_date_parse((const char*)child->content, &entry->date));
+  _(gf_datetime_parse_iso8061_string((const char*)child->content, &entry->date));
   
   return GF_SUCCESS;
 }
@@ -579,7 +645,7 @@ entry_set_keyword_set(gf_entry* entry, xmlNodePtr node) {
 }
 
 static gf_status
-entry_set_document_info(gf_entry* entry) {
+entry_set_document_info(gf_entry* entry, const gf_path* root_path) {
   gf_status rc = 0;
   xmlDocPtr doc = NULL;
   xmlNodePtr root = NULL;
@@ -587,7 +653,7 @@ entry_set_document_info(gf_entry* entry) {
 
   gf_validate(entry);
 
-  _(entry_read_xml_file(&doc, entry));
+  _(entry_read_xml_file(&doc, root_path, entry));
   assert(doc);
 
   root = xmlDocGetRootElement(doc);
@@ -650,14 +716,14 @@ entry_set_document_info(gf_entry* entry) {
 /* -------------------------------------------------------------------------- */
 
 static gf_status
-entry_set_meta_info(gf_entry* entry) {
+entry_set_meta_info(gf_entry* entry, const gf_path* root_path) {
   gf_status rc = 0;
   xmlDocPtr doc = NULL;
   xmlNodePtr root = NULL;
   
   gf_validate(entry);
 
-  _(entry_read_xml_file(&doc, entry));
+  _(entry_read_xml_file(&doc, root_path, entry));
   assert(doc);
 
   /* "meta" element */
@@ -777,6 +843,26 @@ gf_site_reset(gf_site* site) {
   return GF_SUCCESS;
 }
 
+
+gf_status
+gf_site_get_root_entry(gf_site* site, gf_entry** entry) {
+  gf_size_t cnt = 0;
+  
+  gf_validate(site);
+  gf_validate(entry);
+
+  cnt = gf_array_size(site->entry_set);
+  if (cnt <= 0) {
+    *entry = NULL;
+  } else {
+    gf_any any = { 0 };
+    _(gf_array_get(site->entry_set, 0, &any));
+    *entry = (gf_entry*)(any.ptr);
+  }
+  
+  return GF_SUCCESS;
+}
+
 static gf_bool
 site_does_file_name_equal(
   const gf_file_info* file_info, const gf_char* file_name) {
@@ -869,7 +955,8 @@ site_does_directory_have_document_file(const gf_file_info* file_info) {
 }
 
 static gf_status
-site_collect_document_info(gf_entry* entry, gf_file_info* file_info) {
+site_collect_document_info(
+  gf_entry* entry, const gf_path* root, gf_file_info* file_info) {
   gf_size_t cnt = 0;
   gf_file_info* child_info = NULL;
   
@@ -881,7 +968,7 @@ site_collect_document_info(gf_entry* entry, gf_file_info* file_info) {
     _(gf_file_info_get_child(file_info, i, &child_info));
     if (site_is_document_file(child_info)) {
       _(gf_entry_set_file_info(entry, child_info));
-      _(entry_set_document_info(entry));
+      _(entry_set_document_info(entry, root));
     }
   }
 
@@ -889,7 +976,8 @@ site_collect_document_info(gf_entry* entry, gf_file_info* file_info) {
 }
 
 static gf_status
-site_collect_meta_info(gf_entry* entry, gf_file_info* file_info) {
+site_collect_meta_info(
+  gf_entry* entry, const gf_path* root, gf_file_info* file_info) {
   gf_size_t cnt = 0;
   gf_file_info* child_info = NULL;
   
@@ -901,7 +989,7 @@ site_collect_meta_info(gf_entry* entry, gf_file_info* file_info) {
     _(gf_file_info_get_child(file_info, i, &child_info));
     if (site_is_meta_file(child_info)) {
       _(gf_entry_set_file_info(entry, child_info));
-      _(entry_set_meta_info(entry));
+      _(entry_set_meta_info(entry, root));
     }
   }
 
@@ -942,7 +1030,8 @@ site_collect_file_info(gf_array* file_set, gf_file_info* root) {
 
 
 static gf_status
-site_scan_directories(gf_array* entry_set, gf_file_info* file_info) {
+site_scan_directories(
+  gf_array* entry_set, const gf_path* root, gf_file_info* file_info) {
   gf_status rc = 0;
   gf_size_t cnt = 0;
   gf_entry* entry = NULL;
@@ -961,7 +1050,7 @@ site_scan_directories(gf_array* entry_set, gf_file_info* file_info) {
 
   if (site_does_directory_have_document_file(file_info)) {
     _(gf_entry_new(&entry));
-    rc = site_collect_document_info(entry, file_info);
+    rc = site_collect_document_info(entry, root, file_info);
     if (rc != GF_SUCCESS) {
       gf_entry_free(entry);
       gf_throw(rc);
@@ -973,7 +1062,7 @@ site_scan_directories(gf_array* entry_set, gf_file_info* file_info) {
     }
   } else if (site_does_directory_have_meta_file(file_info)) {
     _(gf_entry_new(&entry));
-    rc = site_collect_meta_info(entry, file_info);
+    rc = site_collect_meta_info(entry, root, file_info);
     if (rc != GF_SUCCESS) {
       gf_entry_free(entry);
       gf_throw(rc);
@@ -987,21 +1076,19 @@ site_scan_directories(gf_array* entry_set, gf_file_info* file_info) {
     /* This directory is not our target */
     return GF_SUCCESS;
   }
-  /* collect file info */
   if (entry) {
+    /* collect file info */
     rc = site_collect_file_info(entry->file_set, file_info);
     if (rc != GF_SUCCESS) {
       gf_throw(rc);
     }
-  }
-  /* process children  */
-  if (entry) {
+    /* process children  */
     cnt = gf_file_info_count_children(file_info);
     for (gf_size_t i = 0; i < cnt; i++) {
       gf_file_info* child_info = NULL;
       
       _(gf_file_info_get_child(file_info, i, &child_info));
-      _(site_scan_directories(entry->children, child_info));
+      _(site_scan_directories(entry->children, root, child_info));
     }
   }
   
@@ -1026,7 +1113,7 @@ gf_site_scan(gf_site** site, const gf_path* path) {
   _(gf_file_info_scan(&file_info, path));
 
   /* Traverse */
-  rc = site_scan_directories(tmp->entry_set, file_info);
+  rc = site_scan_directories(tmp->entry_set, path, file_info);
   gf_file_info_free(file_info);
   if (rc != GF_SUCCESS) {
     gf_site_free(tmp);
@@ -1202,7 +1289,7 @@ site_add_xml_date(xmlNodePtr node, xmlChar* name, gf_64u datetime) {
 
   _(gf_string_new(&str));
   if (datetime > 0) {
-    rc = gf_date_make_string(str, (gf_datetime)datetime);
+    rc = gf_datetime_make_iso8061_string(str, (gf_datetime)datetime);
     if (rc != GF_SUCCESS) {
       gf_string_free(str);
       gf_throw(rc);
@@ -1854,7 +1941,7 @@ site_read_xml_date(gf_datetime* value, const xmlNodePtr node) {
   if (!xmlNodeIsText(node)) {
     gf_raise(GF_E_DATA, "Invalid site data.");
   }
-  _(gf_date_parse((const gf_char*)node->content, value));
+  _(gf_datetime_parse_iso8061_string((const gf_char*)node->content, value));
   
   return GF_SUCCESS;
 }
@@ -2177,7 +2264,7 @@ site_read_xml_file_set(gf_array* file_set, const xmlNodePtr node) {
     if (!xmlStrcmp(cur->name, BAD_CAST"file-info")) {
       gf_file_info* info = NULL;
 
-      _(gf_file_info_new(&info, NULL));
+      _(gf_file_info_new(&info, NULL, NULL));
       rc = gf_array_add(file_set, (gf_any){ .ptr = info });
       if (rc != GF_SUCCESS) {
         gf_file_info_free(info);

@@ -21,6 +21,8 @@
 #include <libgf/gf_memory.h>
 #include <libgf/gf_string.h>
 #include <libgf/gf_path.h>
+#include <libgf/gf_datetime.h>
+#include <libgf/gf_shell.h>
 #include <libgf/gf_config.h>
 
 #include "gf_local.h"
@@ -29,6 +31,9 @@ struct gf_path {
   char* buf;
   gf_size_t len;
 };
+
+const gf_path* GF_PATH_CURRENT = &(gf_path){ .buf = ".",  .len = 1 };
+const gf_path* GF_PATH_PARENT  = &(gf_path){ .buf = "..", .len = 2 };
 
 gf_status
 path_init(gf_path* path) {
@@ -258,8 +263,9 @@ gf_bool
 gf_path_has_separator(const gf_path* path) {
   gf_bool ret = GF_FALSE;
   char* last = NULL;
-
-  if (path && path->buf && path->len > 0) {
+  
+  // Now we return GF_FALSE when a path string is only '/'.
+  if (path && path->buf && path->len > 1) {
     last = &path->buf[path->len - 1];
     switch (*last) {
     case '\\':
@@ -295,7 +301,10 @@ gf_path_append(gf_path* path, const gf_path* src) {
   /* 
   ** <path length> + <seaparator> + <src length>
   */
-  if (path->len > 0) {
+  // TODO: make a function to check this condition below
+  if (path->len == 1 && path->buf[0] == '/') {
+    len = path->len + src->len;
+  } else if (path->len > 0) {
     len = path->len + 1 + src->len;
   } else {
     len = src->len;
@@ -308,8 +317,11 @@ gf_path_append(gf_path* path, const gf_path* src) {
   if (path->len > 0) {
     memcpy_s(ptr, path->len, path->buf, path->len);
     ptr += path->len;
-    ptr[0] = GF_PATH_SEPARATOR_CHAR;
-    ptr++;
+    // TODO: make a function to check this condition below
+    if (path->len > 1 || path->buf[0] != '/') {
+      ptr[0] = GF_PATH_SEPARATOR_CHAR;
+      ptr++;
+    }
   }
   memcpy_s(ptr, src->len, src->buf, src->len);
 
@@ -353,8 +365,49 @@ gf_path_append_string(gf_path** dst, const gf_path* src, const char* str) {
 }
 
 gf_status
+gf_path_substitute_separators_from_backslash_to_slash(gf_path* path) {
+  gf_validate(path);
+
+  static const gf_char w_sep = GF_PATH_SEPARATOR_WINDOWS[0];
+  static const gf_char u_sep = GF_PATH_SEPARATOR_UNIX[0];
+
+  for (gf_size_t i = 0; path->buf[i]; i++) {
+    if (path->buf[i] == w_sep) {
+      path->buf[i] = u_sep;
+    }
+  }
+  
+  return GF_SUCCESS;
+}
+
+gf_status
+gf_path_remove_drive_letters(gf_path* path) {
+  gf_status rc = 0;
+  
+  gf_validate(path);
+  // The length of a drive letter must be longer than 1 characters.
+  if (path->len < 2) {
+    return GF_SUCCESS;
+  }
+  if (path->buf[1] == ':') {
+    gf_char* tmp = NULL;
+    const gf_char* ptr = path->buf + 2;
+
+    _(gf_strdup(&tmp, ptr));
+    rc = gf_path_set_string(path, tmp);
+    gf_free(tmp);
+    if (rc != GF_SUCCESS) {
+      gf_throw(rc);
+    }
+  }
+  
+  return GF_SUCCESS;
+}
+
+gf_status
 gf_path_evacuate(const gf_path* path) {
   gf_status rc = 0;
+  gf_string* str_date = NULL;
   gf_path* new_path = NULL;
   gf_size_t len = 0;
   char* buf = NULL;
@@ -367,20 +420,58 @@ gf_path_evacuate(const gf_path* path) {
   if (!gf_path_file_exists(path)) {
     return GF_SUCCESS;
   }
-  /* Make the evacuating path string */
-  _(gf_path_new(&new_path, gf_path_get_string(path)));
-  len = path->len + extra;
+  /* Make a current time string */
+  rc = gf_string_new(&str_date);
+  if (rc != GF_SUCCESS) {
+    gf_throw(rc);
+  }
+  rc = gf_datetime_make_current_digit_string(str_date);
+  if (rc != GF_SUCCESS) {
+    gf_string_free(str_date);
+    gf_throw(rc);
+  }
+  /* Make a evacuating path string */
+  rc = gf_path_new(&new_path, gf_path_get_string(path));
+  if (rc != GF_SUCCESS) {
+    gf_string_free(str_date);
+    gf_throw(rc);
+  }
+
+  len = path->len + gf_string_size(str_date) + extra;
   rc = gf_malloc((gf_ptr *)buf, len);
   if (rc != GF_SUCCESS) {
     gf_path_free(new_path);
-    return rc;
+    gf_string_free(str_date);
+    gf_throw(rc);
   }
   for (gf_size_t i = 0; ; i++) {
     int ret = 0;
-    ret = sprintf_s(buf, len, "%s.old%04d", path->buf, i);
+    
+    ret = sprintf_s(buf, len, "%s.%s-%04d",
+                    path->buf, gf_string_get(str_date), i);
     if (ret == 0) {
       gf_path_free(new_path);
+      gf_string_free(str_date);
       gf_raise(GF_E_API, "Failed to evacuate the existing directory.");
+    }
+    rc = gf_path_set_string(new_path, buf);
+    if (rc != GF_SUCCESS) {
+      gf_path_free(new_path);
+      gf_string_free(str_date);
+      gf_throw(rc);
+    }
+    if (!gf_path_file_exists(new_path)) {
+      rc = gf_shell_move(new_path, path);
+      gf_path_free(new_path);
+      gf_string_free(str_date);
+      if (rc != GF_SUCCESS) {
+        gf_throw(rc);
+      }
+      rc = gf_shell_make_directory(path);
+      if (rc != GF_SUCCESS) {
+        gf_throw(rc);
+      }
+      break;
     }
   }
   
