@@ -36,6 +36,7 @@ gf_cmd_base_init(gf_cmd_base* cmd) {
   cmd->conf_file   = NULL;
   cmd->site_path   = NULL;
   cmd->build_path  = NULL;
+  cmd->style_path  = NULL;
   cmd->src_path    = NULL;
   cmd->dst_path    = NULL;
   cmd->create      = NULL;
@@ -231,6 +232,9 @@ gf_cmd_base_clear(gf_cmd_base* cmd) {
     }
     if (cmd->build_path) {
       gf_path_free(cmd->build_path);
+    }
+    if (cmd->style_path) {
+      gf_path_free(cmd->style_path);
     }
     if (cmd->src_path) {
       gf_path_free(cmd->src_path);

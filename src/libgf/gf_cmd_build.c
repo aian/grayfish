@@ -319,6 +319,30 @@ build_xml_get_process_set(xmlNodePtr node) {
 }
 
 static gf_status
+build_get_style_path(
+  gf_path** style_path, const gf_char* method, const gf_path* root) {
+  gf_status rc = 0;
+  gf_path* tmp = NULL;
+  gf_char buf[1024] = { 0 };
+
+  gf_validate(style_path);
+  gf_validate(!gf_strnull(method));
+  gf_validate(root);
+
+  // TODO: check the length of the string 'method'.
+  
+  sprintf_s(buf, 1024, "%s.xsl", method);
+  rc = gf_path_append_string(&tmp, root, buf);
+  if (rc != GF_SUCCESS) {
+    gf_throw(rc);
+  }
+  
+  *style_path = tmp;
+
+  return GF_SUCCESS;
+}
+
+static gf_status
 build_process_file(xmlNodePtr node, gf_cmd_build* cmd) {
   gf_status rc = 0;
   gf_xslt* xslt = NULL;
@@ -337,24 +361,43 @@ build_process_file(xmlNodePtr node, gf_cmd_build* cmd) {
     gf_raise(GF_E_READ, "Invalid meta file.");
   }
 
+  /* Prepare an XSLT processor */
   rc = gf_xslt_new(&xslt);
   if (rc != GF_SUCCESS) {
     gf_throw(rc);
   }
-
-  // TODO: Implement a processing routine.
-  rc = gf_xslt_read_template(xslt, style_path);
+  rc = build_get_style_path(
+    &style_path, method, GF_CMD_BASE_CAST(cmd)->style_path);
   if (rc != GF_SUCCESS) {
     gf_xslt_free(xslt);
     gf_throw(rc);
   }
+  rc = gf_xslt_read_template(xslt, style_path);
+  gf_path_free(style_path);
+  if (rc != GF_SUCCESS) {
+    gf_xslt_free(xslt);
+    gf_throw(rc);
+  }
+  rc = gf_xslt_set_param(
+    xslt, "conf-file", gf_path_get_string(GF_CMD_BASE_CAST(cmd)->conf_path));
+  if (rc != GF_SUCCESS) {
+    gf_xslt_free(xslt);
+    gf_throw(rc);
+  }
+  rc = gf_xslt_set_param(
+    xslt, "site-file", gf_path_get_string(GF_CMD_BASE_CAST(cmd)->site_path));
+  if (rc != GF_SUCCESS) {
+    gf_xslt_free(xslt);
+    gf_throw(rc);
+  }
+  /* XSLT process */
   rc = gf_xslt_process(xslt, GF_CMD_BASE_CAST(cmd)->site_path);
   if (rc != GF_SUCCESS) {
     gf_xslt_free(xslt);
     gf_throw(rc);
   }
   /* Output when it is needed */
-  if (output) {
+  if (!gf_strnull(output)) {
     gf_path* output_path = NULL;
 
     rc = gf_path_new(&output_path, output);
@@ -447,7 +490,6 @@ build_convert_document_file_set(gf_cmd_build* cmd) {
   if (rc != GF_SUCCESS) {
     gf_throw(rc);
   }
-  
   /* Convert documents */
   
   return GF_SUCCESS;

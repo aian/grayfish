@@ -52,6 +52,7 @@ struct gf_cmd_base {
   gf_path*          conf_file;   ///< The local config file path 
   gf_path*          site_path;   ///< The path of the `site file'
   gf_path*          build_path;  ///< The path of the intermediate files.
+  gf_path*          style_path;  ///< The path of the XSLT stylesheets.
   gf_path*          src_path;    ///< The root path of the source files
   gf_path*          dst_path;    ///< The root path of the destination files
   gf_cmd_create_fn  create;      ///< The function to create this object
