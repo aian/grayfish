@@ -63,7 +63,7 @@ gf_system_get_system_config_path(gf_path** path) {
   if (rc != GF_SUCCESS) {
     return rc;
   }
-  rc = gf_path_canonicalize(*path);
+  rc = gf_path_absolute_path(*path);
   if (rc != GF_SUCCESS) {
     return rc;
   }

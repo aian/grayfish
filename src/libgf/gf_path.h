@@ -88,8 +88,6 @@ extern gf_status gf_path_copy(gf_path* dst, const gf_path* src);
 
 extern gf_status gf_path_clone(gf_path** dst, const gf_path* src);
 
-extern gf_status gf_path_canonicalize(gf_path* path);
-
 extern gf_status gf_path_absolute_path(gf_path* path);
 
 

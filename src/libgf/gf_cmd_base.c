@@ -87,11 +87,6 @@ cmd_base_init_paths(gf_cmd_base* cmd) {
   if (rc != GF_SUCCESS) {
     gf_throw(rc);
   }
-  rc = gf_path_canonicalize(path);
-  if (rc != GF_SUCCESS) {
-    gf_path_free(path);
-    gf_throw(rc);
-  }
   rc = gf_path_absolute_path(path);
   if (rc != GF_SUCCESS) {
     gf_path_free(path);

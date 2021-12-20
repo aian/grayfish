@@ -135,37 +135,6 @@ gf_path_clone(gf_path** dst, const gf_path* src) {
 }
 
 gf_status
-gf_path_canonicalize(gf_path* path) {
-  gf_status rc = 0;
-  BOOL ret = 0;
-  char tmp[MAX_PATH] = { 0 };
-  char *str = NULL;
-    
-  gf_validate(path);
-
-  if (gf_path_is_empty(path)) {
-    return GF_SUCCESS;
-  }
-
-  ret = PathCanonicalize(tmp, path->buf);
-  if (!ret) {
-    gf_raise(GF_E_API, "Failed to canonicalize the path string '%s'", path->buf);
-  }
-  rc = gf_strdup(&str, tmp);
-  if (rc != GF_SUCCESS) {
-    return rc;
-  }
-  if (path->buf) {
-    gf_free(path->buf);
-    path->buf = NULL;
-  }
-  path->buf = str;
-  path->len = gf_strlen(str);
-  
-  return GF_SUCCESS;
-}
-
-gf_status
 gf_path_absolute_path(gf_path* path) {
   gf_status rc = 0;
   char* buf = NULL;
@@ -181,9 +150,14 @@ gf_path_absolute_path(gf_path* path) {
   rc = gf_strassign(&path->buf, buf);
   if (rc != GF_SUCCESS) {
     gf_free(buf);
-    return rc;
+    gf_throw(rc);
   }
   path->len = gf_strlen(path->buf);
+
+  rc = gf_path_substitute_separators_from_backslash_to_slash(path);
+  if (rc != GF_SUCCESS) {
+    gf_throw(rc);
+  }
 
   return GF_SUCCESS;
 }
@@ -221,7 +195,7 @@ gf_path_get_parent(gf_path** parent, const gf_path* path) {
 
   _(gf_path_append_string(&p, path, ".."));
 
-  rc = gf_path_canonicalize(p);
+  rc = gf_path_absolute_path(p);
   if (rc != GF_SUCCESS) {
     gf_path_free(p);
     gf_throw(rc);
@@ -592,7 +566,7 @@ gf_path_get_style_path(gf_path** path) {
     if (rc != GF_SUCCESS) {
       gf_throw(rc);
     }
-    rc = gf_path_canonicalize(*path);
+    rc = gf_path_absolute_path(*path);
     if (rc != GF_SUCCESS) {
       gf_throw(rc);
     }
@@ -624,6 +598,11 @@ gf_path_get_current_path(gf_path** path) {
   rc = gf_path_new(&tmp, buf);
   gf_free(buf);
   if (rc != GF_SUCCESS) {
+    return rc;
+  }
+  rc = gf_path_substitute_separators_from_backslash_to_slash(tmp);
+  if (rc != GF_SUCCESS) {
+    gf_path_free(tmp);
     return rc;
   }
 
