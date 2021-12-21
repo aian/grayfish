@@ -211,6 +211,23 @@ gf_path_get_parent(gf_path** parent, const gf_path* path) {
 }
 
 gf_bool
+gf_path_equal(const gf_path* lhs, const gf_path* rhs) {
+  if (!lhs || !rhs) {
+    return GF_FALSE;
+  }
+  if (!lhs->buf || !rhs->buf) {
+    return GF_FALSE;
+  }
+  if (!strcmp(lhs->buf, rhs->buf)) {
+    return GF_TRUE;
+  } else {
+    return GF_FALSE;
+  }
+  /* Not reaches here */
+  return GF_FALSE;
+}
+
+gf_bool
 gf_path_is_root(const gf_path* path) {
   if (gf_path_is_empty(path)) {
     return GF_FALSE;

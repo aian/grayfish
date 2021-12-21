@@ -102,6 +102,8 @@ extern gf_status gf_path_file_name(gf_path* path);
 
 extern gf_status gf_path_get_parent(gf_path** parent, const gf_path* path);
 
+extern gf_bool gf_path_equal(const gf_path* lhs, const gf_path* rhs);
+
 /*!
 ** @brief Test if the specified path is the root directory
 **

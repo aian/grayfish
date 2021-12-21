@@ -368,9 +368,15 @@ cmd_base_is_project_directory(const gf_path* path) {
       return GF_FALSE;
     } else {
       gf_bool ret = GF_FALSE;
-
-      ret =  cmd_base_is_project_directory(parent);
+      
+      if (!gf_path_equal(path, parent)) {
+        ret = cmd_base_is_project_directory(parent);
+      } else {
+        /* Reached to the root directory */
+        ret = GF_FALSE;
+      }
       gf_path_free(parent);
+
       return ret;
     }
   }
