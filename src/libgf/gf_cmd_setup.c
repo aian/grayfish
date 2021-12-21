@@ -38,6 +38,15 @@ struct gf_cmd_setup {
   gf_path*    proj_path; ///< Project path to be created
   gf_path*    conf_path; ///< Config path to be crated
   gf_path*    conf_file; ///< Config file path to be crated
+  gf_bool     help;
+};
+
+/*!
+** @brief
+*/
+
+enum {
+  OPT_SETUP_HELP,
 };
 
 /*!
@@ -54,6 +63,14 @@ static const gf_cmd_base_info info_ = {
     .execute     = gf_cmd_setup_execute,
   },
   .options = {
+    {
+      .key         = OPT_SETUP_HELP,
+      .opt_short   = 'h',
+      .opt_long    = "help",
+      .opt_count   = 0,
+      .usage       = "-h, --help",
+      .description = "Show help.",
+    },
     /* Terminate */
     GF_OPTION_NULL,
   },
@@ -73,6 +90,7 @@ init(gf_cmd_base* cmd) {
   GF_CMD_SETUP_CAST(cmd)->proj_path = NULL;
   GF_CMD_SETUP_CAST(cmd)->conf_path = NULL;
   GF_CMD_SETUP_CAST(cmd)->conf_file = NULL;
+  GF_CMD_SETUP_CAST(cmd)->help = GF_FALSE;
 
   return GF_SUCCESS;
 }
@@ -120,6 +138,21 @@ gf_cmd_setup_free(gf_cmd_base* cmd) {
 }
 
 /* -------------------------------------------------------------------------- */
+
+static gf_status
+setup_check_args(const gf_args* args) {
+  int remain = 0;
+  
+  gf_validate(args);
+
+  remain = gf_args_remain(args);
+  if (remain != 1) {
+    gf_msg("setup <site name>");
+    gf_raise(GF_E_OPTION, "Invalid command.");
+  }
+  
+  return GF_SUCCESS;
+}
 
 /*
 ** @brief Check if the root directory is a valid path to setup
@@ -336,6 +369,14 @@ setup_process(gf_cmd_setup* cmd) {
   return GF_SUCCESS;
 }
 
+static gf_status
+setup_set_options(gf_cmd_setup* cmd) {
+  /* Parse command line arguments */
+  _(gf_args_parse(cmd->base.args));
+  cmd->help = gf_args_is_specified(cmd->base.args, OPT_SETUP_HELP);
+  return GF_SUCCESS;
+}
+
 /*!
 ** This function tries to create a new directory. If the directory path, which
 ** is specified by the project name, already exist, it renames the existing one
@@ -344,12 +385,24 @@ setup_process(gf_cmd_setup* cmd) {
 
 gf_status
 gf_cmd_setup_execute(gf_cmd_base* cmd) {
+  gf_status rc = 0;
+  
   gf_validate(cmd);
 
   gf_msg("Setting up your site ...");
-  
-  _(gf_args_parse(cmd->args));
-  _(setup_process(GF_CMD_SETUP_CAST(cmd)));
+
+  rc = setup_set_options(GF_CMD_SETUP_CAST(cmd));
+  if (rc != GF_SUCCESS) {
+    gf_throw(rc);
+  }
+  rc = setup_check_args(cmd->args);
+  if (rc != GF_SUCCESS) {
+    gf_throw(rc);
+  }
+  rc = setup_process(GF_CMD_SETUP_CAST(cmd));
+  if (rc != GF_SUCCESS) {
+    gf_throw(rc);
+  }
 
   gf_msg("Done.");
 
