@@ -139,15 +139,28 @@ gf_cmd_setup_free(gf_cmd_base* cmd) {
 
 /* -------------------------------------------------------------------------- */
 
+static void
+setup_show_help(const gf_cmd_setup* cmd) {
+  gf_msg("usage: gf [options] setup [--help] [[options] <site name>]");
+  gf_msg("");
+  assert(cmd);
+  if (cmd && GF_CMD_BASE_CAST(cmd)->args) {
+    gf_msg("Options:");
+    gf_msg("");
+    gf_args_print_help(GF_CMD_BASE_CAST(cmd)->args);
+  }
+  gf_msg("");
+}
+
 static gf_status
-setup_check_args(const gf_args* args) {
+setup_check_args(const gf_cmd_setup* cmd) {
   int remain = 0;
   
-  gf_validate(args);
+  gf_validate(cmd);
 
-  remain = gf_args_remain(args);
+  remain = gf_args_remain(GF_CMD_BASE_CAST(cmd)->args);
   if (remain != 1) {
-    gf_msg("setup <site name>");
+    setup_show_help(cmd);
     gf_raise(GF_E_OPTION, "Invalid command.");
   }
   
@@ -389,16 +402,17 @@ gf_cmd_setup_execute(gf_cmd_base* cmd) {
   
   gf_validate(cmd);
 
-  gf_msg("Setting up your site ...");
-
   rc = setup_set_options(GF_CMD_SETUP_CAST(cmd));
   if (rc != GF_SUCCESS) {
     gf_throw(rc);
   }
-  rc = setup_check_args(cmd->args);
+  rc = setup_check_args(GF_CMD_SETUP_CAST(cmd));
   if (rc != GF_SUCCESS) {
     gf_throw(rc);
   }
+
+  gf_msg("Setting up your site ...");
+
   rc = setup_process(GF_CMD_SETUP_CAST(cmd));
   if (rc != GF_SUCCESS) {
     gf_throw(rc);

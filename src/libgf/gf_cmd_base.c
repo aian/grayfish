@@ -498,7 +498,7 @@ gf_cmd_factory_show_helps(void) {
     gf_cmd_base* cmd = NULL;
 
     _(gf_cmd_create(&cmd, factory_.entries[i].name));
-    gf_msg("  %-16s %s", cmd->name, cmd->description);
+    gf_msg("    %-24s %s", cmd->name, cmd->description);
     gf_cmd_base_free(cmd);
   }
   return GF_SUCCESS;

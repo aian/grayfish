@@ -230,6 +230,7 @@ extern gf_status gf_args_get_entry_by_long_option(
 extern gf_status gf_args_get_option_args(
   gf_args* args, int key, char*** opt_args, gf_size_t* opt_count);
 
+extern void gf_args_print_help(const gf_args* args);
 
 /* -------------------------------------------------------------------------- */
 

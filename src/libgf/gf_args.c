@@ -663,3 +663,27 @@ gf_args_get_option_args(
   
   return GF_SUCCESS;
 }
+
+void
+gf_args_print_help(const gf_args* args) {
+  assert(args);
+  if (args) {
+    gf_char name[1024] = { 0 };
+    
+    
+    for (size_t i = 0; i < args->used; i++) {
+      const gf_args_entry* e = args->entries[i];
+
+      sprintf_s(
+        name, 1024, "%s%c%s%s%s",
+        e->opt_short ? "-" : "",
+        e->opt_short ? e->opt_short : '\0',
+        (e->opt_short && !gf_strnull(e->opt_long)) ? ", " : "",
+        !gf_strnull(e->opt_long) ? "--" : "",
+        !gf_strnull(e->opt_long) ? e->opt_long : ""
+        );
+
+      gf_msg("    %-24s%s", name, e->description);
+    }
+  }
+}

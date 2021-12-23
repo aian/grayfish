@@ -112,8 +112,8 @@ gf_cmd_help_execute(gf_cmd_base* cmd) {
   gf_msg("");
   gf_msg("Options:");
   gf_msg("");
-  gf_msg("  %-16s %s", "-v, --version", "Show version infomation");
-  gf_msg("  %-16s %s", "-h, --help",    "Show help");
+  gf_msg("    %-24s %s", "-v, --version", "Show version infomation");
+  gf_msg("    %-24s %s", "-h, --help",    "Show help");
   gf_msg("");
   gf_msg("There are the Grayfish commands:");
   gf_msg("");
