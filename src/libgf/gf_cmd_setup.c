@@ -291,7 +291,7 @@ setup_create_project_directory(gf_cmd_setup* cmd) {
     _(gf_path_create_directory(cmd->proj_path));
     gf_info("Directory '%s' has been created.", path);
   } else {
-    gf_warn("Directory '%s' already exists.", path);
+    gf_warn("Directory '%s' already exists. (not created)", path);
   }
   /* Create the config directory */
   path = gf_path_get_string(cmd->conf_path);
@@ -299,7 +299,7 @@ setup_create_project_directory(gf_cmd_setup* cmd) {
     _(gf_path_create_directory(cmd->conf_path));
     gf_info("Directory '%s' has been created.", path);
   } else {
-    gf_warn("Directory '%s' already exists.", path);
+    gf_warn("Directory '%s' already exists. (not created)", path);
   }
   
   return GF_SUCCESS;
@@ -329,9 +329,11 @@ setup_create_document_directories(gf_cmd_setup* cmd) {
         gf_path_free(pub_path);
         return rc;
       }
-      gf_info("Directory '%s' has been created.", gf_path_get_string(pub_path));
+      gf_info("Directory '%s' has been created.",
+              gf_path_get_string(pub_path));
     } else {
-      gf_warn("Directory '%s' already exists.", gf_path_get_string(pub_path));
+      gf_warn("Directory '%s' already exists. (not created)",
+              gf_path_get_string(pub_path));
     }
     gf_path_free(pub_path);
   } else {
@@ -352,9 +354,11 @@ setup_create_document_directories(gf_cmd_setup* cmd) {
         gf_path_free(src_path);
         return rc;
       }
-      gf_info("Directory '%s' has been created.", gf_path_get_string(src_path));
+      gf_info("Directory '%s' has been created.",
+              gf_path_get_string(src_path));
     } else {
-      gf_warn("Directory '%s' already exists.", gf_path_get_string(src_path));
+      gf_warn("Directory '%s' already exists. (not created)",
+              gf_path_get_string(src_path));
     }
     gf_path_free(src_path);
   } else {
@@ -366,18 +370,35 @@ setup_create_document_directories(gf_cmd_setup* cmd) {
 
 static gf_status
 setup_process(gf_cmd_setup* cmd) {
+  gf_status rc = 0;
+  
   gf_validate(cmd);
 
   /* Check if the current directory is not in the project path */
-  _(setup_check_root_path(cmd));
+  rc = setup_check_root_path(cmd);
+  if (rc != GF_SUCCESS) {
+    gf_throw(rc);
+  }
   /* Make a project path */
-  _(setup_make_paths(cmd));
+  rc = setup_make_paths(cmd);
+  if (rc != GF_SUCCESS) {
+    gf_throw(rc);
+  }
   /* Create a project_directory */
-  _(setup_create_project_directory(cmd));
+  rc = setup_create_project_directory(cmd);
+  if (rc != GF_SUCCESS) {
+    gf_throw(rc);
+  }
   /* Create a config files */
-  _(setup_create_config_file(cmd));
+  rc = setup_create_config_file(cmd);
+  if (rc != GF_SUCCESS) {
+    gf_throw(rc);
+  }
   /* Create document paths */
-  _(setup_create_document_directories(cmd));
+  rc = setup_create_document_directories(cmd);
+  if (rc != GF_SUCCESS) {
+    gf_throw(rc);
+  }
   
   return GF_SUCCESS;
 }
@@ -392,8 +413,7 @@ setup_set_options(gf_cmd_setup* cmd) {
 
 /*!
 ** This function tries to create a new directory. If the directory path, which
-** is specified by the project name, already exist, it renames the existing one
-** into the other name.
+** is specified by the project name, already exist, we do nothing on this path.
 */
 
 gf_status
